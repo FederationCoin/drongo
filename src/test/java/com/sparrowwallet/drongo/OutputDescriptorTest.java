@@ -59,7 +59,7 @@ public class OutputDescriptorTest {
         KeyDerivation derivation = descriptor.getKeyDerivation(extendedPublicKey);
         Assertions.assertEquals("d34db33f", derivation.getMasterFingerprint());
         Assertions.assertEquals("m/44'/0'/0'", derivation.getDerivationPath());
-        Assertions.assertEquals("14qCH92HCyDDBFFZdhDt1WMfrMDYnBFYMF", descriptor.getAddress(descriptor.getChangeDerivation(0)).toString());
+        Assertions.assertEquals(ChainEncoding.address("14qCH92HCyDDBFFZdhDt1WMfrMDYnBFYMF"), descriptor.getAddress(descriptor.getChangeDerivation(0)).toString());
     }
 
     @Test
@@ -70,7 +70,7 @@ public class OutputDescriptorTest {
         KeyDerivation derivation = descriptor.getKeyDerivation(extendedPublicKey);
         Assertions.assertEquals("f09a3b29", derivation.getMasterFingerprint());
         Assertions.assertEquals("m/49'/0'/0'", derivation.getDerivationPath());
-        Assertions.assertEquals("31sNBFoYAaFggvNBAnnnLAc5ygfjZRCK6s", descriptor.getAddress(descriptor.getChangeDerivation(0)).toString());
+        Assertions.assertEquals(ChainEncoding.address("31sNBFoYAaFggvNBAnnnLAc5ygfjZRCK6s"), descriptor.getAddress(descriptor.getChangeDerivation(0)).toString());
     }
 
     @Test
@@ -78,7 +78,7 @@ public class OutputDescriptorTest {
         OutputDescriptor descriptor = OutputDescriptor.getOutputDescriptor("wsh(sortedmulti(2,xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/0/*,xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/0/*))");
         Assertions.assertEquals("wsh(sortedmulti(2,xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/0/*,xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/0/*))", descriptor.toString());
         Assertions.assertEquals(2, descriptor.getMultisigThreshold());
-        Assertions.assertEquals("bc1qf5l7g5t5v2tp2wnwfeqlktkds7zvprmm7afjn6f85fdesc2pwedsh42kcl", descriptor.getAddress(KeyDerivation.parsePath("0/0")).toString());
+        Assertions.assertEquals(ChainEncoding.address("bc1qf5l7g5t5v2tp2wnwfeqlktkds7zvprmm7afjn6f85fdesc2pwedsh42kcl"), descriptor.getAddress(KeyDerivation.parsePath("0/0")).toString());
     }
 
     @Test
@@ -526,10 +526,10 @@ public class OutputDescriptorTest {
         String p2shP2wsh = "sh(wsh(sortedmulti(2,[793cc70b/48'/0'/0'/1']xpub6ErVmcYYHmavsMgxEcTZyzN5sqth1ZyRpFNJC26ij1wYGC2SBKYrgt9yariSbn7HLRoZUvhUhmPfsRTPrdhhGFscpPZzmch6UTdmRP1aZUj/0/0,[b3118e52/48'/0'/0'/1']xpub6Du5Jn6eYZE96ccmAc1ZTFPzdnzrvqfG4mpamDun2qZYKywoiQJMCbS3kWWMr6U3XW6s125RLsaPABWgv2yA749ieaMe67FxkTjMsbcxCch/0/0,[842bd2ed/48'/0'/0'/1']xpub6Ex81KopPkEt9hJiWHabYy8LNsSR4A7sUQoFBk9dR8XxHrr4p9HrYWN3NCf5uwfopHnQkCG7FYnZMztKbtRtbh6tzZC4xtHPbmVVxRSN7ic/0/0)))";
 
         OutputDescriptor p2wshDescriptor = OutputDescriptor.getOutputDescriptor(p2wsh);
-        Assertions.assertEquals("bc1qrgc6p3kylfztu06ysl752gwwuekhvtfh9vr7zg43jvu60mutamcsv948ej", p2wshDescriptor.getAddress(p2wshDescriptor.getChildDerivation()).toString());
+        Assertions.assertEquals(ChainEncoding.address("bc1qrgc6p3kylfztu06ysl752gwwuekhvtfh9vr7zg43jvu60mutamcsv948ej"), p2wshDescriptor.getAddress(p2wshDescriptor.getChildDerivation()).toString());
 
         OutputDescriptor p2shP2wshDescriptor = OutputDescriptor.getOutputDescriptor(p2shP2wsh);
-        Assertions.assertEquals("3MmNkJ3e67jDGNwGL7yQ886T192Bbb81zP", p2shP2wshDescriptor.getAddress(p2shP2wshDescriptor.getChildDerivation()).toString());
+        Assertions.assertEquals(ChainEncoding.address("3MmNkJ3e67jDGNwGL7yQ886T192Bbb81zP"), p2shP2wshDescriptor.getAddress(p2shP2wshDescriptor.getChildDerivation()).toString());
 
         //A fixed /0/0 descriptor must describe the same address as the equivalent template at receive index 0
         OutputDescriptor template = OutputDescriptor.getOutputDescriptor(p2shP2wsh.replace("/0/0", "/**"));

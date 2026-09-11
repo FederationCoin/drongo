@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -22,7 +21,6 @@ import java.util.Map;
  * The last entry anchors forward header validation; earlier entries verify historical headers by hash linkage.
  */
 public class HeaderCheckpoints {
-    private static final String CHECKPOINTS_RESOURCE_DIR = "/checkpoints/";
     private static final Map<Network, HeaderCheckpoints> NETWORK_CHECKPOINTS = new EnumMap<>(Network.class);
 
     private final Network network;
@@ -35,26 +33,15 @@ public class HeaderCheckpoints {
         this.bits = bits;
     }
 
-    /** The checkpoints for the given network, parsed from its resource on first use and cached. Regtest has none. */
+    /** The checkpoints for the given network. This chain has none yet and anchors at genesis. */
     public static synchronized HeaderCheckpoints get(Network network) {
         return NETWORK_CHECKPOINTS.computeIfAbsent(network, HeaderCheckpoints::load);
     }
 
     private static HeaderCheckpoints load(Network network) {
-        if(network == Network.REGTEST) {
-            return new HeaderCheckpoints(network, Collections.emptyList(), Collections.emptyList());
-        }
-
-        String resource = CHECKPOINTS_RESOURCE_DIR + network.getName() + ".txt";
-        try(InputStream inputStream = HeaderCheckpoints.class.getResourceAsStream(resource)) {
-            if(inputStream == null) {
-                throw new IllegalStateException("No checkpoints resource at " + resource);
-            }
-
-            return parse(network, inputStream);
-        } catch(IOException e) {
-            throw new UncheckedIOException("Failed to read " + resource, e);
-        }
+        // Blake2b is from height 1 on this chain. A difficulty-period pin starts at 2015 and would sit
+        // above activation, so every network anchors at genesis until there is history to pin.
+        return new HeaderCheckpoints(network, Collections.emptyList(), Collections.emptyList());
     }
 
     static HeaderCheckpoints parse(Network network, InputStream inputStream) throws IOException {

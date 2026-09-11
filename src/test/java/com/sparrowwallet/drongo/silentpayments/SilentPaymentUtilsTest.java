@@ -1,5 +1,6 @@
 package com.sparrowwallet.drongo.silentpayments;
 
+import com.sparrowwallet.drongo.ChainEncoding;
 import com.sparrowwallet.drongo.KeyPurpose;
 import com.sparrowwallet.drongo.Utils;
 import com.sparrowwallet.drongo.address.Address;
@@ -201,7 +202,7 @@ public class SilentPaymentUtilsTest {
         sendWallet.getKeystores().add(sendKeystore);
         sendWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, sendWallet.getKeystores(), 1));
 
-        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv");
+        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy");
         List<SilentPayment> silentPayments = List.of(new SilentPayment(silentPaymentAddress, "", 0, false));
 
         SilentPaymentUtils.computeOutputAddresses(silentPayments, utxos);
@@ -234,7 +235,7 @@ public class SilentPaymentUtilsTest {
         sendWallet.getKeystores().add(sendKeystore);
         sendWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, sendWallet.getKeystores(), 1));
 
-        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv");
+        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy");
         List<SilentPayment> silentPayments = List.of(new SilentPayment(silentPaymentAddress, "", 0, false));
 
         SilentPaymentUtils.computeOutputAddresses(silentPayments, utxos);
@@ -266,7 +267,7 @@ public class SilentPaymentUtilsTest {
         sendWallet.getKeystores().add(sendKeystore);
         sendWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, sendWallet.getKeystores(), 1));
 
-        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv");
+        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy");
         List<SilentPayment> silentPayments = List.of(new SilentPayment(silentPaymentAddress, "", 0, false));
 
         SilentPaymentUtils.computeOutputAddresses(silentPayments, utxos);
@@ -298,7 +299,7 @@ public class SilentPaymentUtilsTest {
         sendWallet.getKeystores().add(sendKeystore);
         sendWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, sendWallet.getKeystores(), 1));
 
-        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv");
+        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy");
         List<SilentPayment> silentPayments = List.of(new SilentPayment(silentPaymentAddress, "", 0, false));
 
         SilentPaymentUtils.computeOutputAddresses(silentPayments, utxos);
@@ -330,7 +331,7 @@ public class SilentPaymentUtilsTest {
         sendWallet.getKeystores().add(sendKeystore);
         sendWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, sendWallet.getKeystores(), 1));
 
-        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv");
+        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy");
         List<SilentPayment> silentPayments = List.of(new SilentPayment(silentPaymentAddress, "", 0, false));
 
         SilentPaymentUtils.computeOutputAddresses(silentPayments, utxos);
@@ -362,7 +363,7 @@ public class SilentPaymentUtilsTest {
         sendWallet.getKeystores().add(sendKeystore);
         sendWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, sendWallet.getKeystores(), 1));
 
-        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv");
+        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy");
         List<SilentPayment> silentPayments = List.of(new SilentPayment(silentPaymentAddress, "", 0, false));
 
         SilentPaymentUtils.computeOutputAddresses(silentPayments, utxos);
@@ -404,7 +405,7 @@ public class SilentPaymentUtilsTest {
         sendWallet.getKeystores().add(sendKeystore);
         sendWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, sendWallet.getKeystores(), 1));
 
-        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv");
+        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy");
         List<SilentPayment> silentPayments = List.of(new SilentPayment(silentPaymentAddress, "", 0, false));
 
         SilentPaymentUtils.computeOutputAddresses(silentPayments, utxos);
@@ -446,7 +447,7 @@ public class SilentPaymentUtilsTest {
         sendWallet.getKeystores().add(sendKeystore);
         sendWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, sendWallet.getKeystores(), 1));
 
-        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv");
+        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy");
         List<SilentPayment> silentPayments = List.of(new SilentPayment(silentPaymentAddress, "", 0, false));
 
         SilentPaymentUtils.computeOutputAddresses(silentPayments, utxos);
@@ -493,7 +494,7 @@ public class SilentPaymentUtilsTest {
         segwitWallet.getKeystores().add(segwitKeystore);
         segwitWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, segwitWallet.getKeystores(), 1));
 
-        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv");
+        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy");
         List<SilentPayment> silentPayments = List.of(new SilentPayment(silentPaymentAddress, "", 0, false));
 
         SilentPaymentUtils.computeOutputAddresses(silentPayments, utxos);
@@ -540,7 +541,7 @@ public class SilentPaymentUtilsTest {
         segwitWallet.getKeystores().add(segwitKeystore);
         segwitWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, segwitWallet.getKeystores(), 1));
 
-        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv");
+        SilentPaymentAddress silentPaymentAddress = SilentPaymentAddress.from("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy");
         List<SilentPayment> silentPayments = List.of(new SilentPayment(silentPaymentAddress, "", 0, false));
 
         SilentPaymentUtils.computeOutputAddresses(silentPayments, utxos);
@@ -572,8 +573,8 @@ public class SilentPaymentUtilsTest {
         sendWallet.getKeystores().add(sendKeystore);
         sendWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, sendWallet.getKeystores(), 1));
 
-        SilentPaymentAddress silentPaymentAddress0 = SilentPaymentAddress.from("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv");
-        SilentPaymentAddress silentPaymentAddress1 = SilentPaymentAddress.from("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv");
+        SilentPaymentAddress silentPaymentAddress0 = SilentPaymentAddress.from("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy");
+        SilentPaymentAddress silentPaymentAddress1 = SilentPaymentAddress.from("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy");
         List<SilentPayment> silentPayments = List.of(new SilentPayment(silentPaymentAddress0, "First", 0, false), new SilentPayment(silentPaymentAddress1, "Second", 0, false));
 
         SilentPaymentUtils.computeOutputAddresses(silentPayments, utxos);
@@ -608,9 +609,9 @@ public class SilentPaymentUtilsTest {
         sendWallet.getKeystores().add(sendKeystore);
         sendWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, sendWallet.getKeystores(), 1));
 
-        SilentPaymentAddress silentPaymentAddress0 = SilentPaymentAddress.from("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv");
-        SilentPaymentAddress silentPaymentAddress1 = SilentPaymentAddress.from("sp1qqgrz6j0lcqnc04vxccydl0kpsj4frfje0ktmgcl2t346hkw30226xqupawdf48k8882j0strrvcmgg2kdawz53a54dd376ngdhak364hzcmynqtn");
-        SilentPaymentAddress silentPaymentAddress2 = SilentPaymentAddress.from("sp1qqgrz6j0lcqnc04vxccydl0kpsj4frfje0ktmgcl2t346hkw30226xqupawdf48k8882j0strrvcmgg2kdawz53a54dd376ngdhak364hzcmynqtn");
+        SilentPaymentAddress silentPaymentAddress0 = SilentPaymentAddress.from("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy");
+        SilentPaymentAddress silentPaymentAddress1 = SilentPaymentAddress.from(ChainEncoding.address("sp1qqgrz6j0lcqnc04vxccydl0kpsj4frfje0ktmgcl2t346hkw30226xqupawdf48k8882j0strrvcmgg2kdawz53a54dd376ngdhak364hzcmynqtn"));
+        SilentPaymentAddress silentPaymentAddress2 = SilentPaymentAddress.from(ChainEncoding.address("sp1qqgrz6j0lcqnc04vxccydl0kpsj4frfje0ktmgcl2t346hkw30226xqupawdf48k8882j0strrvcmgg2kdawz53a54dd376ngdhak364hzcmynqtn"));
         List<SilentPayment> silentPayments = List.of(new SilentPayment(silentPaymentAddress0, "First", 0, false), new SilentPayment(silentPaymentAddress1, "Second", 0, false), new SilentPayment(silentPaymentAddress2, "Third", 0, false));
 
         SilentPaymentUtils.computeOutputAddresses(silentPayments, utxos);
@@ -1026,7 +1027,7 @@ public class SilentPaymentUtilsTest {
     }
 
     private static final String VERIFY_TEST_SEED = "absent essay fox snake vast pumpkin height crouch silent bulb excuse razor";
-    private static final String VERIFY_TEST_SP_ADDRESS = "sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv";
+    private static final String VERIFY_TEST_SP_ADDRESS = "fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy";
     private static final long VERIFY_INPUT_VALUE = 100_000L;
     private static final long VERIFY_OUTPUT_VALUE = 50_000L;
 

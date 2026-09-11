@@ -10,22 +10,17 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class HeaderCheckpointsTest {
-    //Mainnet block 2015, the last header of the first difficulty period, whose period and the one after it are both at minimum difficulty
-    private static final String MAINNET_FIRST_PIN = "00000000693067b0e6b440bc51450b9f3850561b07f6d3c021c54fbd6abb9763";
-    private static final String MAINNET_SECOND_PIN = "00000000f037ad09d0b05ee66b8c1da83030abaf909d2b1bf519c3c7d2cd3fdf";
-    //Mainnet block 32255, the last header of the period before the chain's first difficulty rise
-    private static final int MAINNET_FIRST_RISE_HEIGHT = 32255;
-    private static final long MAINNET_FIRST_RISE_BITS = 0x1d00d86aL;
+    private static final String SAMPLE_PIN = "00000000693067b0e6b440bc51450b9f3850561b07f6d3c021c54fbd6abb9763";
 
     @Test
     public void testMainnetCheckpoints() {
         HeaderCheckpoints checkpoints = Network.MAINNET.getHeaderCheckpoints();
-        Assertions.assertEquals(MAINNET_FIRST_PIN, checkpoints.getHash(2015).toString());
-        Assertions.assertEquals(MAINNET_SECOND_PIN, checkpoints.getHash(4031).toString());
-        Assertions.assertEquals(0x1d00ffffL, checkpoints.getBitsAfter(2015));
-        Assertions.assertEquals(MAINNET_FIRST_RISE_BITS, checkpoints.getBitsAfter(MAINNET_FIRST_RISE_HEIGHT));
-        Assertions.assertEquals(0, (checkpoints.getMaxHeight() + 1) % HeaderChainState.RETARGET_INTERVAL);
-        Assertions.assertTrue(checkpoints.getMaxHeight() > 950000, "Mainnet checkpoints end at " + checkpoints.getMaxHeight());
+        Assertions.assertEquals(0, checkpoints.getMaxHeight());
+        Assertions.assertEquals(Network.MAINNET.getGenesisHash(), checkpoints.getHash(0));
+        Assertions.assertEquals(0x1e00ffffL, checkpoints.getBitsAfter(0));
+        Assertions.assertEquals(0, checkpoints.getPinnedHeightAtOrAbove(0));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> checkpoints.getPinnedHeightAtOrAbove(1));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> checkpoints.getHash(2015));
     }
 
     @Test
@@ -34,7 +29,7 @@ public class HeaderCheckpointsTest {
             HeaderCheckpoints checkpoints = network.getHeaderCheckpoints();
             int maxHeight = checkpoints.getMaxHeight();
             //Every pinned height is the last of a difficulty period, except regtest's genesis anchor
-            Assertions.assertEquals(network == Network.REGTEST ? 1 : 0, (maxHeight + 1) % HeaderChainState.RETARGET_INTERVAL, network.getName());
+            Assertions.assertEquals(1, (maxHeight + 1) % HeaderChainState.RETARGET_INTERVAL, network.getName());
             Assertions.assertDoesNotThrow(() -> checkpoints.getHash(maxHeight), network.getName());
             Assertions.assertDoesNotThrow(() -> checkpoints.getBitsAfter(maxHeight), network.getName());
         }
@@ -53,26 +48,16 @@ public class HeaderCheckpointsTest {
     @Test
     public void testPinnedHeightAtOrAbove() {
         HeaderCheckpoints checkpoints = Network.MAINNET.getHeaderCheckpoints();
-        Assertions.assertEquals(2015, checkpoints.getPinnedHeightAtOrAbove(0));
-        Assertions.assertEquals(2015, checkpoints.getPinnedHeightAtOrAbove(1));
-        Assertions.assertEquals(2015, checkpoints.getPinnedHeightAtOrAbove(2015));
-        Assertions.assertEquals(4031, checkpoints.getPinnedHeightAtOrAbove(2016));
-        Assertions.assertEquals(4031, checkpoints.getPinnedHeightAtOrAbove(4031));
-        Assertions.assertEquals(6047, checkpoints.getPinnedHeightAtOrAbove(4032));
-
-        int maxHeight = checkpoints.getMaxHeight();
-        Assertions.assertEquals(maxHeight, checkpoints.getPinnedHeightAtOrAbove(maxHeight));
-        Assertions.assertEquals(maxHeight, checkpoints.getPinnedHeightAtOrAbove(maxHeight - HeaderChainState.RETARGET_INTERVAL + 1));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> checkpoints.getPinnedHeightAtOrAbove(maxHeight + 1));
+        Assertions.assertEquals(0, checkpoints.getPinnedHeightAtOrAbove(0));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> checkpoints.getPinnedHeightAtOrAbove(1));
         Assertions.assertThrows(IllegalArgumentException.class, () -> checkpoints.getPinnedHeightAtOrAbove(-1));
     }
 
     @Test
     public void testUnpinnedHeightRejected() {
         HeaderCheckpoints checkpoints = Network.MAINNET.getHeaderCheckpoints();
-        Assertions.assertThrows(IllegalArgumentException.class, () -> checkpoints.getHash(2014));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> checkpoints.getHash(2016));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> checkpoints.getHash(checkpoints.getMaxHeight() + HeaderChainState.RETARGET_INTERVAL));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> checkpoints.getHash(1));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> checkpoints.getHash(2015));
         Assertions.assertThrows(IllegalArgumentException.class, () -> checkpoints.getBitsAfter(2016));
     }
 
@@ -93,11 +78,11 @@ public class HeaderCheckpointsTest {
 
     @Test
     public void testGenesisHeaders() {
-        Assertions.assertEquals("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f", Network.MAINNET.getGenesisHash().toString());
-        Assertions.assertEquals("000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943", Network.TESTNET.getGenesisHash().toString());
-        Assertions.assertEquals("0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206", Network.REGTEST.getGenesisHash().toString());
-        Assertions.assertEquals("00000008819873e925422c1ff0f99f7cc9bbb232af63a077a480a3633bee1ef6", Network.SIGNET.getGenesisHash().toString());
-        Assertions.assertEquals("00000000da84f2bafbbc53dee25a72ae507ff4914b867c565be350b0da8bf043", Network.TESTNET4.getGenesisHash().toString());
+        Assertions.assertEquals("0000002df35a11022728c1c1e0eedc4fd2aa586ed18b5b8e959a1f305d8ffbe6", Network.MAINNET.getGenesisHash().toString());
+        Assertions.assertEquals("000000f5e120154c61eeca65bde83e68b5cb59bec3a7a40d4f4b2b83075b8952", Network.TESTNET.getGenesisHash().toString());
+        Assertions.assertEquals("7540675e579ae63ff4628473bab9e7098d1e30d24c344f59855785989677dbc1", Network.REGTEST.getGenesisHash().toString());
+        Assertions.assertEquals("000001157c04349393694e070e3fc59e8b18e57dc13bea6d5568a1849bd2c4a6", Network.SIGNET.getGenesisHash().toString());
+        Assertions.assertEquals("000000b97d7bc58bcf36a9fd427a0a8ce98501e7b1299d42aa02ec1f8dc47848", Network.TESTNET4.getGenesisHash().toString());
 
         for(Network network : Network.values()) {
             Network.set(network);
@@ -109,24 +94,24 @@ public class HeaderCheckpointsTest {
 
     @Test
     public void testMalformedCheckpointsRejected() {
-        Assertions.assertThrows(IllegalStateException.class, () -> parse(MAINNET_FIRST_PIN.substring(1) + " 1d00ffff"));
-        Assertions.assertThrows(IllegalStateException.class, () -> parse(MAINNET_FIRST_PIN));
-        Assertions.assertThrows(IllegalStateException.class, () -> parse(MAINNET_FIRST_PIN + " 1d00ffff extra"));
-        Assertions.assertThrows(IllegalStateException.class, () -> parse(MAINNET_FIRST_PIN.replace('0', 'z') + " 1d00ffff"));
+        Assertions.assertThrows(IllegalStateException.class, () -> parse(SAMPLE_PIN.substring(1) + " 1d00ffff"));
+        Assertions.assertThrows(IllegalStateException.class, () -> parse(SAMPLE_PIN));
+        Assertions.assertThrows(IllegalStateException.class, () -> parse(SAMPLE_PIN + " 1d00ffff extra"));
+        Assertions.assertThrows(IllegalStateException.class, () -> parse(SAMPLE_PIN.replace('0', 'z') + " 1d00ffff"));
         Assertions.assertThrows(IllegalStateException.class, () -> parse(""));
 
         //A target that decodes as negative, as zero, or to a compact form other than the one written is not a consensus value
-        Assertions.assertThrows(IllegalStateException.class, () -> parse(MAINNET_FIRST_PIN + " 1d80ffff"));
-        Assertions.assertThrows(IllegalStateException.class, () -> parse(MAINNET_FIRST_PIN + " 00000000"));
-        Assertions.assertThrows(IllegalStateException.class, () -> parse(MAINNET_FIRST_PIN + " 1d0000ff"));
+        Assertions.assertThrows(IllegalStateException.class, () -> parse(SAMPLE_PIN + " 1d80ffff"));
+        Assertions.assertThrows(IllegalStateException.class, () -> parse(SAMPLE_PIN + " 00000000"));
+        Assertions.assertThrows(IllegalStateException.class, () -> parse(SAMPLE_PIN + " 1d0000ff"));
 
-        Assertions.assertDoesNotThrow(() -> parse(MAINNET_FIRST_PIN + " 1d00ffff"));
+        Assertions.assertDoesNotThrow(() -> parse(SAMPLE_PIN + " 1e00ffff"));
     }
 
     @Test
     public void testMalformedResourceForOneNetworkLeavesOthersLoadable() {
         Assertions.assertThrows(IllegalStateException.class, () -> parse("nonsense"));
-        Assertions.assertNotNull(Network.MAINNET.getHeaderCheckpoints().getHash(2015));
+        Assertions.assertNotNull(Network.MAINNET.getHeaderCheckpoints().getHash(0));
     }
 
     private static HeaderCheckpoints parse(String content) throws IOException {
@@ -140,15 +125,7 @@ public class HeaderCheckpointsTest {
 
     /**
      * A pinned header above the activation height would be describing headers this wallet must not trust.
-     *
-     * The checkpoints are inherited from upstream, which has not adopted the fork, so above the activation
-     * height its hashes are not the ones this wallet must verify against. Pinning one there anchors the
-     * header store above the fork and links every height to a block the connected node does not have, which fails
-     * closed for the whole network rather than for one height.
-     *
-     * Mainnet shipped such a pin once: 963647 carried bits 0x17023cc1, an ordinary pre-fork target, where the shift
-     * at 961640 puts the forked chain near 0x1a008d4f. Below the last pin nothing is difficulty checked, so the
-     * shift could never fire and nothing else would have caught it.
+     * Blake2b is from height 1, so the only valid pin is genesis.
      */
     @Test
     public void testNoPinnedHeaderSitsAboveTheActivationHeight() {

@@ -10,11 +10,11 @@ import java.util.Locale;
 import java.util.Map;
 
 public enum Network {
-    MAINNET("mainnet", "Mainnet", "mainnet", 0, "1", 5, "3", "bc", "sp", "spscan", "spspend", ExtendedKey.Header.xprv, ExtendedKey.Header.xpub, 128, 8332),
-    TESTNET("testnet", "Testnet3", "testnet3", 111, "mn", 196, "2", "tb", "tsp", "tspscan", "tspspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 239, 18332),
-    REGTEST("regtest", "Regtest", "regtest", 111, "mn", 196, "2", "bcrt", "sprt", "tspscan", "tspspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 239, 18443),
-    SIGNET("signet", "Signet", "signet", 111, "mn", 196, "2", "tb", "tsp", "tspscan", "tspspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 239, 38332),
-    TESTNET4("testnet4", "Testnet4", "testnet4", 111, "mn", 196, "2", "tb", "tsp", "tspscan", "tspspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 239, 48332);
+    MAINNET("mainnet", "Mainnet (not live)", "mainnet", 36, "F", 16, "7", "fcn", "fcnsp", "fcnscan", "fcnspend", ExtendedKey.Header.xprv, ExtendedKey.Header.xpub, 164, 4094),
+    TESTNET("testnet", "Testnet3", "testnet3", 95, "f", 197, "2", "tfcn", "tfcnsp", "tfcnscan", "tfcnspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 223, 35332),
+    REGTEST("regtest", "Regtest", "regtest", 95, "f", 197, "2", "fcnrt", "fcnrtsp", "fcnrtscan", "fcnrtspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 223, 25443),
+    SIGNET("signet", "Signet", "signet", 95, "f", 197, "2", "tfcn", "tfcnsp", "tfcnscan", "tfcnspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 223, 26332),
+    TESTNET4("testnet4", "Testnet4", "testnet4", 95, "f", 197, "2", "tfcn", "tfcnsp", "tfcnscan", "tfcnspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 223, 45332);
 
     public static final String BLOCK_HEIGHT_PROPERTY = "com.sparrowwallet.blockHeight";
     private static final Network[] CANONICAL_VALUES = new Network[]{MAINNET, TESTNET, REGTEST, SIGNET};
@@ -121,9 +121,8 @@ public enum Network {
      */
     public Integer getBlake2bHeight() {
         return switch(this) {
-            case MAINNET -> 961640;
-            case TESTNET4 -> 150308;
-            default -> null;    //regtest chooses its own through -testactivationheight, and there is nothing to hardcode
+            case MAINNET, TESTNET, TESTNET4, SIGNET -> 1;
+            case REGTEST -> null;    //regtest chooses its own through -testactivationheight
         };
     }
 
@@ -135,7 +134,7 @@ public enum Network {
      * algorithm yet. Networks that do not pin one take the reference implementation's default.
      */
     public int getBlake2bTargetShift() {
-        return this == MAINNET ? 22 : 20;
+        return 0;
     }
 
     /**
@@ -161,7 +160,7 @@ public enum Network {
             return Utils.decodeCompactBits(0x1e0377aeL);
         }
 
-        return Utils.decodeCompactBits(0x1d00ffffL);
+        return Utils.decodeCompactBits(0x1e00ffffL);
     }
 
     /**
@@ -179,11 +178,11 @@ public enum Network {
 
     private String getGenesisHeaderHex() {
         return switch(this) {
-            case MAINNET -> "0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a29ab5f49ffff001d1dac2b7c";
-            case TESTNET -> "0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4adae5494dffff001d1aa4ae18";
-            case REGTEST -> "0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4adae5494dffff7f2002000000";
-            case SIGNET -> "0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a008f4d5fae77031e8ad22203";
-            case TESTNET4 -> "0100000000000000000000000000000000000000000000000000000000000000000000004e7b2b9128fe0291db0693af2ae418b767e657cd407e80cb1434221eaea7a07a046f3566ffff001dbb0c7817";
+            case MAINNET -> "0100000000000000000000000000000000000000000000000000000000000000000000007e44f3e38c51497d5c1f61b86fdf2d8b13c6b7748f8e2c1575d841714c62acaf0065cd1dffff001e20bb3600";
+            case TESTNET -> "0100000000000000000000000000000000000000000000000000000000000000000000009f0e8be762d076368e0be351e9a7b11f94e68629b073971391369f47c86e7a6581a1a06affff001ece88ba04";
+            case REGTEST -> "01000000000000000000000000000000000000000000000000000000000000000000000009f6a971dd15f9873483034fc0c3856db270b057193fccd84eb4394d64b424aa84a1a06affff7f2000000000";
+            case SIGNET -> "010000000000000000000000000000000000000000000000000000000000000000000000c5d7d34755da3bbd31fe60a5cde01b02e855a9c1fa2490d10752c4a1d067a51083a1a06aae77031e12236f00";
+            case TESTNET4 -> "010000000000000000000000000000000000000000000000000000000000000000000000310e3daed692cc261372098ecc048292e91ada612d547e3a29f0f6978ec7eb4682a1a06affff001eca120701";
         };
     }
 

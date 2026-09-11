@@ -1,5 +1,6 @@
 package com.sparrowwallet.drongo.crypto;
 
+import com.sparrowwallet.drongo.ChainEncoding;
 import com.sparrowwallet.drongo.Utils;
 import com.sparrowwallet.drongo.address.Address;
 import com.sparrowwallet.drongo.address.InvalidAddressException;
@@ -25,9 +26,9 @@ public class Bip322Test {
 
     @Test
     public void signMessageBip322() {
-        ECKey privKey = DumpedPrivateKey.fromBase58("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k").getKey();
+        ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_HD, privKey);
-        Assertions.assertEquals("bc1q9vza2e8x573nczrlzms0wvx3gsqjx7vavgkx0l", address.toString());
+        Assertions.assertEquals(ChainEncoding.address("bc1q9vza2e8x573nczrlzms0wvx3gsqjx7vavgkx0l"), address.toString());
 
         String signature = Bip322.signMessageBip322(ScriptType.P2WPKH, "", privKey);
         Assertions.assertEquals("smpAkcwRAIgM2gBAQqvZX15ZiysmKmQpDrG83avLIT492QBzLnQIxYCIBaTpOaD20qRlEylyxFSeEA2ba9YOixpX8z46TSDtS40ASECx/EgAxlkQpQ9hYjgGu6EBCPMVPwVIVJqO4XCsMvViHI=", signature);
@@ -38,7 +39,7 @@ public class Bip322Test {
 
     @Test
     public void verifyMessageBip322Fail() throws InvalidAddressException, SignatureException {
-        Address address = Address.fromString("bc1q9vza2e8x573nczrlzms0wvx3gsqjx7vavgkx0l");
+        Address address = Address.fromString(ChainEncoding.address("bc1q9vza2e8x573nczrlzms0wvx3gsqjx7vavgkx0l"));
         String message1 = "";
         String signature2 = "AkcwRAIgZRfIY3p7/DoVTty6YZbWS71bc5Vct9p9Fia83eRmw2QCICK/ENGfwLtptFluMGs2KsqoNSk89pO7F29zJLUx9a/sASECx/EgAxlkQpQ9hYjgGu6EBCPMVPwVIVJqO4XCsMvViHI=";
 
@@ -47,7 +48,7 @@ public class Bip322Test {
 
     @Test
     public void verifyMessageBip322() throws InvalidAddressException, SignatureException {
-        Address address = Address.fromString("bc1q9vza2e8x573nczrlzms0wvx3gsqjx7vavgkx0l");
+        Address address = Address.fromString(ChainEncoding.address("bc1q9vza2e8x573nczrlzms0wvx3gsqjx7vavgkx0l"));
         String message1 = "";
         String signature1 = "smpAkcwRAIgM2gBAQqvZX15ZiysmKmQpDrG83avLIT492QBzLnQIxYCIBaTpOaD20qRlEylyxFSeEA2ba9YOixpX8z46TSDtS40ASECx/EgAxlkQpQ9hYjgGu6EBCPMVPwVIVJqO4XCsMvViHI=";
 
@@ -63,7 +64,7 @@ public class Bip322Test {
 
     @Test
     public void verifyMessageBip322RejectsFullVariant() throws InvalidAddressException {
-        Address address = Address.fromString("bc1q9vza2e8x573nczrlzms0wvx3gsqjx7vavgkx0l");
+        Address address = Address.fromString(ChainEncoding.address("bc1q9vza2e8x573nczrlzms0wvx3gsqjx7vavgkx0l"));
         String fullSignature = "fulAkcwRAIgM2gBAQqvZX15ZiysmKmQpDrG83avLIT492QBzLnQIxYCIBaTpOaD20qRlEylyxFSeEA2ba9YOixpX8z46TSDtS40ASECx/EgAxlkQpQ9hYjgGu6EBCPMVPwVIVJqO4XCsMvViHI=";
         Assertions.assertThrows(SignatureException.class, () -> Bip322.verifyMessageBip322(ScriptType.P2WPKH, address, "", fullSignature));
 
@@ -73,9 +74,9 @@ public class Bip322Test {
 
     @Test
     public void signMessageBip322Taproot() {
-        ECKey privKey = DumpedPrivateKey.fromBase58("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k").getKey();
+        ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         Address address = ScriptType.P2TR.getAddress(PolicyType.SINGLE_HD, privKey);
-        Assertions.assertEquals("bc1ppv609nr0vr25u07u95waq5lucwfm6tde4nydujnu8npg4q75mr5sxq8lt3", address.toString());
+        Assertions.assertEquals(ChainEncoding.address("bc1ppv609nr0vr25u07u95waq5lucwfm6tde4nydujnu8npg4q75mr5sxq8lt3"), address.toString());
 
         String signature = Bip322.signMessageBip322(ScriptType.P2TR, "Hello World", privKey);
         Assertions.assertEquals("smpAUHd69PrJQEv+oKTfZ8l+WROBHuy9HKrbFCJu7U1iK2iiEy1vMU5EfMtjc+VSHM7aU0SDbak5IUZRVno2P5mjSafAQ==", signature);
@@ -83,9 +84,9 @@ public class Bip322Test {
 
     @Test
     public void verifyMessageBip322Taproot() throws SignatureException {
-        ECKey privKey = DumpedPrivateKey.fromBase58("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k").getKey();
+        ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         Address address = ScriptType.P2TR.getAddress(PolicyType.SINGLE_HD, privKey);
-        Assertions.assertEquals("bc1ppv609nr0vr25u07u95waq5lucwfm6tde4nydujnu8npg4q75mr5sxq8lt3", address.toString());
+        Assertions.assertEquals(ChainEncoding.address("bc1ppv609nr0vr25u07u95waq5lucwfm6tde4nydujnu8npg4q75mr5sxq8lt3"), address.toString());
 
         String message1 = "Hello World";
         String signaturePrefixed = "smpAUHd69PrJQEv+oKTfZ8l+WROBHuy9HKrbFCJu7U1iK2iiEy1vMU5EfMtjc+VSHM7aU0SDbak5IUZRVno2P5mjSafAQ==";
@@ -97,18 +98,18 @@ public class Bip322Test {
 
     @Test
     public void signMessageBip322NestedSegwit() {
-        ECKey privKey = DumpedPrivateKey.fromBase58("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k").getKey();
+        ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         Address address = ScriptType.P2SH_P2WPKH.getAddress(PolicyType.SINGLE_HD, privKey);
-        Assertions.assertEquals("37qyp7jQAzqb2rCBpMvVtLDuuzKAUCVnJb", address.toString());
+        Assertions.assertEquals(ChainEncoding.address("37qyp7jQAzqb2rCBpMvVtLDuuzKAUCVnJb"), address.toString());
 
         Assertions.assertThrows(UnsupportedOperationException.class, () -> Bip322.signMessageBip322(ScriptType.P2SH_P2WPKH, "Hello World", privKey));
     }
 
     @Test
     public void verifyMessageBip322NestedSegwit() throws SignatureException {
-        ECKey privKey = DumpedPrivateKey.fromBase58("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k").getKey();
+        ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         Address address = ScriptType.P2SH_P2WPKH.getAddress(PolicyType.SINGLE_HD, privKey);
-        Assertions.assertEquals("37qyp7jQAzqb2rCBpMvVtLDuuzKAUCVnJb", address.toString());
+        Assertions.assertEquals(ChainEncoding.address("37qyp7jQAzqb2rCBpMvVtLDuuzKAUCVnJb"), address.toString());
 
         String message1 = "Hello World";
         String signature1 = "AkcwRAIgHx821fcP3D4R6RsXHF8kXza4d/SqpKGaGu++AEQjJz0CIH9cN5XGDkgkqqF9OMTbYvhgI7Yp9NoHXEgLstjqDOqDASECx/EgAxlkQpQ9hYjgGu6EBCPMVPwVIVJqO4XCsMvViHI=";
@@ -118,7 +119,7 @@ public class Bip322Test {
 
     @Test
     public void getBip322Psbt() {
-        ECKey privKey = DumpedPrivateKey.fromBase58("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k").getKey();
+        ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_HD, privKey);
 
         PSBT psbt = Bip322.getBip322Psbt(ScriptType.P2WPKH, address, "Hello World");
@@ -132,7 +133,7 @@ public class Bip322Test {
 
     @Test
     public void getBip322PsbtMessageRoundTrip() throws com.sparrowwallet.drongo.psbt.PSBTParseException {
-        ECKey privKey = DumpedPrivateKey.fromBase58("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k").getKey();
+        ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_HD, privKey);
 
         String message = "UTF-8 support: öäüéàè 测试文本 😄";
@@ -145,7 +146,7 @@ public class Bip322Test {
 
     @Test
     public void getBip322PsbtTaproot() {
-        ECKey privKey = DumpedPrivateKey.fromBase58("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k").getKey();
+        ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         Address address = ScriptType.P2TR.getAddress(PolicyType.SINGLE_HD, privKey);
 
         PSBT psbt = Bip322.getBip322Psbt(ScriptType.P2TR, address, "Hello World");
@@ -157,7 +158,7 @@ public class Bip322Test {
 
     @Test
     public void getBip322SignatureFromPsbt() {
-        ECKey privKey = DumpedPrivateKey.fromBase58("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k").getKey();
+        ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         ECKey pubKey = ECKey.fromPublicOnly(privKey);
         Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_HD, privKey);
 
@@ -171,7 +172,7 @@ public class Bip322Test {
 
     @Test
     public void getBip322SignatureFromPsbtTaproot() {
-        ECKey privKey = DumpedPrivateKey.fromBase58("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k").getKey();
+        ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         ECKey pubKey = ECKey.fromPublicOnly(privKey);
         Address address = ScriptType.P2TR.getAddress(PolicyType.SINGLE_HD, privKey);
 
@@ -185,7 +186,7 @@ public class Bip322Test {
 
     @Test
     public void getBip322SignatureFromUnsignedPsbt() {
-        ECKey privKey = DumpedPrivateKey.fromBase58("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k").getKey();
+        ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         ECKey pubKey = ECKey.fromPublicOnly(privKey);
         Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_HD, privKey);
 
@@ -195,7 +196,7 @@ public class Bip322Test {
 
     @Test
     public void signMessageBip322Sp() throws SignatureException {
-        ECKey spendPrivKey = DumpedPrivateKey.fromBase58("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k").getKey();
+        ECKey spendPrivKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         byte[] tweak = Utils.hexToBytes("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef");
 
         ECKey spendPubKey = ECKey.fromPublicOnly(spendPrivKey);
@@ -218,7 +219,7 @@ public class Bip322Test {
 
     @Test
     public void getBip322PsbtSp() {
-        ECKey spendPrivKey = DumpedPrivateKey.fromBase58("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k").getKey();
+        ECKey spendPrivKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         byte[] tweak = Utils.hexToBytes("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef");
 
         ECKey spendPubKey = ECKey.fromPublicOnly(spendPrivKey);
@@ -237,7 +238,7 @@ public class Bip322Test {
 
     @Test
     public void verifyMessageBip322Multisig() throws SignatureException, InvalidAddressException {
-        Address address = Address.fromString("bc1ppv609nr0vr25u07u95waq5lucwfm6tde4nydujnu8npg4q75mr5sxq8lt3");
+        Address address = Address.fromString(ChainEncoding.address("bc1ppv609nr0vr25u07u95waq5lucwfm6tde4nydujnu8npg4q75mr5sxq8lt3"));
 
         String message1 = "This will be a p2wsh 3-of-3 multisig BIP 322 signed message";
         String signature1 = "smpBQBIMEUCIQDQoXvGKLH58exuujBOta+7+GN7vi0lKwiQxzBpuNuXuAIgIE0XYQlFDOfxbegGYYzlf+tqegleAKE6SXYIa1U+uCcBRzBEAiATegywVl6GWrG9jJuPpNwtgHKyVYCX2yfuSSDRFATAaQIgTLlU6reLQsSIrQSF21z3PtUO2yAUseUWGZqRUIE7VKoBSDBFAiEAgxtpidsU0Z4u/+5RB9cyeQtoCW5NcreLJmWXZ8kXCZMCIBR1sXoEinhZE4CF9P9STGIcMvCuZjY6F5F0XTVLj9SjAWlTIQP3dyWvTZjUENWJowMWBsQrrXCUs20Gu5YF79CG5Ga0XSEDwqI5GVBOuFkFzQOGH5eTExSAj2Z/LDV/hbcvAPQdlJMhA17FuuJd+4wGuj+ZbVxEsFapTKAOwyhfw9qpch52JKxbU64=";

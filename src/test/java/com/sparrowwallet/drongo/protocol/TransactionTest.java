@@ -3,6 +3,11 @@ package com.sparrowwallet.drongo.protocol;
 import com.sparrowwallet.drongo.Utils;
 import com.sparrowwallet.drongo.address.Address;
 import com.sparrowwallet.drongo.address.InvalidAddressException;
+import com.sparrowwallet.drongo.address.P2PKHAddress;
+import com.sparrowwallet.drongo.address.P2SHAddress;
+import com.sparrowwallet.drongo.address.P2TRAddress;
+import com.sparrowwallet.drongo.address.P2WPKHAddress;
+import com.sparrowwallet.drongo.address.P2WSHAddress;
 import com.sparrowwallet.drongo.crypto.ECKey;
 import com.sparrowwallet.drongo.crypto.SchnorrSignature;
 import com.sparrowwallet.drongo.policy.PolicyType;
@@ -98,7 +103,7 @@ public class TransactionTest {
 
         ECKey pubKey = ECKey.fromPublicOnly(Utils.hexToBytes("03ad1d8e89212f0b92c74d23bb710c00662ad1470198ac48c43f7d6f93a2a26873"));
         Sha256Hash hash = transaction.hashForWitnessSignature(0, ScriptType.P2PKH.getOutputScript(pubKey.getPubKeyHash()),1000000000L, SigHash.ALL);
-        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("3044022047ac8e878352d3ebbde1c94ce3a10d057c24175747116f8288e5d794d12d482f0220217f36a485cae903c713331d877c1f64677e3622ad4010726870540656fe9dcb01"), true);
+        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("3044022047ac8e878352d3ebbde1c94ce3a10d057c24175747116f8288e5d794d12d482f0220217f36a485cae903c713331d877c1f64677e3622ad4010726870540656fe9dcb01"), false);
         Assertions.assertTrue(pubKey.verify(hash, signature));
     }
 
@@ -110,7 +115,7 @@ public class TransactionTest {
         ECKey pubKey = ECKey.fromPublicOnly(Utils.hexToBytes("026dccc749adc2a9d0d89497ac511f760f45c47dc5ed9cf352a58ac706453880ae"));
         Script script = new Script(Utils.hexToBytes("21026dccc749adc2a9d0d89497ac511f760f45c47dc5ed9cf352a58ac706453880aeadab210255a9626aebf5e29c0e6538428ba0d1dcf6ca98ffdf086aa8ced5e0d0215ea465ac"));
         Sha256Hash hash = transaction.hashForWitnessSignature(1, script,4900000000L, SigHash.SINGLE);
-        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("3044022027dc95ad6b740fe5129e7e62a75dd00f291a2aeb1200b84b09d9e3789406b6c002201a9ecd315dd6a0e632ab20bbb98948bc0c6fb204f2c286963bb48517a7058e2703"), true);
+        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("3044022027dc95ad6b740fe5129e7e62a75dd00f291a2aeb1200b84b09d9e3789406b6c002201a9ecd315dd6a0e632ab20bbb98948bc0c6fb204f2c286963bb48517a7058e2703"), false);
         Assertions.assertTrue(pubKey.verify(hash, signature));
     }
 
@@ -122,7 +127,7 @@ public class TransactionTest {
         ECKey pubKey = ECKey.fromPublicOnly(Utils.hexToBytes("0392972e2eb617b2388771abe27235fd5ac44af8e61693261550447a4c3e39da98"));
         Script script = new Script(Utils.hexToBytes("68210392972e2eb617b2388771abe27235fd5ac44af8e61693261550447a4c3e39da98ac"));
         Sha256Hash hash = transaction.hashForWitnessSignature(1, script,16777215L, SigHash.ANYONECANPAY_SINGLE);
-        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("30440220032521802a76ad7bf74d0e2c218b72cf0cbc867066e2e53db905ba37f130397e02207709e2188ed7f08f4c952d9d13986da504502b8c3be59617e043552f506c46ff83"), true);
+        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("30440220032521802a76ad7bf74d0e2c218b72cf0cbc867066e2e53db905ba37f130397e02207709e2188ed7f08f4c952d9d13986da504502b8c3be59617e043552f506c46ff83"), false);
         Assertions.assertTrue(pubKey.verify(hash, signature));
     }
 
@@ -134,7 +139,7 @@ public class TransactionTest {
         ECKey pubKey = ECKey.fromPublicOnly(Utils.hexToBytes("0307b8ae49ac90a048e9b53357a2354b3334e9c8bee813ecb98e99a7e07e8c3ba3"));
         Script script = new Script(Utils.hexToBytes("56210307b8ae49ac90a048e9b53357a2354b3334e9c8bee813ecb98e99a7e07e8c3ba32103b28f0c28bfab54554ae8c658ac5c3e0ce6e79ad336331f78c428dd43eea8449b21034b8113d703413d57761b8b9781957b8c0ac1dfe69f492580ca4195f50376ba4a21033400f6afecb833092a9a21cfdf1ed1376e58c5d1f47de74683123987e967a8f42103a6d48b1131e94ba04d9737d61acdaa1322008af9602b3b14862c07a1789aac162102d8b661b0b3302ee2f162b09e07a55ad5dfbe673a9f01d9f0c19617681024306b56ae"));
         Sha256Hash hash = transaction.hashForWitnessSignature(0, script,987654321L, SigHash.ALL);
-        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("304402206ac44d672dac41f9b00e28f4df20c52eeb087207e8d758d76d92c6fab3b73e2b0220367750dbbe19290069cba53d096f44530e4f98acaa594810388cf7409a1870ce01"), true);
+        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("304402206ac44d672dac41f9b00e28f4df20c52eeb087207e8d758d76d92c6fab3b73e2b0220367750dbbe19290069cba53d096f44530e4f98acaa594810388cf7409a1870ce01"), false);
         Assertions.assertTrue(pubKey.verify(hash, signature));
     }
 
@@ -146,7 +151,7 @@ public class TransactionTest {
         ECKey pubKey = ECKey.fromPublicOnly(Utils.hexToBytes("03b28f0c28bfab54554ae8c658ac5c3e0ce6e79ad336331f78c428dd43eea8449b"));
         Script script = new Script(Utils.hexToBytes("56210307b8ae49ac90a048e9b53357a2354b3334e9c8bee813ecb98e99a7e07e8c3ba32103b28f0c28bfab54554ae8c658ac5c3e0ce6e79ad336331f78c428dd43eea8449b21034b8113d703413d57761b8b9781957b8c0ac1dfe69f492580ca4195f50376ba4a21033400f6afecb833092a9a21cfdf1ed1376e58c5d1f47de74683123987e967a8f42103a6d48b1131e94ba04d9737d61acdaa1322008af9602b3b14862c07a1789aac162102d8b661b0b3302ee2f162b09e07a55ad5dfbe673a9f01d9f0c19617681024306b56ae"));
         Sha256Hash hash = transaction.hashForWitnessSignature(0, script,987654321L, SigHash.NONE);
-        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("3044022068c7946a43232757cbdf9176f009a928e1cd9a1a8c212f15c1e11ac9f2925d9002205b75f937ff2f9f3c1246e547e54f62e027f64eefa2695578cc6432cdabce271502"), true);
+        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("3044022068c7946a43232757cbdf9176f009a928e1cd9a1a8c212f15c1e11ac9f2925d9002205b75f937ff2f9f3c1246e547e54f62e027f64eefa2695578cc6432cdabce271502"), false);
         Assertions.assertTrue(pubKey.verify(hash, signature));
     }
 
@@ -158,7 +163,7 @@ public class TransactionTest {
         ECKey pubKey = ECKey.fromPublicOnly(Utils.hexToBytes("034b8113d703413d57761b8b9781957b8c0ac1dfe69f492580ca4195f50376ba4a"));
         Script script = new Script(Utils.hexToBytes("56210307b8ae49ac90a048e9b53357a2354b3334e9c8bee813ecb98e99a7e07e8c3ba32103b28f0c28bfab54554ae8c658ac5c3e0ce6e79ad336331f78c428dd43eea8449b21034b8113d703413d57761b8b9781957b8c0ac1dfe69f492580ca4195f50376ba4a21033400f6afecb833092a9a21cfdf1ed1376e58c5d1f47de74683123987e967a8f42103a6d48b1131e94ba04d9737d61acdaa1322008af9602b3b14862c07a1789aac162102d8b661b0b3302ee2f162b09e07a55ad5dfbe673a9f01d9f0c19617681024306b56ae"));
         Sha256Hash hash = transaction.hashForWitnessSignature(0, script,987654321L, SigHash.SINGLE);
-        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("3044022059ebf56d98010a932cf8ecfec54c48e6139ed6adb0728c09cbe1e4fa0915302e022007cd986c8fa870ff5d2b3a89139c9fe7e499259875357e20fcbb15571c76795403"), true);
+        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("3044022059ebf56d98010a932cf8ecfec54c48e6139ed6adb0728c09cbe1e4fa0915302e022007cd986c8fa870ff5d2b3a89139c9fe7e499259875357e20fcbb15571c76795403"), false);
         Assertions.assertTrue(pubKey.verify(hash, signature));
     }
 
@@ -170,7 +175,7 @@ public class TransactionTest {
         ECKey pubKey = ECKey.fromPublicOnly(Utils.hexToBytes("033400f6afecb833092a9a21cfdf1ed1376e58c5d1f47de74683123987e967a8f4"));
         Script script = new Script(Utils.hexToBytes("56210307b8ae49ac90a048e9b53357a2354b3334e9c8bee813ecb98e99a7e07e8c3ba32103b28f0c28bfab54554ae8c658ac5c3e0ce6e79ad336331f78c428dd43eea8449b21034b8113d703413d57761b8b9781957b8c0ac1dfe69f492580ca4195f50376ba4a21033400f6afecb833092a9a21cfdf1ed1376e58c5d1f47de74683123987e967a8f42103a6d48b1131e94ba04d9737d61acdaa1322008af9602b3b14862c07a1789aac162102d8b661b0b3302ee2f162b09e07a55ad5dfbe673a9f01d9f0c19617681024306b56ae"));
         Sha256Hash hash = transaction.hashForWitnessSignature(0, script,987654321L, SigHash.ANYONECANPAY_ALL);
-        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("3045022100fbefd94bd0a488d50b79102b5dad4ab6ced30c4069f1eaa69a4b5a763414067e02203156c6a5c9cf88f91265f5a942e96213afae16d83321c8b31bb342142a14d16381"), true);
+        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("3045022100fbefd94bd0a488d50b79102b5dad4ab6ced30c4069f1eaa69a4b5a763414067e02203156c6a5c9cf88f91265f5a942e96213afae16d83321c8b31bb342142a14d16381"), false);
         Assertions.assertTrue(pubKey.verify(hash, signature));
     }
 
@@ -182,7 +187,7 @@ public class TransactionTest {
         ECKey pubKey = ECKey.fromPublicOnly(Utils.hexToBytes("03a6d48b1131e94ba04d9737d61acdaa1322008af9602b3b14862c07a1789aac16"));
         Script script = new Script(Utils.hexToBytes("56210307b8ae49ac90a048e9b53357a2354b3334e9c8bee813ecb98e99a7e07e8c3ba32103b28f0c28bfab54554ae8c658ac5c3e0ce6e79ad336331f78c428dd43eea8449b21034b8113d703413d57761b8b9781957b8c0ac1dfe69f492580ca4195f50376ba4a21033400f6afecb833092a9a21cfdf1ed1376e58c5d1f47de74683123987e967a8f42103a6d48b1131e94ba04d9737d61acdaa1322008af9602b3b14862c07a1789aac162102d8b661b0b3302ee2f162b09e07a55ad5dfbe673a9f01d9f0c19617681024306b56ae"));
         Sha256Hash hash = transaction.hashForWitnessSignature(0, script,987654321L, SigHash.ANYONECANPAY_NONE);
-        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("3045022100a5263ea0553ba89221984bd7f0b13613db16e7a70c549a86de0cc0444141a407022005c360ef0ae5a5d4f9f2f87a56c1546cc8268cab08c73501d6b3be2e1e1a8a0882"), true);
+        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("3045022100a5263ea0553ba89221984bd7f0b13613db16e7a70c549a86de0cc0444141a407022005c360ef0ae5a5d4f9f2f87a56c1546cc8268cab08c73501d6b3be2e1e1a8a0882"), false);
         Assertions.assertTrue(pubKey.verify(hash, signature));
     }
 
@@ -194,7 +199,7 @@ public class TransactionTest {
         ECKey pubKey = ECKey.fromPublicOnly(Utils.hexToBytes("02d8b661b0b3302ee2f162b09e07a55ad5dfbe673a9f01d9f0c19617681024306b"));
         Script script = new Script(Utils.hexToBytes("56210307b8ae49ac90a048e9b53357a2354b3334e9c8bee813ecb98e99a7e07e8c3ba32103b28f0c28bfab54554ae8c658ac5c3e0ce6e79ad336331f78c428dd43eea8449b21034b8113d703413d57761b8b9781957b8c0ac1dfe69f492580ca4195f50376ba4a21033400f6afecb833092a9a21cfdf1ed1376e58c5d1f47de74683123987e967a8f42103a6d48b1131e94ba04d9737d61acdaa1322008af9602b3b14862c07a1789aac162102d8b661b0b3302ee2f162b09e07a55ad5dfbe673a9f01d9f0c19617681024306b56ae"));
         Sha256Hash hash = transaction.hashForWitnessSignature(0, script,987654321L, SigHash.ANYONECANPAY_SINGLE);
-        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("30440220525406a1482936d5a21888260dc165497a90a15669636d8edca6b9fe490d309c022032af0c646a34a44d1f4576bf6a4a74b67940f8faa84c7df9abe12a01a11e2b4783"), true);
+        TransactionSignature signature = TransactionSignature.decodeFromBitcoin(Utils.hexToBytes("30440220525406a1482936d5a21888260dc165497a90a15669636d8edca6b9fe490d309c022032af0c646a34a44d1f4576bf6a4a74b67940f8faa84c7df9abe12a01a11e2b4783"), false);
         Assertions.assertTrue(pubKey.verify(hash, signature));
     }
 
@@ -295,8 +300,8 @@ public class TransactionTest {
         Transaction transaction = new Transaction();
         spent0ScriptType.addSpendingInput(PolicyType.SINGLE_HD, transaction, spent0Output, key0, signature0);
 
-        transaction.addOutput(3000000000L, Address.fromString("1GWUbNagGsvpwygRCjoczegGVDvpm5fLV8"));
-        transaction.addOutput(2000000000L, Address.fromString("19jCd38mHkNcXiGF4AjUCoJBSo7iqqjRHT"));
+        transaction.addOutput(3000000000L, vectorAddress("1GWUbNagGsvpwygRCjoczegGVDvpm5fLV8"));
+        transaction.addOutput(2000000000L, vectorAddress("19jCd38mHkNcXiGF4AjUCoJBSo7iqqjRHT"));
 
         Assertions.assertEquals(spendingTransaction.getLength(), transaction.getLength());
 
@@ -338,8 +343,8 @@ public class TransactionTest {
         spent0ScriptType.addSpendingInput(PolicyType.SINGLE_HD, transaction, spent0Output, pubKey0, signature0);
         spent1ScriptType.addSpendingInput(PolicyType.SINGLE_HD, transaction, spent1Output, pubKey1, signature1);
 
-        transaction.addOutput(922, Address.fromString("1JVsQ4L4HAcn58Gj5uF16dvgFNdVTarY6i"));
-        transaction.addOutput(9984568, Address.fromString("1Q7CEaM3CQ6ejGHgDZNbdTTAkoLcPk63nQ"));
+        transaction.addOutput(922, vectorAddress("1JVsQ4L4HAcn58Gj5uF16dvgFNdVTarY6i"));
+        transaction.addOutput(9984568, vectorAddress("1Q7CEaM3CQ6ejGHgDZNbdTTAkoLcPk63nQ"));
 
         Assertions.assertEquals(spendingTransaction.getLength(), transaction.getLength());
 
@@ -378,10 +383,10 @@ public class TransactionTest {
         Transaction transaction = new Transaction();
         spent0ScriptType.addMultisigSpendingInput(PolicyType.MULTI_HD, transaction, spent0Output, 2, pubKeySignatures);
 
-        transaction.addOutput(833300, Address.fromString("31mKrRn3xQoGppLY5dU92Dbm4kN4ddkknE"));
-        transaction.addOutput(1222480000, Address.fromString("1CL9kj1seXif6agPfeh6vpKkzc2Hxq1UpM"));
-        transaction.addOutput(332000, Address.fromString("1B6ifpYaSvBkjJTf4W1tjYgDYajFua3NU8"));
-        transaction.addOutput(8993844, Address.fromString("3Pwp5u7PwgrMw3gAAyLAkDKYKRrFuFkneG"));
+        transaction.addOutput(833300, vectorAddress("31mKrRn3xQoGppLY5dU92Dbm4kN4ddkknE"));
+        transaction.addOutput(1222480000, vectorAddress("1CL9kj1seXif6agPfeh6vpKkzc2Hxq1UpM"));
+        transaction.addOutput(332000, vectorAddress("1B6ifpYaSvBkjJTf4W1tjYgDYajFua3NU8"));
+        transaction.addOutput(8993844, vectorAddress("3Pwp5u7PwgrMw3gAAyLAkDKYKRrFuFkneG"));
 
         Assertions.assertEquals(spendingTransaction.getLength(), transaction.getLength());
 
@@ -415,9 +420,9 @@ public class TransactionTest {
         TransactionInput input = ScriptType.P2SH_P2WPKH.addSpendingInput(PolicyType.SINGLE_HD, transaction, spent0Output, pubKey0, signature0);
         input.setSequenceNumber(TransactionInput.SEQUENCE_RBF_ENABLED);
 
-        transaction.addOutput(4000, Address.fromString("1LiQZqSwPqb615uyxDKTaN9Tg4CER98cgJ"));
-        transaction.addOutput(361206, Address.fromString("32B5Pv7Nvhh8iQ3Z2xK8cbKBW5f2bGMoqp"));
-        transaction.addOutput(27100, Address.fromString("3KzUpFMVKXiNETUy19VVW9Re5EimboDuyX"));
+        transaction.addOutput(4000, vectorAddress("1LiQZqSwPqb615uyxDKTaN9Tg4CER98cgJ"));
+        transaction.addOutput(361206, vectorAddress("32B5Pv7Nvhh8iQ3Z2xK8cbKBW5f2bGMoqp"));
+        transaction.addOutput(27100, vectorAddress("3KzUpFMVKXiNETUy19VVW9Re5EimboDuyX"));
 
         Assertions.assertEquals(spendingTransaction.getLength(), transaction.getLength());
 
@@ -458,8 +463,8 @@ public class TransactionTest {
         transaction.setSegwitFlag(1);
         TransactionInput input = ScriptType.P2SH_P2WSH.addMultisigSpendingInput(PolicyType.MULTI_HD, transaction, spent0Output, 2, pubKeySignatures);
 
-        transaction.addOutput(59287429, Address.fromString("3PBjKH4FRuEKy4sD3NfL7tqfZTG5K42owu"));
-        transaction.addOutput(212571, Address.fromString("3KRUgU4XGuErXkjBtFhksPzTGJ4AMwF4jB"));
+        transaction.addOutput(59287429, vectorAddress("3PBjKH4FRuEKy4sD3NfL7tqfZTG5K42owu"));
+        transaction.addOutput(212571, vectorAddress("3KRUgU4XGuErXkjBtFhksPzTGJ4AMwF4jB"));
 
         Assertions.assertEquals(spendingTransaction.getLength(), transaction.getLength());
 
@@ -492,8 +497,8 @@ public class TransactionTest {
         transaction.setSegwitFlag(1);
         spent0ScriptType.addSpendingInput(PolicyType.SINGLE_HD, transaction, spent0Output, key0, signature0);
 
-        transaction.addOutput(211584990, Address.fromString("bc1q9k6aan6ncahvlslw8w54jzv897k55zh077un6s"));
-        transaction.addOutput(1806203, Address.fromString("3QLFcgKFNzo262FYRFgGfrUNiUurpQbDZv"));
+        transaction.addOutput(211584990, vectorAddress("bc1q9k6aan6ncahvlslw8w54jzv897k55zh077un6s"));
+        transaction.addOutput(1806203, vectorAddress("3QLFcgKFNzo262FYRFgGfrUNiUurpQbDZv"));
 
         Assertions.assertEquals(spendingTransaction.getLength(), transaction.getLength());
 
@@ -534,9 +539,9 @@ public class TransactionTest {
         transaction.setSegwitFlag(1);
         spent0ScriptType.addMultisigSpendingInput(PolicyType.MULTI_HD, transaction, spent0Output, 2, pubKeySignatures);
 
-        transaction.addOutput(10900000, Address.fromString("3Dt17mpd8FDXBjP56rCD7a4Sx7wpL91uhn"));
-        transaction.addOutput(332500000, Address.fromString("1K6igqzm36x8jxRTavPhgWXLVcVZVDTGc9"));
-        transaction.addOutput(156694315, Address.fromString("bc1qwqdg6squsna38e46795at95yu9atm8azzmyvckulcc7kytlcckxswvvzej"));
+        transaction.addOutput(10900000, vectorAddress("3Dt17mpd8FDXBjP56rCD7a4Sx7wpL91uhn"));
+        transaction.addOutput(332500000, vectorAddress("1K6igqzm36x8jxRTavPhgWXLVcVZVDTGc9"));
+        transaction.addOutput(156694315, vectorAddress("bc1qwqdg6squsna38e46795at95yu9atm8azzmyvckulcc7kytlcckxswvvzej"));
 
         Assertions.assertEquals(spendingTransaction.getLength(), transaction.getLength());
 
@@ -568,5 +573,36 @@ public class TransactionTest {
 
         ECKey pubKey = ECKey.fromPublicOnly(privateKey);
         Assertions.assertTrue(pubKey.verify(hash, new TransactionSignature(sig, SigHash.DEFAULT)));
+    }
+
+    /**
+     * BIP173/base58 vectors still name the same output scripts; re-encode them on this chain's versions/HRP.
+     */
+    private static Address vectorAddress(String bitcoinAddress) throws InvalidAddressException {
+        String lower = bitcoinAddress.toLowerCase(Locale.ROOT);
+        if(lower.startsWith("bc1") || lower.startsWith("tb1")) {
+            Bech32.Bech32Data data = Bech32.decode(bitcoinAddress);
+            byte[] converted = Arrays.copyOfRange(data.data, 1, data.data.length);
+            byte[] program = Bech32.convertBits(converted, 0, converted.length, 5, 8, false);
+            int witnessVersion = data.data[0];
+            if(witnessVersion == 0 && program.length == 20) {
+                return new P2WPKHAddress(program);
+            }
+            if(witnessVersion == 0 && program.length == 32) {
+                return new P2WSHAddress(program);
+            }
+            if(witnessVersion == 1) {
+                return new P2TRAddress(program);
+            }
+            throw new InvalidAddressException("Unsupported witness program in vector " + bitcoinAddress);
+        }
+
+        byte[] decoded = Base58.decodeChecked(bitcoinAddress);
+        byte[] hash = Arrays.copyOfRange(decoded, 1, decoded.length);
+        int version = Byte.toUnsignedInt(decoded[0]);
+        if(version == 0 || version == 111) {
+            return new P2PKHAddress(hash);
+        }
+        return new P2SHAddress(hash);
     }
 }
