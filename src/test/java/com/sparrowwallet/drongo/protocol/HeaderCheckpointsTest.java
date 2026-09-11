@@ -79,10 +79,10 @@ public class HeaderCheckpointsTest {
     @Test
     public void testGenesisHeaders() {
         Assertions.assertEquals("0000002df35a11022728c1c1e0eedc4fd2aa586ed18b5b8e959a1f305d8ffbe6", Network.MAINNET.getGenesisHash().toString());
-        Assertions.assertEquals("000000f5e120154c61eeca65bde83e68b5cb59bec3a7a40d4f4b2b83075b8952", Network.TESTNET.getGenesisHash().toString());
+        Assertions.assertEquals("000000007b820d7dd6173e5c91ac6c5851a5a914bbe228d20b99e94cdd2d7733", Network.TESTNET.getGenesisHash().toString());
         Assertions.assertEquals("7540675e579ae63ff4628473bab9e7098d1e30d24c344f59855785989677dbc1", Network.REGTEST.getGenesisHash().toString());
         Assertions.assertEquals("000001157c04349393694e070e3fc59e8b18e57dc13bea6d5568a1849bd2c4a6", Network.SIGNET.getGenesisHash().toString());
-        Assertions.assertEquals("000000b97d7bc58bcf36a9fd427a0a8ce98501e7b1299d42aa02ec1f8dc47848", Network.TESTNET4.getGenesisHash().toString());
+        Assertions.assertEquals("00000000518588d27956912b3e6c5a310067c1d43a95290bd84b5d4f732d1622", Network.TESTNET4.getGenesisHash().toString());
 
         for(Network network : Network.values()) {
             Network.set(network);
