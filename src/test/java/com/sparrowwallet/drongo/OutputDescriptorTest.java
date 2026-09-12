@@ -14,47 +14,55 @@ import java.util.*;
 import static com.sparrowwallet.drongo.OutputDescriptor.LEGACY_MULTI_PATTERN;
 
 public class OutputDescriptorTest {
+    private static OutputDescriptor parse(String published) {
+        return OutputDescriptor.getOutputDescriptor(ChainEncoding.descriptor(published));
+    }
+
+    private static void assertDesc(String published, String actual) {
+        Assertions.assertEquals(ChainEncoding.descriptor(published), actual);
+    }
+
 
     @Test
     public void electrumP2PKH() {
-        OutputDescriptor descriptor = OutputDescriptor.getOutputDescriptor("xpub661MyMwAqRbcFT5HwyRoP5hebbeRDvy2RGDTH2uxFyDPaf5FLtu4njuishddViQxTABZKzoWKuwpy6MsgfPvTw9pKnRGDL5eBxDej9kF54Z");
-        Assertions.assertEquals("pkh(xpub661MyMwAqRbcFT5HwyRoP5hebbeRDvy2RGDTH2uxFyDPaf5FLtu4njuishddViQxTABZKzoWKuwpy6MsgfPvTw9pKnRGDL5eBxDej9kF54Z)", descriptor.toString());
+        OutputDescriptor descriptor = parse("xpub661MyMwAqRbcFT5HwyRoP5hebbeRDvy2RGDTH2uxFyDPaf5FLtu4njuishddViQxTABZKzoWKuwpy6MsgfPvTw9pKnRGDL5eBxDej9kF54Z");
+        assertDesc("pkh(xpub661MyMwAqRbcFT5HwyRoP5hebbeRDvy2RGDTH2uxFyDPaf5FLtu4njuishddViQxTABZKzoWKuwpy6MsgfPvTw9pKnRGDL5eBxDej9kF54Z)", descriptor.toString());
     }
 
     @Test
     public void iancolemanP2PKH() {
-        OutputDescriptor descriptor = OutputDescriptor.getOutputDescriptor("xpub6EEznxrqoN5HUXfD3QC3B8Vjw8Lj9UnRj17uTzNaBnEYN5xgwe6Un46Z443sSTBP2bzLZuDzygkdD1FtVWSexFmg4yAuCTxE2HxXFtz541z/*");
-        Assertions.assertEquals("pkh(xpub6EEznxrqoN5HUXfD3QC3B8Vjw8Lj9UnRj17uTzNaBnEYN5xgwe6Un46Z443sSTBP2bzLZuDzygkdD1FtVWSexFmg4yAuCTxE2HxXFtz541z/*)", descriptor.toString());
+        OutputDescriptor descriptor = parse("xpub6EEznxrqoN5HUXfD3QC3B8Vjw8Lj9UnRj17uTzNaBnEYN5xgwe6Un46Z443sSTBP2bzLZuDzygkdD1FtVWSexFmg4yAuCTxE2HxXFtz541z/*");
+        assertDesc("pkh(xpub6EEznxrqoN5HUXfD3QC3B8Vjw8Lj9UnRj17uTzNaBnEYN5xgwe6Un46Z443sSTBP2bzLZuDzygkdD1FtVWSexFmg4yAuCTxE2HxXFtz541z/*)", descriptor.toString());
     }
 
     @Test
     public void electrumP2WPKH() {
-        OutputDescriptor descriptor = OutputDescriptor.getOutputDescriptor("zpub6njbcfTHEfK4U96Z8dBaTULdb1LGWMtj73yYZ76kfmE9nuf3KhNSsXfzDefz5KV6TreWjnQbgvnSmSttudzTugesV2HFunYu7gWYJUD4eoR");
-        Assertions.assertEquals("wpkh(xpub69551L7SwJE6mYiKTucL3J9dF53Nd7ujGpw6zKJyukUPgi2apP3KdQMiBEkp5WBFeaQuEqDUmc5LzsfmUFASKDHfkLtQjxuvaEPFXNDF4Kg)", descriptor.toString());
+        OutputDescriptor descriptor = parse("zpub6njbcfTHEfK4U96Z8dBaTULdb1LGWMtj73yYZ76kfmE9nuf3KhNSsXfzDefz5KV6TreWjnQbgvnSmSttudzTugesV2HFunYu7gWYJUD4eoR");
+        assertDesc("wpkh(xpub69551L7SwJE6mYiKTucL3J9dF53Nd7ujGpw6zKJyukUPgi2apP3KdQMiBEkp5WBFeaQuEqDUmc5LzsfmUFASKDHfkLtQjxuvaEPFXNDF4Kg)", descriptor.toString());
     }
 
     @Test
     public void iancolemanP2SHP2WPKH() {
-        OutputDescriptor descriptor = OutputDescriptor.getOutputDescriptor("ypub6Zken22QbjfomRUXki5v4ndP6T1DEtaBhGGZBvR4ocoooM44dFmnF8DyFmvcK76TKnuvdFfaPnicVvTAPdqEcbuEfKEqfnRoUjSkTB4u1os/*");
-        Assertions.assertEquals("sh(wpkh(xpub6EvPUMMVT48Kv8HQvMJHrhXsvUrmJGagn9kLQXXBRcRvkFEqNbcDd4ZqEZy2KCSXv9o7sn51w8N4cdqbfwRDpNDdnyYR5scKD1P74ZAKbGm/*))", descriptor.toString());
+        OutputDescriptor descriptor = parse("ypub6Zken22QbjfomRUXki5v4ndP6T1DEtaBhGGZBvR4ocoooM44dFmnF8DyFmvcK76TKnuvdFfaPnicVvTAPdqEcbuEfKEqfnRoUjSkTB4u1os/*");
+        assertDesc("sh(wpkh(xpub6EvPUMMVT48Kv8HQvMJHrhXsvUrmJGagn9kLQXXBRcRvkFEqNbcDd4ZqEZy2KCSXv9o7sn51w8N4cdqbfwRDpNDdnyYR5scKD1P74ZAKbGm/*))", descriptor.toString());
     }
 
     @Test
     public void bip84P2WPKH() {
-        OutputDescriptor descriptor = OutputDescriptor.getOutputDescriptor("zpub6rFR7y4Q2AijBEqTUquhVz398htDFrtymD9xYYfG1m4wAcvPhXNfE3EfH1r1ADqtfSdVCToUG868RvUUkgDKf31mGDtKsAYz2oz2AGutZYs");
-        Assertions.assertEquals("wpkh(xpub6CatWdiZiodmUeTDp8LT5or8nmbKNcuyvz7WyksVFkKB4RHwCD3XyuvPEbvqAQY3rAPshWcMLoP2fMFMKHPJ4ZeZXYVUhLv1VMrjPC7PW6V)", descriptor.toString());
+        OutputDescriptor descriptor = parse("zpub6rFR7y4Q2AijBEqTUquhVz398htDFrtymD9xYYfG1m4wAcvPhXNfE3EfH1r1ADqtfSdVCToUG868RvUUkgDKf31mGDtKsAYz2oz2AGutZYs");
+        assertDesc("wpkh(xpub6CatWdiZiodmUeTDp8LT5or8nmbKNcuyvz7WyksVFkKB4RHwCD3XyuvPEbvqAQY3rAPshWcMLoP2fMFMKHPJ4ZeZXYVUhLv1VMrjPC7PW6V)", descriptor.toString());
     }
 
     @Test
     public void redditP2SHP2WPKH() {
-        OutputDescriptor descriptor = OutputDescriptor.getOutputDescriptor("ypub6XiW9nhToS1gjVsFKzgmtWZuqo6V1YY7xaCns37aR3oYhFyAsTehAqV1iW2UCNtgWFQFkz3aNSZZbkfe5d1tD8MzjZuFJQn2XnczsxtjoXr");
-        Assertions.assertEquals("sh(wpkh(xpub6CtEr82YekUCtCg8Vdu9gRUQfpx34vYd3Tga5eDh33RfeA9wcoV8YmpshJ4tCUEm6cHT1WT1unD1iU45MvbsQtgPsECpiVxYG4ZMVKEKqGP))", descriptor.toString());
+        OutputDescriptor descriptor = parse("ypub6XiW9nhToS1gjVsFKzgmtWZuqo6V1YY7xaCns37aR3oYhFyAsTehAqV1iW2UCNtgWFQFkz3aNSZZbkfe5d1tD8MzjZuFJQn2XnczsxtjoXr");
+        assertDesc("sh(wpkh(xpub6CtEr82YekUCtCg8Vdu9gRUQfpx34vYd3Tga5eDh33RfeA9wcoV8YmpshJ4tCUEm6cHT1WT1unD1iU45MvbsQtgPsECpiVxYG4ZMVKEKqGP))", descriptor.toString());
     }
 
     @Test
     public void masterP2PKH() {
-        OutputDescriptor descriptor = OutputDescriptor.getOutputDescriptor("pkh([d34db33f/44'/0'/0']xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL/1/*)");
-        Assertions.assertEquals("pkh([d34db33f/44h/0h/0h]xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL/1/*)", descriptor.toString());
+        OutputDescriptor descriptor = parse("pkh([d34db33f/44'/0'/0']xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL/1/*)");
+        assertDesc("pkh([d34db33f/44h/0h/0h]xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL/1/*)", descriptor.toString());
         ExtendedKey extendedPublicKey = descriptor.getSingletonExtendedPublicKey();
         KeyDerivation derivation = descriptor.getKeyDerivation(extendedPublicKey);
         Assertions.assertEquals("d34db33f", derivation.getMasterFingerprint());
@@ -64,8 +72,8 @@ public class OutputDescriptorTest {
 
     @Test
     public void singleP2SH_P2WPKH() {
-        OutputDescriptor descriptor = OutputDescriptor.getOutputDescriptor("sh(wpkh([f09a3b29/49h/0h/0h]xpub6CjUWYtkq9KT1zkM5NPMxoJTCMm8JSFw7JPyMG6YLBzv5AsCTkASnsVyJhqL1aaqF5XSsFinHK3FDi8RoeEWcTG3DQA2TjqrZ6HJtatYbsU/0/*))");
-        Assertions.assertEquals("sh(wpkh([f09a3b29/49h/0h/0h]xpub6CjUWYtkq9KT1zkM5NPMxoJTCMm8JSFw7JPyMG6YLBzv5AsCTkASnsVyJhqL1aaqF5XSsFinHK3FDi8RoeEWcTG3DQA2TjqrZ6HJtatYbsU/0/*))", descriptor.toString());
+        OutputDescriptor descriptor = parse("sh(wpkh([f09a3b29/49h/0h/0h]xpub6CjUWYtkq9KT1zkM5NPMxoJTCMm8JSFw7JPyMG6YLBzv5AsCTkASnsVyJhqL1aaqF5XSsFinHK3FDi8RoeEWcTG3DQA2TjqrZ6HJtatYbsU/0/*))");
+        assertDesc("sh(wpkh([f09a3b29/49h/0h/0h]xpub6CjUWYtkq9KT1zkM5NPMxoJTCMm8JSFw7JPyMG6YLBzv5AsCTkASnsVyJhqL1aaqF5XSsFinHK3FDi8RoeEWcTG3DQA2TjqrZ6HJtatYbsU/0/*))", descriptor.toString());
         ExtendedKey extendedPublicKey = descriptor.getSingletonExtendedPublicKey();
         KeyDerivation derivation = descriptor.getKeyDerivation(extendedPublicKey);
         Assertions.assertEquals("f09a3b29", derivation.getMasterFingerprint());
@@ -75,25 +83,25 @@ public class OutputDescriptorTest {
 
     @Test
     public void multisigP2WSH() {
-        OutputDescriptor descriptor = OutputDescriptor.getOutputDescriptor("wsh(sortedmulti(2,xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/0/*,xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/0/*))");
-        Assertions.assertEquals("wsh(sortedmulti(2,xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/0/*,xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/0/*))", descriptor.toString());
+        OutputDescriptor descriptor = parse("wsh(sortedmulti(2,xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/0/*,xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/0/*))");
+        assertDesc("wsh(sortedmulti(2,xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/0/*,xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/0/*))", descriptor.toString());
         Assertions.assertEquals(2, descriptor.getMultisigThreshold());
         Assertions.assertEquals(ChainEncoding.address("bc1qf5l7g5t5v2tp2wnwfeqlktkds7zvprmm7afjn6f85fdesc2pwedsh42kcl"), descriptor.getAddress(KeyDerivation.parsePath("0/0")).toString());
     }
 
     @Test
     public void multisigP2WSH2() {
-        OutputDescriptor descriptor = OutputDescriptor.getOutputDescriptor("wsh(sortedmulti(2,[04fefef0/48h/0h/0h/2h]xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/0/*,[04ba1ef0/48h/0h/0h/2h]xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/0/*))");
+        OutputDescriptor descriptor = parse("wsh(sortedmulti(2,[04fefef0/48h/0h/0h/2h]xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/0/*,[04ba1ef0/48h/0h/0h/2h]xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/0/*))");
         Set<ExtendedKey> extendedPublicKeys = descriptor.getExtendedPublicKeys();
         Iterator<ExtendedKey> iter = extendedPublicKeys.iterator();
         ExtendedKey extendedPublicKey1 = iter.next();
-        Assertions.assertEquals("xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB", extendedPublicKey1.toString());
+        Assertions.assertEquals(ChainEncoding.extendedKey("xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB"), extendedPublicKey1.toString());
         KeyDerivation derivation = descriptor.getKeyDerivation(extendedPublicKey1);
         Assertions.assertEquals("04fefef0", derivation.getMasterFingerprint());
         Assertions.assertEquals("m/48'/0'/0'/2'", derivation.getDerivationPath());
 
         ExtendedKey extendedPublicKey2 = iter.next();
-        Assertions.assertEquals("xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH", extendedPublicKey2.toString());
+        Assertions.assertEquals(ChainEncoding.extendedKey("xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH"), extendedPublicKey2.toString());
         KeyDerivation derivation2 = descriptor.getKeyDerivation(extendedPublicKey2);
         Assertions.assertEquals("04ba1ef0", derivation2.getMasterFingerprint());
         Assertions.assertEquals("m/48'/0'/0'/2'", derivation2.getDerivationPath());
@@ -101,8 +109,8 @@ public class OutputDescriptorTest {
 
     @Test
     public void testChecksum() {
-        OutputDescriptor descriptor = OutputDescriptor.getOutputDescriptor("sh(multi(2,[00000000/111'/222]xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL,xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBaohPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0))#tjg09x5t");
-        Assertions.assertEquals("sh(sortedmulti(2,[00000000/111h/222]xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL,xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBaohPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0))#vqfgjk5v", descriptor.toString(true));
+        OutputDescriptor descriptor = parse("sh(multi(2,[00000000/111'/222]xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL,xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBaohPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0))#tjg09x5t");
+        assertDesc("sh(sortedmulti(2,[00000000/111h/222]xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL,xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBaohPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0))#vqfgjk5v", descriptor.toString(true));
     }
 
     private static final String MULTI_KEY_1 = "[04fefef0/48h/0h/0h/2h]xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/0/*";
@@ -118,7 +126,7 @@ public class OutputDescriptorTest {
         //The script type is determined case insensitively, so the threshold must be extracted the same way - see GHSA-rr8c-7vxh-fm72
         for(String descriptor : List.of(multisigDescriptor("sortedMULTI", "2"), multisigDescriptor("SORTEDMULTI", "2"),
                 multisigDescriptor("SortedMulti", "2"), multisigDescriptor("MULTI", "2"))) {
-            OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(descriptor);
+            OutputDescriptor outputDescriptor = parse(descriptor);
             Assertions.assertEquals(2, outputDescriptor.getMultisigThreshold(), descriptor);
             Assertions.assertEquals(3, outputDescriptor.getExtendedPublicKeys().size(), descriptor);
 
@@ -129,7 +137,7 @@ public class OutputDescriptorTest {
 
     @Test
     public void testMultisigThresholdWhitespace() {
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(multisigDescriptor("sortedmulti", " 2"));
+        OutputDescriptor outputDescriptor = parse(multisigDescriptor("sortedmulti", " 2"));
         Assertions.assertEquals(2, outputDescriptor.getMultisigThreshold());
         Assertions.assertEquals(2, outputDescriptor.toWallet().getDefaultPolicy().getNumSignaturesRequired());
     }
@@ -137,25 +145,25 @@ public class OutputDescriptorTest {
     @Test
     public void testMultisigThresholdNeverDefaulted() {
         //A descriptor providing multiple keys but no recognisable threshold must be rejected, not silently downgraded to 1 of n
-        Assertions.assertThrows(IllegalArgumentException.class, () -> OutputDescriptor.getOutputDescriptor(
+        Assertions.assertThrows(IllegalArgumentException.class, () -> parse(
                 "tr(multi_a(2," + MULTI_KEY_1 + "," + MULTI_KEY_2 + "," + MULTI_KEY_3 + "))"));
     }
 
     @Test
     public void testMultisigThresholdOutOfRange() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> OutputDescriptor.getOutputDescriptor(multisigDescriptor("sortedmulti", "0")));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> OutputDescriptor.getOutputDescriptor(multisigDescriptor("sortedmulti", "4")));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> parse(multisigDescriptor("sortedmulti", "0")));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> parse(multisigDescriptor("sortedmulti", "4")));
     }
 
     @Test
     public void testSingleKeyThresholdUnchanged() {
         //Single key descriptors have no threshold to state, and must continue to yield a threshold of 1
-        OutputDescriptor singleSig = OutputDescriptor.getOutputDescriptor("wpkh([04fefef0/84h/0h/0h]xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/0/*)");
+        OutputDescriptor singleSig = parse("wpkh([04fefef0/84h/0h/0h]xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/0/*)");
         Assertions.assertEquals(1, singleSig.getMultisigThreshold());
         Assertions.assertEquals(PolicyType.SINGLE_HD, singleSig.toWallet().getPolicyType());
 
         //A single key cosigner descriptor is a MULTI_HD policy, and must render as sortedmulti(1,...) rather than sortedmulti(0,...)
-        OutputDescriptor cosigner = OutputDescriptor.getOutputDescriptor("sh(" + MULTI_KEY_1 + ")");
+        OutputDescriptor cosigner = parse("sh(" + MULTI_KEY_1 + ")");
         Assertions.assertEquals(1, cosigner.getMultisigThreshold());
         Wallet cosignerWallet = cosigner.toWallet();
         Assertions.assertEquals(PolicyType.MULTI_HD, cosignerWallet.getPolicyType());
@@ -177,12 +185,12 @@ public class OutputDescriptorTest {
 
     @Test
     public void testPubKeySingle() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> OutputDescriptor.getOutputDescriptor("sh(wpkh(03fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556))"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> parse("sh(wpkh(03fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556))"));
     }
 
     @Test
     public void testPubKeyMulti() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> OutputDescriptor.getOutputDescriptor("sh(multi(2,022f01e5e15cca351daff3843fb70f3c2f0a1bdd05e5af888a67784ef3e10a2a01,03acd484e2f0c7f65309ad178a9f559abde09796974c57e714c35f110dfc27ccbe))"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> parse("sh(multi(2,022f01e5e15cca351daff3843fb70f3c2f0a1bdd05e5af888a67784ef3e10a2a01,03acd484e2f0c7f65309ad178a9f559abde09796974c57e714c35f110dfc27ccbe))"));
     }
 
     @Test
@@ -190,18 +198,18 @@ public class OutputDescriptorTest {
         Map<ExtendedKey, KeyDerivation> extendedKeys = new LinkedHashMap<>();
         Map<ExtendedKey, String> extendedKeyLabels = new LinkedHashMap<>();
 
-        ExtendedKey ext1 = ExtendedKey.fromDescriptor("xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB");
+        ExtendedKey ext1 = ExtendedKey.fromDescriptor(ChainEncoding.extendedKey("xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB"));
         KeyDerivation kd1 = new KeyDerivation("04fefef0", "m/48'/0'/0'/2'");
         extendedKeys.put(ext1, kd1);
         extendedKeyLabels.put(ext1, "Unique");
 
-        ExtendedKey ext2 = ExtendedKey.fromDescriptor("xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH");
+        ExtendedKey ext2 = ExtendedKey.fromDescriptor(ChainEncoding.extendedKey("xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH"));
         KeyDerivation kd2 = new KeyDerivation("04ba1ef0", "m/48'/0'/0'/2'");
         extendedKeys.put(ext2, kd2);
         extendedKeyLabels.put(ext2, "Unique");
 
         OutputDescriptor descriptor = new OutputDescriptor(ScriptType.P2WSH, 2, extendedKeys, new LinkedHashMap<>(), extendedKeyLabels);
-        Assertions.assertEquals("wsh(sortedmulti(2,[04fefef0/48h/0h/0h/2h]xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB,[04ba1ef0/48h/0h/0h/2h]xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH))", descriptor.toString());
+        assertDesc("wsh(sortedmulti(2,[04fefef0/48h/0h/0h/2h]xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB,[04ba1ef0/48h/0h/0h/2h]xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH))", descriptor.toString());
 
         Wallet wallet = descriptor.toWallet();
         Assertions.assertEquals("Unique 1", wallet.getKeystores().get(0).getLabel());
@@ -211,31 +219,31 @@ public class OutputDescriptorTest {
     @Test
     public void testMasterPrivateKey() {
         String desc = "wpkh(xprv9s21ZrQH143K2x63uS9B5XiQqBKDs5ke5jF7dH7cwKaAycKs72VyR7zfBAqQFAnWMwpW6w2eJKc4pKfkMebXv1qi5cs5eQ1N9n2rwbsp94g)";
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(desc);
+        OutputDescriptor outputDescriptor = parse(desc);
         Wallet wallet = outputDescriptor.toWallet();
         Assertions.assertEquals("fe05631b", wallet.getKeystores().get(0).getKeyDerivation().getMasterFingerprint());
         Assertions.assertEquals("m/84'/0'/0'", wallet.getKeystores().get(0).getKeyDerivation().getDerivationPath());
-        Assertions.assertEquals("xpub6DTvSp2zaQ3DHrB19BnXTPEsMhnsVPKFgb47x8tkg1VjuwkKvyEeL3Jc4ojgiVUit2ron1SqkQph1hVPtGfREGkiZ8KCbN2TGXnoXHnQ12E", wallet.getKeystores().get(0).getExtendedPublicKey().toString());
+        Assertions.assertEquals(ChainEncoding.extendedKey("xpub6DTvSp2zaQ3DHrB19BnXTPEsMhnsVPKFgb47x8tkg1VjuwkKvyEeL3Jc4ojgiVUit2ron1SqkQph1hVPtGfREGkiZ8KCbN2TGXnoXHnQ12E"), wallet.getKeystores().get(0).getExtendedPublicKey().toString());
     }
 
     @Test
     public void testMasterPrivateKeyWithChildDerivation() {
         String desc = "wpkh(xprv9s21ZrQH143K2x63uS9B5XiQqBKDs5ke5jF7dH7cwKaAycKs72VyR7zfBAqQFAnWMwpW6w2eJKc4pKfkMebXv1qi5cs5eQ1N9n2rwbsp94g/84'/1'/0'/0/*)";
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(desc);
+        OutputDescriptor outputDescriptor = parse(desc);
         Wallet wallet = outputDescriptor.toWallet();
         Assertions.assertEquals("fe05631b", wallet.getKeystores().get(0).getKeyDerivation().getMasterFingerprint());
         Assertions.assertEquals("m/84'/1'/0'", wallet.getKeystores().get(0).getKeyDerivation().getDerivationPath());
-        Assertions.assertEquals("xpub6BwAZuXFhV4oufDPGLi89BXMWkFSWDY8EGjLN7GReoKcBQC2MV9A6siCKefwMitca3YnvRCWKWp2RJoDeG9djtucWkH2EibPEvpm2fyNLK3", wallet.getKeystores().get(0).getExtendedPublicKey().toString());
+        Assertions.assertEquals(ChainEncoding.extendedKey("xpub6BwAZuXFhV4oufDPGLi89BXMWkFSWDY8EGjLN7GReoKcBQC2MV9A6siCKefwMitca3YnvRCWKWp2RJoDeG9djtucWkH2EibPEvpm2fyNLK3"), wallet.getKeystores().get(0).getExtendedPublicKey().toString());
     }
 
     @Test
     public void testMasterPrivateKeyWithNonBip32ChildDerivation() {
         String desc = "wpkh(xprv9s21ZrQH143K2x63uS9B5XiQqBKDs5ke5jF7dH7cwKaAycKs72VyR7zfBAqQFAnWMwpW6w2eJKc4pKfkMebXv1qi5cs5eQ1N9n2rwbsp94g/84'/1'/0'/3/*)";
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(desc);
+        OutputDescriptor outputDescriptor = parse(desc);
         Wallet wallet = outputDescriptor.toWallet();
         Assertions.assertEquals("fe05631b", wallet.getKeystores().get(0).getKeyDerivation().getMasterFingerprint());
         Assertions.assertEquals("m/84'/1'/0'", wallet.getKeystores().get(0).getKeyDerivation().getDerivationPath());
-        Assertions.assertEquals("xpub6BwAZuXFhV4oufDPGLi89BXMWkFSWDY8EGjLN7GReoKcBQC2MV9A6siCKefwMitca3YnvRCWKWp2RJoDeG9djtucWkH2EibPEvpm2fyNLK3", wallet.getKeystores().get(0).getExtendedPublicKey().toString());
+        Assertions.assertEquals(ChainEncoding.extendedKey("xpub6BwAZuXFhV4oufDPGLi89BXMWkFSWDY8EGjLN7GReoKcBQC2MV9A6siCKefwMitca3YnvRCWKWp2RJoDeG9djtucWkH2EibPEvpm2fyNLK3"), wallet.getKeystores().get(0).getExtendedPublicKey().toString());
     }
 
     @Test
@@ -246,7 +254,7 @@ public class OutputDescriptorTest {
         String spscanEncoded = spAddr.toKeyString();
         String desc = "sp(" + spscanEncoded + ")";
 
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(desc);
+        OutputDescriptor outputDescriptor = parse(desc);
         Assertions.assertTrue(outputDescriptor.isSilentPayments());
         Assertions.assertEquals(ScriptType.P2TR, outputDescriptor.getScriptType());
 
@@ -263,7 +271,7 @@ public class OutputDescriptorTest {
         SilentPaymentScanAddress spAddr = new SilentPaymentScanAddress(scanKey, spendKey);
         String desc = "sp([deadbeef/352h/0h/0h]" + spAddr.toKeyString() + ")";
 
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(desc);
+        OutputDescriptor outputDescriptor = parse(desc);
         Assertions.assertTrue(outputDescriptor.isSilentPayments());
 
         Map.Entry<SilentPaymentScanAddress, KeyDerivation> entry = outputDescriptor.getSilentPaymentScanAddresses().entrySet().iterator().next();
@@ -280,7 +288,7 @@ public class OutputDescriptorTest {
         String spendPubHex = Utils.bytesToHex(spendKey.getPubKey());
         String desc = "sp(" + wif + "," + spendPubHex + ")";
 
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(desc);
+        OutputDescriptor outputDescriptor = parse(desc);
         Assertions.assertTrue(outputDescriptor.isSilentPayments());
 
         Map.Entry<SilentPaymentScanAddress, KeyDerivation> entry = outputDescriptor.getSilentPaymentScanAddresses().entrySet().iterator().next();
@@ -293,18 +301,18 @@ public class OutputDescriptorTest {
     @Test
     public void testParseTwoArgXprvXpubSp() {
         // Derive expected keys independently
-        ExtendedKey scanXprv = ExtendedKey.fromDescriptor("xprv9s21ZrQH143K2x63uS9B5XiQqBKDs5ke5jF7dH7cwKaAycKs72VyR7zfBAqQFAnWMwpW6w2eJKc4pKfkMebXv1qi5cs5eQ1N9n2rwbsp94g");
+        ExtendedKey scanXprv = ExtendedKey.fromDescriptor(ChainEncoding.extendedKey("xprv9s21ZrQH143K2x63uS9B5XiQqBKDs5ke5jF7dH7cwKaAycKs72VyR7zfBAqQFAnWMwpW6w2eJKc4pKfkMebXv1qi5cs5eQ1N9n2rwbsp94g"));
         List<ChildNumber> scanPath = KeyDerivation.parsePath("/1h/0");
         scanPath.addFirst(scanXprv.getKeyChildNumber());
         ECKey expectedScanKey = ECKey.fromPrivate(scanXprv.getKey(scanPath).getPrivKeyBytes(), true);
 
-        ExtendedKey spendXpub = ExtendedKey.fromDescriptor("xpub661MyMwAqRbcFT5HwyRoP5hebbeRDvy2RGDTH2uxFyDPaf5FLtu4njuishddViQxTABZKzoWKuwpy6MsgfPvTw9pKnRGDL5eBxDej9kF54Z");
+        ExtendedKey spendXpub = ExtendedKey.fromDescriptor(ChainEncoding.extendedKey("xpub661MyMwAqRbcFT5HwyRoP5hebbeRDvy2RGDTH2uxFyDPaf5FLtu4njuishddViQxTABZKzoWKuwpy6MsgfPvTw9pKnRGDL5eBxDej9kF54Z"));
         List<ChildNumber> spendPath = KeyDerivation.parsePath("/0/0");
         spendPath.addFirst(spendXpub.getKeyChildNumber());
         ECKey expectedSpendKey = ECKey.fromPublicOnly(spendXpub.getKey(spendPath).getPubKey());
 
         String desc = "sp([deadbeef/352h/0h/0h]xprv9s21ZrQH143K2x63uS9B5XiQqBKDs5ke5jF7dH7cwKaAycKs72VyR7zfBAqQFAnWMwpW6w2eJKc4pKfkMebXv1qi5cs5eQ1N9n2rwbsp94g/1h/0,xpub661MyMwAqRbcFT5HwyRoP5hebbeRDvy2RGDTH2uxFyDPaf5FLtu4njuishddViQxTABZKzoWKuwpy6MsgfPvTw9pKnRGDL5eBxDej9kF54Z/0/0)";
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(desc);
+        OutputDescriptor outputDescriptor = parse(desc);
 
         Map.Entry<SilentPaymentScanAddress, KeyDerivation> entry = outputDescriptor.getSilentPaymentScanAddresses().entrySet().iterator().next();
         SilentPaymentScanAddress parsed = entry.getKey();
@@ -320,7 +328,7 @@ public class OutputDescriptorTest {
     @Test
     public void testParseTwoArgXprvXprvSp() {
         // Derive expected keys independently
-        ExtendedKey xprv = ExtendedKey.fromDescriptor("xprv9s21ZrQH143K2x63uS9B5XiQqBKDs5ke5jF7dH7cwKaAycKs72VyR7zfBAqQFAnWMwpW6w2eJKc4pKfkMebXv1qi5cs5eQ1N9n2rwbsp94g");
+        ExtendedKey xprv = ExtendedKey.fromDescriptor(ChainEncoding.extendedKey("xprv9s21ZrQH143K2x63uS9B5XiQqBKDs5ke5jF7dH7cwKaAycKs72VyR7zfBAqQFAnWMwpW6w2eJKc4pKfkMebXv1qi5cs5eQ1N9n2rwbsp94g"));
         List<ChildNumber> scanPath = KeyDerivation.parsePath("/1h/0");
         scanPath.addFirst(xprv.getKeyChildNumber());
         ECKey expectedScanKey = ECKey.fromPrivate(xprv.getKey(scanPath).getPrivKeyBytes(), true);
@@ -330,7 +338,7 @@ public class OutputDescriptorTest {
         ECKey expectedSpendPubKey = ECKey.fromPublicOnly(xprv.getKey(spendPath).getPubKey());
 
         String desc = "sp(xprv9s21ZrQH143K2x63uS9B5XiQqBKDs5ke5jF7dH7cwKaAycKs72VyR7zfBAqQFAnWMwpW6w2eJKc4pKfkMebXv1qi5cs5eQ1N9n2rwbsp94g/1h/0,xprv9s21ZrQH143K2x63uS9B5XiQqBKDs5ke5jF7dH7cwKaAycKs72VyR7zfBAqQFAnWMwpW6w2eJKc4pKfkMebXv1qi5cs5eQ1N9n2rwbsp94g/0h/0)";
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(desc);
+        OutputDescriptor outputDescriptor = parse(desc);
 
         Map.Entry<SilentPaymentScanAddress, KeyDerivation> entry = outputDescriptor.getSilentPaymentScanAddresses().entrySet().iterator().next();
         SilentPaymentScanAddress parsed = entry.getKey();
@@ -345,13 +353,13 @@ public class OutputDescriptorTest {
         String wif = scanKey.getPrivateKeyEncoded().toString();
 
         // Derive expected spend key independently
-        ExtendedKey spendXpub = ExtendedKey.fromDescriptor("xpub661MyMwAqRbcFT5HwyRoP5hebbeRDvy2RGDTH2uxFyDPaf5FLtu4njuishddViQxTABZKzoWKuwpy6MsgfPvTw9pKnRGDL5eBxDej9kF54Z");
+        ExtendedKey spendXpub = ExtendedKey.fromDescriptor(ChainEncoding.extendedKey("xpub661MyMwAqRbcFT5HwyRoP5hebbeRDvy2RGDTH2uxFyDPaf5FLtu4njuishddViQxTABZKzoWKuwpy6MsgfPvTw9pKnRGDL5eBxDej9kF54Z"));
         List<ChildNumber> spendPath = KeyDerivation.parsePath("/0/0");
         spendPath.addFirst(spendXpub.getKeyChildNumber());
         ECKey expectedSpendKey = ECKey.fromPublicOnly(spendXpub.getKey(spendPath).getPubKey());
 
         String desc = "sp(" + wif + ",xpub661MyMwAqRbcFT5HwyRoP5hebbeRDvy2RGDTH2uxFyDPaf5FLtu4njuishddViQxTABZKzoWKuwpy6MsgfPvTw9pKnRGDL5eBxDej9kF54Z/0/0)";
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(desc);
+        OutputDescriptor outputDescriptor = parse(desc);
 
         Map.Entry<SilentPaymentScanAddress, KeyDerivation> entry = outputDescriptor.getSilentPaymentScanAddresses().entrySet().iterator().next();
         SilentPaymentScanAddress parsed = entry.getKey();
@@ -367,10 +375,10 @@ public class OutputDescriptorTest {
         SilentPaymentScanAddress spAddr = new SilentPaymentScanAddress(scanKey, spendKey);
         String desc = "sp([deadbeef/352h/0h/0h]" + spAddr.toKeyString() + ")";
 
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(desc);
+        OutputDescriptor outputDescriptor = parse(desc);
         String serialized = outputDescriptor.toString();
 
-        OutputDescriptor reparsed = OutputDescriptor.getOutputDescriptor(serialized);
+        OutputDescriptor reparsed = parse(serialized);
         Assertions.assertTrue(reparsed.isSilentPayments());
 
         Map.Entry<SilentPaymentScanAddress, KeyDerivation> entry = reparsed.getSilentPaymentScanAddresses().entrySet().iterator().next();
@@ -386,7 +394,7 @@ public class OutputDescriptorTest {
         SilentPaymentScanAddress spAddr = new SilentPaymentScanAddress(scanKey, spendKey);
         String desc = "sp(" + spAddr.toKeyString() + ")";
 
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(desc);
+        OutputDescriptor outputDescriptor = parse(desc);
         Wallet wallet = outputDescriptor.toWallet();
         Assertions.assertEquals(PolicyType.SINGLE_SP, wallet.getPolicyType());
         Assertions.assertEquals(ScriptType.P2TR, wallet.getScriptType());
@@ -398,7 +406,7 @@ public class OutputDescriptorTest {
     public void testSpRejectPublicScanKey() {
         String desc = "sp(xpub661MyMwAqRbcFT5HwyRoP5hebbeRDvy2RGDTH2uxFyDPaf5FLtu4njuishddViQxTABZKzoWKuwpy6MsgfPvTw9pKnRGDL5eBxDej9kF54Z,xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH)";
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> OutputDescriptor.getOutputDescriptor(desc));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> parse(desc));
     }
 
     @Test
@@ -409,8 +417,8 @@ public class OutputDescriptorTest {
         String desc = "sp(" + spAddr.toKeyString() + ")";
         String normalized = OutputDescriptor.normalize(desc);
 
-        Assertions.assertDoesNotThrow(() -> OutputDescriptor.getOutputDescriptor(normalized));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> OutputDescriptor.getOutputDescriptor(desc + "#aaaaaaaa"));
+        Assertions.assertDoesNotThrow(() -> parse(normalized));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> parse(desc + "#aaaaaaaa"));
     }
 
     @Test
@@ -418,7 +426,7 @@ public class OutputDescriptorTest {
         String desc = "wpkh(xpub6CatWdiZiodmUeTDp8LT5or8nmbKNcuyvz7WyksVFkKB4RHwCD3XyuvPEbvqAQY3rAPshWcMLoP2fMFMKHPJ4ZeZXYVUhLv1VMrjPC7PW6V)";
         String annotated = OutputDescriptor.normalize(desc + "?bh=800000&gl=25");
 
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(annotated);
+        OutputDescriptor outputDescriptor = parse(annotated);
         Assertions.assertEquals(800000, outputDescriptor.getAnnotations().get(OutputDescriptor.ANNOTATION_BLOCK_HEIGHT));
         Assertions.assertEquals(25, outputDescriptor.getAnnotations().get(OutputDescriptor.ANNOTATION_GAP_LIMIT));
         Assertions.assertFalse(outputDescriptor.isSilentPayments());
@@ -432,13 +440,13 @@ public class OutputDescriptorTest {
         String desc = "sp(" + spAddr.toKeyString() + ")?bh=850000&gl=30&ml=5";
         String normalized = OutputDescriptor.normalize(desc);
 
-        OutputDescriptor parsed = OutputDescriptor.getOutputDescriptor(normalized);
+        OutputDescriptor parsed = parse(normalized);
         Assertions.assertEquals(850000, parsed.getAnnotations().get(OutputDescriptor.ANNOTATION_BLOCK_HEIGHT));
         Assertions.assertEquals(30, parsed.getAnnotations().get(OutputDescriptor.ANNOTATION_GAP_LIMIT));
         Assertions.assertEquals(5, parsed.getAnnotations().get(OutputDescriptor.ANNOTATION_MAX_LABEL));
 
         String serialized = parsed.toString(true);
-        OutputDescriptor reparsed = OutputDescriptor.getOutputDescriptor(serialized);
+        OutputDescriptor reparsed = parse(serialized);
         Assertions.assertEquals(parsed.getAnnotations(), reparsed.getAnnotations());
     }
 
@@ -450,11 +458,11 @@ public class OutputDescriptorTest {
         String desc = "sp(" + spAddr.toKeyString() + ")?bh=800000";
         String normalized = OutputDescriptor.normalize(desc);
 
-        Assertions.assertDoesNotThrow(() -> OutputDescriptor.getOutputDescriptor(normalized));
+        Assertions.assertDoesNotThrow(() -> parse(normalized));
 
         // Tamper with annotation value — checksum should fail
         String tampered = normalized.replace("bh=800000", "bh=800001");
-        Assertions.assertThrows(IllegalArgumentException.class, () -> OutputDescriptor.getOutputDescriptor(tampered));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> parse(tampered));
     }
 
     @Test
@@ -465,7 +473,7 @@ public class OutputDescriptorTest {
         String desc = "sp(" + spAddr.toKeyString() + ")?bh=800000";
         String normalized = OutputDescriptor.normalize(desc);
 
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(normalized);
+        OutputDescriptor outputDescriptor = parse(normalized);
         Wallet wallet = outputDescriptor.toWallet();
         Assertions.assertEquals(800000, wallet.getBirthHeight());
     }
@@ -478,7 +486,7 @@ public class OutputDescriptorTest {
         String desc = "sp(" + spAddr.toKeyString() + ")?bh=800000&xx=42&gl=25";
         String normalized = OutputDescriptor.normalize(desc);
 
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(normalized);
+        OutputDescriptor outputDescriptor = parse(normalized);
         Assertions.assertEquals(800000, outputDescriptor.getAnnotations().get(OutputDescriptor.ANNOTATION_BLOCK_HEIGHT));
         Assertions.assertEquals(25, outputDescriptor.getAnnotations().get(OutputDescriptor.ANNOTATION_GAP_LIMIT));
         Assertions.assertEquals(42, outputDescriptor.getAnnotations().get("xx"));
@@ -492,14 +500,14 @@ public class OutputDescriptorTest {
         String desc = "sp(" + spAddr.toKeyString() + ")?bh=0800000&gl=0";
         String normalized = OutputDescriptor.normalize(desc);
 
-        OutputDescriptor outputDescriptor = OutputDescriptor.getOutputDescriptor(normalized);
+        OutputDescriptor outputDescriptor = parse(normalized);
         Assertions.assertEquals(800000, outputDescriptor.getAnnotations().get(OutputDescriptor.ANNOTATION_BLOCK_HEIGHT));
         Assertions.assertEquals(0, outputDescriptor.getAnnotations().get(OutputDescriptor.ANNOTATION_GAP_LIMIT));
     }
 
     @Test
     public void testDescriptorWithoutAnnotations() {
-        OutputDescriptor descriptor = OutputDescriptor.getOutputDescriptor("wpkh(xpub6CatWdiZiodmUeTDp8LT5or8nmbKNcuyvz7WyksVFkKB4RHwCD3XyuvPEbvqAQY3rAPshWcMLoP2fMFMKHPJ4ZeZXYVUhLv1VMrjPC7PW6V)");
+        OutputDescriptor descriptor = parse("wpkh(xpub6CatWdiZiodmUeTDp8LT5or8nmbKNcuyvz7WyksVFkKB4RHwCD3XyuvPEbvqAQY3rAPshWcMLoP2fMFMKHPJ4ZeZXYVUhLv1VMrjPC7PW6V)");
         Assertions.assertTrue(descriptor.getAnnotations().isEmpty());
     }
 
@@ -509,14 +517,14 @@ public class OutputDescriptorTest {
         String b = "[4fc1dd4a/48'/0'/0'/2']xpub6EebMbEps7ZcV3FYEnddRsvrFWDrt2tiPmCeM7pPXQEmphvq9ZfJ1LWFUDjf3vxCeBuPrfyGrMazWUsYsetrnHatQZVLJH7LsgCjtMqdzgj";
 
         //A /** descriptor template describes multiple addresses, as does an explicit wildcard or a multipath expression
-        Assertions.assertTrue(OutputDescriptor.getOutputDescriptor("wsh(sortedmulti(2," + a + "/**," + b + "/**))").describesMultipleAddresses());
-        Assertions.assertTrue(OutputDescriptor.getOutputDescriptor("wsh(sortedmulti(2," + a + "/0/*," + b + "/0/*))").describesMultipleAddresses());
-        Assertions.assertTrue(OutputDescriptor.getOutputDescriptor("wsh(sortedmulti(2," + a + "/<0;1>/*," + b + "/<0;1>/*))").describesMultipleAddresses());
-        Assertions.assertTrue(OutputDescriptor.getOutputDescriptor("wsh(sortedmulti(2," + a + "," + b + "))").describesMultipleAddresses());
+        Assertions.assertTrue(parse("wsh(sortedmulti(2," + a + "/**," + b + "/**))").describesMultipleAddresses());
+        Assertions.assertTrue(parse("wsh(sortedmulti(2," + a + "/0/*," + b + "/0/*))").describesMultipleAddresses());
+        Assertions.assertTrue(parse("wsh(sortedmulti(2," + a + "/<0;1>/*," + b + "/<0;1>/*))").describesMultipleAddresses());
+        Assertions.assertTrue(parse("wsh(sortedmulti(2," + a + "," + b + "))").describesMultipleAddresses());
 
         //A concrete child derivation describes exactly one address
-        Assertions.assertFalse(OutputDescriptor.getOutputDescriptor("wsh(sortedmulti(2," + a + "/0/0," + b + "/0/0))").describesMultipleAddresses());
-        Assertions.assertFalse(OutputDescriptor.getOutputDescriptor("wsh(sortedmulti(2," + a + "/1/5," + b + "/1/5))").describesMultipleAddresses());
+        Assertions.assertFalse(parse("wsh(sortedmulti(2," + a + "/0/0," + b + "/0/0))").describesMultipleAddresses());
+        Assertions.assertFalse(parse("wsh(sortedmulti(2," + a + "/1/5," + b + "/1/5))").describesMultipleAddresses());
     }
 
     @Test
@@ -525,14 +533,14 @@ public class OutputDescriptorTest {
         String p2wsh = "wsh(sortedmulti(2,[1cf0bf7e/48'/0'/0'/2']xpub6FL8FhxNNUVnG64YurPd16AfGyvFLhh7S2uSsDqR3Qfcm6o9jtcMYwh6DvmcBF9qozxNQmTCVvWtxLpKTnhVLN3Pgnu2D3pAoXYFgVyd8Yz/0/0,[4fc1dd4a/48'/0'/0'/2']xpub6EebMbEps7ZcV3FYEnddRsvrFWDrt2tiPmCeM7pPXQEmphvq9ZfJ1LWFUDjf3vxCeBuPrfyGrMazWUsYsetrnHatQZVLJH7LsgCjtMqdzgj/0/0))";
         String p2shP2wsh = "sh(wsh(sortedmulti(2,[793cc70b/48'/0'/0'/1']xpub6ErVmcYYHmavsMgxEcTZyzN5sqth1ZyRpFNJC26ij1wYGC2SBKYrgt9yariSbn7HLRoZUvhUhmPfsRTPrdhhGFscpPZzmch6UTdmRP1aZUj/0/0,[b3118e52/48'/0'/0'/1']xpub6Du5Jn6eYZE96ccmAc1ZTFPzdnzrvqfG4mpamDun2qZYKywoiQJMCbS3kWWMr6U3XW6s125RLsaPABWgv2yA749ieaMe67FxkTjMsbcxCch/0/0,[842bd2ed/48'/0'/0'/1']xpub6Ex81KopPkEt9hJiWHabYy8LNsSR4A7sUQoFBk9dR8XxHrr4p9HrYWN3NCf5uwfopHnQkCG7FYnZMztKbtRtbh6tzZC4xtHPbmVVxRSN7ic/0/0)))";
 
-        OutputDescriptor p2wshDescriptor = OutputDescriptor.getOutputDescriptor(p2wsh);
+        OutputDescriptor p2wshDescriptor = parse(p2wsh);
         Assertions.assertEquals(ChainEncoding.address("bc1qrgc6p3kylfztu06ysl752gwwuekhvtfh9vr7zg43jvu60mutamcsv948ej"), p2wshDescriptor.getAddress(p2wshDescriptor.getChildDerivation()).toString());
 
-        OutputDescriptor p2shP2wshDescriptor = OutputDescriptor.getOutputDescriptor(p2shP2wsh);
+        OutputDescriptor p2shP2wshDescriptor = parse(p2shP2wsh);
         Assertions.assertEquals(ChainEncoding.address("3MmNkJ3e67jDGNwGL7yQ886T192Bbb81zP"), p2shP2wshDescriptor.getAddress(p2shP2wshDescriptor.getChildDerivation()).toString());
 
         //A fixed /0/0 descriptor must describe the same address as the equivalent template at receive index 0
-        OutputDescriptor template = OutputDescriptor.getOutputDescriptor(p2shP2wsh.replace("/0/0", "/**"));
+        OutputDescriptor template = parse(p2shP2wsh.replace("/0/0", "/**"));
         Assertions.assertEquals(p2shP2wshDescriptor.getAddress(p2shP2wshDescriptor.getChildDerivation()),
                 template.toWallet().getNode(KeyPurpose.RECEIVE).getChildren().iterator().next().getAddress());
     }
