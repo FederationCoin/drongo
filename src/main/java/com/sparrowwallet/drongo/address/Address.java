@@ -48,6 +48,12 @@ public abstract class Address {
         return getScriptType().getOutputScript(data);
     }
 
+    public void requireSendable() throws InvalidAddressException {
+        if(getScriptType().isParkedOnThisChain()) {
+            throw new InvalidAddressException(ScriptType.TAPROOT_NOT_ENABLED_MESSAGE);
+        }
+    }
+
     public byte[] getOutputScriptData() {
         return data;
     }

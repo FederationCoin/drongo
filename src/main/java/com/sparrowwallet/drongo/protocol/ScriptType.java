@@ -1417,6 +1417,21 @@ public enum ScriptType {
         return getAllowedPolicyTypes().contains(policyType);
     }
 
+    /**
+     * Script types offered when creating a FederationCoin wallet. Legacy, nested,
+     * Taproot, and anchors stay parseable for existing files but are not listed.
+     */
+    public boolean isOfferedForNewWallets() {
+        return this == P2WPKH || this == P2WSH;
+    }
+
+    /**
+     * Witness v1+ destinations the node consensus-rejects while Taproot is parked.
+     */
+    public boolean isParkedOnThisChain() {
+        return this == P2TR || this == P2A;
+    }
+
     public ECKey getOutputKey(PolicyType policyType, ECKey derivedKey) {
         return derivedKey;
     }
@@ -1490,6 +1505,8 @@ public enum ScriptType {
 
     public static final ScriptType[] SINGLE_HASH_TYPES = {P2PKH, P2SH, P2SH_P2WPKH, P2SH_P2WSH, P2WPKH, P2WSH};
 
+    public static final String TAPROOT_NOT_ENABLED_MESSAGE = "Taproot is not enabled on this chain";
+
     public static final ScriptType[] ADDRESSABLE_TYPES = {P2PKH, P2SH, P2SH_P2WPKH, P2SH_P2WSH, P2WPKH, P2WSH, P2TR, P2A};
 
     public static final ScriptType[] NON_WITNESS_TYPES = {P2PK, P2PKH, P2SH};
@@ -1503,7 +1520,10 @@ public enum ScriptType {
     }
 
     public static List<ScriptType> getAddressableScriptTypes(PolicyType policyType) {
-        return Arrays.stream(ADDRESSABLE_TYPES).filter(scriptType -> scriptType.isAllowed(policyType)).collect(Collectors.toList());
+        return Arrays.stream(ADDRESSABLE_TYPES)
+                .filter(scriptType -> scriptType.isAllowed(policyType))
+                .filter(ScriptType::isOfferedForNewWallets)
+                .collect(Collectors.toList());
     }
 
     public static ScriptType getType(Script script) {
