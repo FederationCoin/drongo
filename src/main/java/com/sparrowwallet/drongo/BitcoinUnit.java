@@ -14,7 +14,7 @@ public enum BitcoinUnit {
             throw new UnsupportedOperationException("Auto unit cannot convert bitcoin values");
         }
     },
-    BTC("FCN") {
+    BTC("GFCN") {
         @Override
         public long getSatsValue(double unitValue) {
             return Math.round(unitValue * Transaction.SATOSHIS_PER_BITCOIN);

@@ -6,11 +6,11 @@ import org.junit.jupiter.api.Test;
 
 public class BitcoinUnitTest {
     @Test
-    public void labelsAreFcnAndTokens() {
+    public void labelsAreGfcnAndTokens() {
         Assertions.assertEquals("Auto", BitcoinUnit.AUTO.getLabel());
-        Assertions.assertEquals("FCN", BitcoinUnit.BTC.getLabel());
+        Assertions.assertEquals("GFCN", BitcoinUnit.BTC.getLabel());
         Assertions.assertEquals("tokens", BitcoinUnit.SATOSHIS.getLabel());
-        Assertions.assertEquals("FCN", BitcoinUnit.BTC.toString());
+        Assertions.assertEquals("GFCN", BitcoinUnit.BTC.toString());
         Assertions.assertEquals("tokens", BitcoinUnit.SATOSHIS.toString());
     }
 

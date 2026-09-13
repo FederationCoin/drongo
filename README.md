@@ -6,7 +6,7 @@ Not Bitcoin. Not affiliated with Sparrow Wallet. Experimental. No warranty; see 
 
 ## For users
 
-Use [Federation Sparrow](https://github.com/FederationCoin/federation-sparrow) on **testnet** (`tfcn`, node P2P 35333 / RPC 35332). Dummy MAIN is not launched. Chain identity in the wallet (magic, HRP, BIP32 print form, parked Taproot) lives here, not in the Sparrow Java UI tree.
+Use [Federation Sparrow](https://github.com/FederationCoin/federation-sparrow) on **testnet** (`tgfcn`, node P2P 35333 / RPC 35332). Dummy MAIN is not launched. Chain identity in the wallet (magic, HRP, BIP32 print form, parked Taproot) lives here, not in the Sparrow Java UI tree.
 
 Bitcoin `tpub` / `xpub` strings will not import. Recreate a testnet wallet after upgrading.
 

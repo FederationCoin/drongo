@@ -10,11 +10,11 @@ import java.util.Locale;
 import java.util.Map;
 
 public enum Network {
-    MAINNET("mainnet", "Mainnet (not live)", "mainnet", 36, "F", 16, "7", "fcn", "fcnsp", "fcnscan", "fcnspend", ExtendedKey.Header.xprv, ExtendedKey.Header.xpub, 164, 4094),
-    TESTNET("testnet", "Testnet3", "testnet3", 95, "f", 197, "2", "tfcn", "tfcnsp", "tfcnscan", "tfcnspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 223, 35332),
-    REGTEST("regtest", "Regtest", "regtest", 95, "f", 197, "2", "fcnrt", "fcnrtsp", "fcnrtscan", "fcnrtspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 223, 25443),
-    SIGNET("signet", "Signet", "signet", 95, "f", 197, "2", "tfcn", "tfcnsp", "tfcnscan", "tfcnspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 223, 26332),
-    TESTNET4("testnet4", "Testnet4", "testnet4", 95, "f", 197, "2", "tfcn", "tfcnsp", "tfcnscan", "tfcnspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 223, 45332);
+    MAINNET("mainnet", "Mainnet (not live)", "mainnet", 36, "F", 16, "7", "gfcn", "gfcnsp", "gfcnscan", "gfcnspend", ExtendedKey.Header.xprv, ExtendedKey.Header.xpub, 164, 4094),
+    TESTNET("testnet", "Testnet3", "testnet3", 95, "f", 197, "2", "tgfcn", "tgfcnsp", "tgfcnscan", "tgfcnspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 223, 35332),
+    REGTEST("regtest", "Regtest", "regtest", 95, "f", 197, "2", "gfcnrt", "gfcnrtsp", "gfcnrtscan", "gfcnrtspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 223, 25443),
+    SIGNET("signet", "Signet", "signet", 95, "f", 197, "2", "tgfcn", "tgfcnsp", "tgfcnscan", "tgfcnspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 223, 26332),
+    TESTNET4("testnet4", "Testnet4", "testnet4", 95, "f", 197, "2", "tgfcn", "tgfcnsp", "tgfcnscan", "tgfcnspend", ExtendedKey.Header.tprv, ExtendedKey.Header.tpub, 223, 45332);
 
     public static final String BLOCK_HEIGHT_PROPERTY = "com.sparrowwallet.blockHeight";
     private static final Network[] CANONICAL_VALUES = new Network[]{MAINNET, TESTNET, REGTEST, SIGNET};

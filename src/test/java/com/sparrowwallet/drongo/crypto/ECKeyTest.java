@@ -60,7 +60,7 @@ public class ECKeyTest {
         // https://github.com/bitcoin/bips/blob/9a30c28574e62e26da77f14e33eb698b81268887/bip-0341/wallet-test-vectors.json#L6C36-L6C100
         String internalPubKeyHex = "d6889cb081036e0faefa3a35157ad71086b123b2b144b649798b494c300a961d";
         String expectedTweakedPubKey = "53a1f6e454df1aa2776a2814a721372d6258050de330b3c6d10ee8f4e0dda343";
-        String expectedAddress = "fcn1p2wsldez5mud2yam29q22wgfh9439spgduvct83k3pm50fcxa5dpszyga0n";
+        String expectedAddress = "gfcn1p2wsldez5mud2yam29q22wgfh9439spgduvct83k3pm50fcxa5dpsp7ha7v";
 
         ECKey internalPubKey = ECKey.fromPublicOnly(HexFormat.of().parseHex(internalPubKeyHex));
         ECKey tweakedOutputKey = internalPubKey.getTweakedOutputKey();

@@ -15,11 +15,11 @@ public class NetworkIdentityTest {
 
     @Test
     public void bech32Hrps() {
-        Assertions.assertEquals("fcn", Network.MAINNET.getBech32AddressHRP());
-        Assertions.assertEquals("tfcn", Network.TESTNET.getBech32AddressHRP());
-        Assertions.assertEquals("fcnrt", Network.REGTEST.getBech32AddressHRP());
-        Assertions.assertEquals("tfcn", Network.SIGNET.getBech32AddressHRP());
-        Assertions.assertEquals("tfcn", Network.TESTNET4.getBech32AddressHRP());
+        Assertions.assertEquals("gfcn", Network.MAINNET.getBech32AddressHRP());
+        Assertions.assertEquals("tgfcn", Network.TESTNET.getBech32AddressHRP());
+        Assertions.assertEquals("gfcnrt", Network.REGTEST.getBech32AddressHRP());
+        Assertions.assertEquals("tgfcn", Network.SIGNET.getBech32AddressHRP());
+        Assertions.assertEquals("tgfcn", Network.TESTNET4.getBech32AddressHRP());
     }
 
     @Test

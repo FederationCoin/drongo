@@ -18,7 +18,7 @@ public class SilentPaymentScanAddressTest {
         ECKey spendPrivateKey = ECKey.fromPrivate(Utils.hexToBytes("9d6ad855ce3417ef84e836892e5a56392bfba05fa5d97ccea30e266f540e08b3"));
 
         SilentPaymentScanAddress silentPaymentScanAddress = SilentPaymentScanAddress.from(scanPrivateKey, ECKey.fromPublicOnly(spendPrivateKey));
-        Assertions.assertEquals("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy", silentPaymentScanAddress.getAddress());
+        Assertions.assertEquals("gfcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcutr9q0", silentPaymentScanAddress.getAddress());
     }
 
     @Test
@@ -26,7 +26,7 @@ public class SilentPaymentScanAddressTest {
         Network.set(Network.TESTNET);
         DeterministicSeed seed = new DeterministicSeed("life life life life life life life life life life life life", "", 0, DeterministicSeed.Type.BIP39);
         SilentPaymentScanAddress silentPaymentScanAddress = SilentPaymentScanAddress.from(seed, 0);
-        Assertions.assertEquals("tfcnsp1qq0grgkzt7uwfst33pyge7k9mrkag0r9vrklc695n0pw7kwwc7qddqqley3n2a6z8q7vhkhzedtzj5kr86hv6fhh0zvu2j9tjrrxa4ye3ac5dcx9z", silentPaymentScanAddress.getAddress());
+        Assertions.assertEquals("tgfcnsp1qq0grgkzt7uwfst33pyge7k9mrkag0r9vrklc695n0pw7kwwc7qddqqley3n2a6z8q7vhkhzedtzj5kr86hv6fhh0zvu2j9tjrrxa4ye3achp5dxv", silentPaymentScanAddress.getAddress());
         Assertions.assertEquals("36dc57ced5f4a76059947802f094ea40d0c11c74d444a1e7d3ea5e74b8d83d45", Utils.bytesToHex(silentPaymentScanAddress.getScanKey().getPrivKeyBytes()));
         Assertions.assertEquals("03f92466aee84707997b5c596ac52a5867d5d9a4deef1338a9157218cdda9331ee", Utils.bytesToHex(silentPaymentScanAddress.getSpendKey().getPubKey()));
     }
@@ -36,7 +36,7 @@ public class SilentPaymentScanAddressTest {
         Network.set(Network.TESTNET);
         DeterministicSeed seed = new DeterministicSeed("resist cube wrap sleep catalog shadow door scale stage rail script observe", "", 0, DeterministicSeed.Type.BIP39);
         SilentPaymentScanAddress silentPaymentScanAddress = SilentPaymentScanAddress.from(seed, 0);
-        Assertions.assertEquals("tfcnsp1qqgksl44sjwjkedsmrfmf2xqsnyt2njtjp5plk2kzjlnd9el2n76awqe5j974lvkf2utv7nrg0eaug55z86n6n3v4e9alnftdzgqk6pqmm59q4rj3", silentPaymentScanAddress.getAddress());
+        Assertions.assertEquals("tgfcnsp1qqgksl44sjwjkedsmrfmf2xqsnyt2njtjp5plk2kzjlnd9el2n76awqe5j974lvkf2utv7nrg0eaug55z86n6n3v4e9alnftdzgqk6pqmm5xveg3l", silentPaymentScanAddress.getAddress());
     }
 
     @Test
@@ -45,7 +45,7 @@ public class SilentPaymentScanAddressTest {
         ECKey spendPrivateKey = ECKey.fromPrivate(Utils.hexToBytes("9d6ad855ce3417ef84e836892e5a56392bfba05fa5d97ccea30e266f540e08b3"));
 
         SilentPaymentScanAddress unlabelled = SilentPaymentScanAddress.from(scanPrivateKey, ECKey.fromPublicOnly(spendPrivateKey));
-        Assertions.assertEquals("fcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcrhcjxy", unlabelled.getAddress());
+        Assertions.assertEquals("gfcnsp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xcutr9q0", unlabelled.getAddress());
         Assertions.assertEquals(ChainEncoding.address("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjex54dmqmmv6rw353tsuqhs99ydvadxzrsy9nuvk74epvee55drs734pqq"), unlabelled.getLabelledAddress(2).getAddress());
         Assertions.assertEquals(ChainEncoding.address("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqsg59z2rppn4qlkx0yz9sdltmjv3j8zgcqadjn4ug98m3t6plujsq9qvu5n"), unlabelled.getLabelledAddress(3).getAddress());
         Assertions.assertEquals(ChainEncoding.address("sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgq7c2zfthc6x3a5yecwc52nxa0kfd20xuz08zyrjpfw4l2j257yq6qgnkdh5"), unlabelled.getLabelledAddress(1001337).getAddress());
@@ -57,7 +57,7 @@ public class SilentPaymentScanAddressTest {
         ECKey spendPrivateKey = ECKey.fromPrivate(Utils.hexToBytes("b8f87388cbb41934c50daca018901b00070a5ff6cc25a7e9e716a9d5b9e4d664"));
 
         SilentPaymentScanAddress unlabelled = SilentPaymentScanAddress.from(scanPrivateKey, ECKey.fromPublicOnly(spendPrivateKey));
-        Assertions.assertEquals("fcnsp1qqw6vczcfpdh5nf5y2ky99kmqae0tr30hgdfg88parz50cp80wd2wqqauj52ymtc4xdkmx3tgyhrsemg2g3303xk2gtzfy8h8ejet8fz8jcguls54", unlabelled.getAddress());
+        Assertions.assertEquals("gfcnsp1qqw6vczcfpdh5nf5y2ky99kmqae0tr30hgdfg88parz50cp80wd2wqqauj52ymtc4xdkmx3tgyhrsemg2g3303xk2gtzfy8h8ejet8fz8jchqy8j7", unlabelled.getAddress());
         Assertions.assertEquals(ChainEncoding.address("sp1qqw6vczcfpdh5nf5y2ky99kmqae0tr30hgdfg88parz50cp80wd2wqqlv6saelkk5snl4wfutyxrchpzzwm8rjp3z6q7apna59z9huq4x754e5atr"), unlabelled.getChangeAddress().getAddress());
         Assertions.assertEquals("03bc95144daf15336db3456825c70ced0a4462f89aca42c4921ee7ccb2b3a44796", Utils.bytesToHex(spendPrivateKey.getPubKey()));
         Assertions.assertEquals("03ecd43b9fdad484ff57278b21878b844276ce390622d03dd0cfb4288b7e02a6f5", Utils.bytesToHex(unlabelled.getChangeAddress().getSpendKey().getPubKey()));
@@ -70,7 +70,7 @@ public class SilentPaymentScanAddressTest {
 
         SilentPaymentScanAddress spScanAddress = SilentPaymentScanAddress.from(scanPrivateKey, ECKey.fromPublicOnly(spendPrivateKey));
         String keyString = spScanAddress.toKeyString();
-        Assertions.assertTrue(keyString.startsWith("fcnscan1q"));
+        Assertions.assertTrue(keyString.startsWith("gfcnscan1q"));
     }
 
     @Test
@@ -110,7 +110,7 @@ public class SilentPaymentScanAddressTest {
 
         SilentPaymentScanAddress original = SilentPaymentScanAddress.from(scanPrivateKey, ECKey.fromPublicOnly(spendPrivateKey));
         String keyString = original.toKeyString();
-        Assertions.assertTrue(keyString.startsWith("tfcnscan1q"));
+        Assertions.assertTrue(keyString.startsWith("tgfcnscan1q"));
 
         SilentPaymentScanAddress decoded = SilentPaymentScanAddress.fromKeyString(keyString);
         Assertions.assertArrayEquals(original.getScanKey().getPrivKeyBytes(), decoded.getScanKey().getPrivKeyBytes());
