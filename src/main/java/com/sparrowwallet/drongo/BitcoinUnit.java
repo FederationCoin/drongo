@@ -14,7 +14,7 @@ public enum BitcoinUnit {
             throw new UnsupportedOperationException("Auto unit cannot convert bitcoin values");
         }
     },
-    BTC("BTC") {
+    BTC("FCN") {
         @Override
         public long getSatsValue(double unitValue) {
             return Math.round(unitValue * Transaction.SATOSHIS_PER_BITCOIN);
@@ -25,7 +25,7 @@ public enum BitcoinUnit {
             return (double)satsValue / Transaction.SATOSHIS_PER_BITCOIN;
         }
     },
-    SATOSHIS("sats") {
+    SATOSHIS("tokens") {
         @Override
         public long getSatsValue(double unitValue) {
             return (long)unitValue;
