@@ -42,4 +42,24 @@ public class ExtendedKeyTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> ExtendedKey.fromDescriptor(bitcoinTpub));
         Assertions.assertThrows(IllegalArgumentException.class, () -> ExtendedKey.Header.fromExtendedKey(bitcoinTpub));
     }
+
+    @Test
+    public void fromExtendedKeyMatchesPrintPrefixWhenBase58Fails() {
+        Network.set(Network.MAINNET);
+        Assertions.assertEquals(ExtendedKey.Header.xpub, ExtendedKey.Header.fromExtendedKey("xqiM/0"));
+    }
+
+    @Test
+    public void fromExtendedKeyRejectsOtherNetworkPrefix() {
+        Network.set(Network.MAINNET);
+        IllegalArgumentException thrown = Assertions.assertThrows(IllegalArgumentException.class,
+                () -> ExtendedKey.Header.fromExtendedKey("trB6abc"));
+        Assertions.assertTrue(thrown.getMessage().contains("trB6"));
+    }
+
+    @Test
+    public void fromExtendedKeyRejectsUnrecognisedPrefix() {
+        Network.set(Network.MAINNET);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> ExtendedKey.Header.fromExtendedKey("nope"));
+    }
 }
