@@ -39,8 +39,8 @@ public class HeaderCheckpoints {
     }
 
     private static HeaderCheckpoints load(Network network) {
-        // Blake2b is from height 1 on this chain. A difficulty-period pin starts at 2015 and would sit
-        // above activation, so every network anchors at genesis until there is history to pin.
+        // Blake2b is from height 0 on this chain. Difficulty-period pins start at 2015;
+        // until there is history to pin, every network anchors at genesis.
         return new HeaderCheckpoints(network, Collections.emptyList(), Collections.emptyList());
     }
 

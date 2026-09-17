@@ -275,12 +275,12 @@ public class HeaderChainStateTest {
         Network.set(Network.MAINNET);
 
         int activationHeight = Network.get().getBlake2bHeight();
-        Assertions.assertEquals(1, activationHeight);
+        Assertions.assertEquals(0, activationHeight);
         Assertions.assertEquals(0, Network.get().getBlake2bTargetShift());
         long unshifted = 0x1e00ffffL;
         Assertions.assertEquals(unshifted, Network.get().applyBlake2bTargetShift(unshifted));
         Assertions.assertEquals(unshifted, HeaderChainState.applyBlake2bTargetShift(activationHeight, unshifted));
-        for(int height : new int[] {activationHeight - 1, activationHeight + 1, activationHeight + 2016}) {
+        for(int height : new int[] {activationHeight + 1, activationHeight + 2016}) {
             Assertions.assertEquals(unshifted, HeaderChainState.applyBlake2bTargetShift(height, unshifted),
                     "height " + height + " is not the activation height and must take the target unchanged");
         }

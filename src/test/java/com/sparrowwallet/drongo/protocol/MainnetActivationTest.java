@@ -6,13 +6,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Blake2b is from height 1 on this chain, with target shift 0. Dummy MAIN is not launched.
+ * Blake2b is from height 0 on this chain, with target shift 0. Dummy MAIN is not launched.
  *
- * Genesis is a v1 header. The block at height 1 must be v2. A v1 header claiming the (unshifted) target
- * at that height is the cheap SHA256d forgery the version check exists to refuse.
+ * Genesis is a v2 header. A v1 header at height 1 is the cheap SHA256d forgery the version check exists to refuse.
  */
 public class MainnetActivationTest {
-    private static final int ACTIVATION_HEIGHT = 1;
+    private static final int ACTIVATION_HEIGHT = 0;
 
     @AfterEach
     public void tearDown() {
@@ -20,7 +19,7 @@ public class MainnetActivationTest {
     }
 
     @Test
-    public void testActivationIsFromHeightOneWithNoTargetShift() {
+    public void testActivationIsFromHeightZeroWithNoTargetShift() {
         Network.set(Network.MAINNET);
         Assertions.assertEquals(Integer.valueOf(ACTIVATION_HEIGHT), Network.get().getBlake2bHeight());
         Assertions.assertEquals(0, Network.get().getBlake2bTargetShift());
@@ -29,7 +28,16 @@ public class MainnetActivationTest {
     }
 
     @Test
-    public void testASha256dHeaderIsRefusedAtTheActivationHeight() {
+    public void testGenesisIsAV2Header() {
+        Network.set(Network.MAINNET);
+        BlockHeader genesis = Network.MAINNET.getGenesisHeader();
+        Assertions.assertTrue(genesis.isHeaderV2());
+        Assertions.assertEquals(BlockHeader.V2_LENGTH, genesis.bitcoinSerialize().length);
+        Assertions.assertTrue(genesis.verifyProofOfWork());
+    }
+
+    @Test
+    public void testASha256dHeaderIsRefusedAboveGenesis() {
         Network.set(Network.MAINNET);
 
         BlockHeader genesis = Network.MAINNET.getGenesisHeader();
@@ -40,25 +48,5 @@ public class MainnetActivationTest {
 
         VerificationException e = Assertions.assertThrows(VerificationException.class, () -> chainState.add(forged));
         Assertions.assertTrue(e.getMessage().contains("requires v2"), e.getMessage());
-    }
-
-    @Test
-    public void testABlake2bHeaderIsRefusedBelowTheActivationHeight() {
-        Network.set(Network.MAINNET);
-
-        // HEADER_V2_FLAG in the version word is how a v2 header is recognised. Genesis is height 0 and must stay v1.
-        byte[] genesisBytes = Network.MAINNET.getGenesisHeader().bitcoinSerialize();
-        Assertions.assertEquals(BlockHeader.V1_LENGTH, genesisBytes.length);
-        byte[] v2AtGenesis = new byte[BlockHeader.V2_LENGTH];
-        System.arraycopy(genesisBytes, 0, v2AtGenesis, 0, genesisBytes.length);
-        v2AtGenesis[3] |= (byte)0x80;
-        BlockHeader premature = new BlockHeader(v2AtGenesis);
-        Assertions.assertTrue(premature.isHeaderV2(), "the header is a v2 header");
-
-        HeaderChainState chainState = new HeaderChainState(0, Sha256Hash.ZERO_HASH, Network.MAINNET.getGenesisHeader().getDifficultyTarget());
-        // Adding genesis as v2: the chain state is anchored at height 0 with prev zero, so the next header is height 1.
-        // Below-activation is height 0 itself, which is the anchor, not added. Construct a state that would add at height 0
-        // is not possible; the rule is checked on add() for the next height. Height 0 is the genesis we compiled in as v1.
-        Assertions.assertFalse(Network.MAINNET.getGenesisHeader().isHeaderV2());
     }
 }
