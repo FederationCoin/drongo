@@ -23,11 +23,11 @@ public class NetworkIdentityTest {
     }
 
     @Test
-    public void blake2bHeightIsOneExceptRegtest() {
-        Assertions.assertEquals(Integer.valueOf(1), Network.MAINNET.getBlake2bHeight());
-        Assertions.assertEquals(Integer.valueOf(1), Network.TESTNET.getBlake2bHeight());
-        Assertions.assertEquals(Integer.valueOf(1), Network.TESTNET4.getBlake2bHeight());
-        Assertions.assertEquals(Integer.valueOf(1), Network.SIGNET.getBlake2bHeight());
+    public void blake2bHeightIsZeroExceptRegtest() {
+        Assertions.assertEquals(Integer.valueOf(0), Network.MAINNET.getBlake2bHeight());
+        Assertions.assertEquals(Integer.valueOf(0), Network.TESTNET.getBlake2bHeight());
+        Assertions.assertEquals(Integer.valueOf(0), Network.TESTNET4.getBlake2bHeight());
+        Assertions.assertEquals(Integer.valueOf(0), Network.SIGNET.getBlake2bHeight());
         Assertions.assertNull(Network.REGTEST.getBlake2bHeight());
     }
 

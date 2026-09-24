@@ -78,11 +78,11 @@ public class HeaderCheckpointsTest {
 
     @Test
     public void testGenesisHeaders() {
-        Assertions.assertEquals("0000002df35a11022728c1c1e0eedc4fd2aa586ed18b5b8e959a1f305d8ffbe6", Network.MAINNET.getGenesisHash().toString());
-        Assertions.assertEquals("000000007b820d7dd6173e5c91ac6c5851a5a914bbe228d20b99e94cdd2d7733", Network.TESTNET.getGenesisHash().toString());
-        Assertions.assertEquals("7540675e579ae63ff4628473bab9e7098d1e30d24c344f59855785989677dbc1", Network.REGTEST.getGenesisHash().toString());
-        Assertions.assertEquals("000001157c04349393694e070e3fc59e8b18e57dc13bea6d5568a1849bd2c4a6", Network.SIGNET.getGenesisHash().toString());
-        Assertions.assertEquals("00000000518588d27956912b3e6c5a310067c1d43a95290bd84b5d4f732d1622", Network.TESTNET4.getGenesisHash().toString());
+        Assertions.assertEquals("000000a33f3356996804bbe8bee34a543d712c484b60a9dd9952f44183aaa590", Network.MAINNET.getGenesisHash().toString());
+        Assertions.assertEquals("0000000002407773e5e3fc8289f00235f3dc7dd12a7eedbb60e16f38eff34f64", Network.TESTNET.getGenesisHash().toString());
+        Assertions.assertEquals("751a65c1c058cce240ab96f65b5f1bc91783fcdeade3079f1240d64d1929bd30", Network.REGTEST.getGenesisHash().toString());
+        Assertions.assertEquals("000001e7209f5488417bb4dcc98567233da38d48cb553bd649cd3dd87ae586da", Network.SIGNET.getGenesisHash().toString());
+        Assertions.assertEquals("00000000017c20aa7d1f3af2bf025a0d6dcf8d0a6483f4d2ff171e8ff564c26e", Network.TESTNET4.getGenesisHash().toString());
 
         for(Network network : Network.values()) {
             Network.set(network);
@@ -124,19 +124,16 @@ public class HeaderCheckpointsTest {
     }
 
     /**
-     * A pinned header above the activation height would be describing headers this wallet must not trust.
-     * Blake2b is from height 1, so the only valid pin is genesis.
+     * Blake2b is from height 0, so the only valid pin is genesis.
      */
     @Test
-    public void testNoPinnedHeaderSitsAboveTheActivationHeight() {
+    public void testOnlyGenesisIsPinned() {
         for(Network network : Network.values()) {
             Integer activationHeight = network.getBlake2bHeight();
             if(activationHeight != null) {
                 Network.set(network);
                 int maxHeight = HeaderCheckpoints.get(network).getMaxHeight();
-                Assertions.assertTrue(maxHeight < activationHeight,
-                        network + " pins height " + maxHeight + ", at or above its activation height " + activationHeight
-                                + ", so the pin comes from software that has not adopted the fork");
+                Assertions.assertEquals(0, maxHeight, network + " pins height " + maxHeight);
                 Network.set(null);
             }
         }
