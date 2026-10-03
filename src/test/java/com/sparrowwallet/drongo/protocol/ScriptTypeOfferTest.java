@@ -1,5 +1,8 @@
 package com.sparrowwallet.drongo.protocol;
 
+import com.sparrowwallet.drongo.Network;
+import com.sparrowwallet.drongo.address.Address;
+import com.sparrowwallet.drongo.address.MlDsaAddress;
 import com.sparrowwallet.drongo.policy.PolicyType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -8,16 +11,18 @@ import java.util.List;
 
 public class ScriptTypeOfferTest {
     @Test
-    public void newWalletsOfferNativeSegwitOnly() {
-        Assertions.assertEquals(List.of(ScriptType.P2WPKH), ScriptType.getAddressableScriptTypes(PolicyType.SINGLE_HD));
-        Assertions.assertEquals(List.of(ScriptType.P2WSH), ScriptType.getAddressableScriptTypes(PolicyType.MULTI_HD));
+    public void newWalletsOfferMlDsaOnly() {
+        Assertions.assertEquals(List.of(ScriptType.MLDSA_SINGLE), ScriptType.getAddressableScriptTypes(PolicyType.SINGLE_HD));
+        Assertions.assertEquals(List.of(ScriptType.MLDSA_MULTI), ScriptType.getAddressableScriptTypes(PolicyType.MULTI_HD));
         Assertions.assertTrue(ScriptType.getAddressableScriptTypes(PolicyType.SINGLE_SP).isEmpty());
     }
 
     @Test
     public void existingTypesRemainValidForPolicy() {
-        Assertions.assertTrue(ScriptType.getScriptTypesForPolicyType(PolicyType.SINGLE_HD).contains(ScriptType.P2TR));
-        Assertions.assertTrue(ScriptType.getScriptTypesForPolicyType(PolicyType.SINGLE_HD).contains(ScriptType.P2PKH));
+        Assertions.assertTrue(ScriptType.P2WPKH.isAllowed(PolicyType.SINGLE_HD));
+        Assertions.assertTrue(ScriptType.P2PKH.isAllowed(PolicyType.SINGLE_HD));
+        Assertions.assertFalse(ScriptType.P2WPKH.isOfferedForNewWallets());
+        Assertions.assertFalse(ScriptType.getScriptTypesForPolicyType(PolicyType.SINGLE_HD).contains(ScriptType.P2TR));
         Assertions.assertTrue(ScriptType.P2TR.isParkedOnThisChain());
         Assertions.assertFalse(ScriptType.P2WPKH.isParkedOnThisChain());
         Assertions.assertTrue(ScriptType.P2A.isParkedOnThisChain());
@@ -35,8 +40,19 @@ public class ScriptTypeOfferTest {
     }
 
     @Test
-    public void nativeSegwitCanBeSent() {
+    public void heritageSegwitCannotBeSent() {
         com.sparrowwallet.drongo.address.P2WPKHAddress nativeSegwit = new com.sparrowwallet.drongo.address.P2WPKHAddress(new byte[20]);
-        Assertions.assertDoesNotThrow(nativeSegwit::requireSendable);
+        Assertions.assertThrows(com.sparrowwallet.drongo.address.InvalidAddressException.class, nativeSegwit::requireSendable);
+    }
+
+    @Test
+    public void witnessV0ProgramIsMlDsaAddress() throws Exception {
+        byte[] program = new byte[32];
+        program[0] = 0x2a;
+        MlDsaAddress created = new MlDsaAddress(program);
+        Address parsed = Address.fromString(Network.TESTNET, created.getAddress(Network.TESTNET));
+        Assertions.assertInstanceOf(MlDsaAddress.class, parsed);
+        Assertions.assertArrayEquals(program, parsed.getData());
+        Assertions.assertDoesNotThrow(parsed::requireSendable);
     }
 }

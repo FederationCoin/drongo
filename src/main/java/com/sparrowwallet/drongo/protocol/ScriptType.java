@@ -6,6 +6,7 @@ import com.sparrowwallet.drongo.Utils;
 import com.sparrowwallet.drongo.address.*;
 import com.sparrowwallet.drongo.crypto.ChildNumber;
 import com.sparrowwallet.drongo.crypto.ECKey;
+import com.sparrowwallet.drongo.crypto.MlDsa44;
 import com.sparrowwallet.drongo.policy.PolicyType;
 
 import java.util.*;
@@ -1405,7 +1406,10 @@ public enum ScriptType {
 
         @Override
         public TransactionInput addSpendingInput(PolicyType policyType, Transaction transaction, TransactionOutput prevOutput, ECKey pubKey, TransactionSignature signature) {
-            throw new ProtocolException("Use MlDsaSpend.sendSingleKey");
+            byte[] pubkey = new byte[MlDsa44.PUBLIC_KEY_SIZE];
+            byte[] sig = new byte[MlDsa44.SIGNATURE_SIZE];
+            TransactionWitness witness = MlDsaSpend.sendSingleKey(transaction, pubkey, sig);
+            return transaction.addInput(prevOutput.getHash(), prevOutput.getIndex(), new Script(new byte[0]), witness);
         }
 
         @Override
@@ -1501,7 +1505,18 @@ public enum ScriptType {
 
         @Override
         public TransactionInput addMultisigSpendingInput(PolicyType policyType, Transaction transaction, TransactionOutput prevOutput, int threshold, Map<ECKey, TransactionSignature> pubKeySignatures) {
-            throw new ProtocolException("Use MlDsaSpend.sendMultisig");
+            List<byte[]> slots = new ArrayList<>();
+            int signed = 0;
+            for(Map.Entry<ECKey, TransactionSignature> entry : pubKeySignatures.entrySet()) {
+                if(entry.getValue() != null && signed < threshold) {
+                    slots.add(new byte[MlDsa44.PUBLIC_KEY_SIZE + MlDsa44.SIGNATURE_SIZE]);
+                    signed++;
+                } else {
+                    slots.add(new byte[32]);
+                }
+            }
+            TransactionWitness witness = MlDsaSpend.sendMultisig(transaction, slots);
+            return transaction.addInput(prevOutput.getHash(), prevOutput.getIndex(), new Script(new byte[0]), witness);
         }
 
         @Override

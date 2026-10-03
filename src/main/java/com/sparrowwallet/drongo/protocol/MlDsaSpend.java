@@ -22,9 +22,17 @@ public final class MlDsaSpend {
 
     public static TransactionWitness sendMultisig(Transaction transaction, List<byte[]> slots) {
         List<byte[]> stack = new ArrayList<>();
+        int signed = MlDsa44.PUBLIC_KEY_SIZE + MlDsa44.SIGNATURE_SIZE;
         for(byte[] slot : slots) {
-            if(slot.length == 32 || slot.length == MlDsa44.PUBLIC_KEY_SIZE || slot.length == MlDsa44.SIGNATURE_SIZE) {
+            if(slot.length == 32) {
                 stack.add(slot);
+            } else if(slot.length == signed) {
+                byte[] pubkey = new byte[MlDsa44.PUBLIC_KEY_SIZE];
+                byte[] signature = new byte[MlDsa44.SIGNATURE_SIZE];
+                System.arraycopy(slot, 0, pubkey, 0, pubkey.length);
+                System.arraycopy(slot, pubkey.length, signature, 0, signature.length);
+                stack.add(pubkey);
+                stack.add(signature);
             } else {
                 throw new ProtocolException("ML-DSA multisig slot length " + slot.length);
             }
