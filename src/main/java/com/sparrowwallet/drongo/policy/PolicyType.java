@@ -5,7 +5,10 @@ import com.sparrowwallet.drongo.protocol.ScriptType;
 import static com.sparrowwallet.drongo.protocol.ScriptType.*;
 
 public enum PolicyType {
-    SINGLE_HD("Single Signature HD", "Single Signature HD", P2WPKH), MULTI_HD("Multi Signature HD", "Multi Signature HD", P2WSH), SINGLE_SP("Single Signature SP", "Single Signature SP (Silent Payments)", P2TR);
+    SINGLE_HD("Single Signature HD", "Single Signature HD", MLDSA_SINGLE),
+    MULTI_HD("Multi Signature HD", "Multi Signature HD", MLDSA_MULTI),
+    // Heritage: silent payments / Taproot. Not a spend on this chain.
+    SINGLE_SP("Single Signature SP", "Single Signature SP (Silent Payments)", P2TR);
 
     private final String name;
     private final String description;

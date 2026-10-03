@@ -569,6 +569,16 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
         this.storedBlockHeight = storedBlockHeight;
     }
 
+    private long tipAgeMs;
+
+    public long getTipAgeMs() {
+        return tipAgeMs;
+    }
+
+    public void setTipAgeMs(long tipAgeMs) {
+        this.tipAgeMs = tipAgeMs;
+    }
+
     public Integer gapLimit() {
         return gapLimit;
     }
@@ -892,11 +902,11 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public Map<BlockTransactionHashIndex, WalletNode> getSpendableUtxos() {
-        return getWalletTxos(List.of(new SpentTxoFilter(), new FrozenTxoFilter(), new CoinbaseTxoFilter(this)));
+        return getWalletTxos(List.of(new SpentTxoFilter(), new FrozenTxoFilter(), new CoinbaseTxoFilter(this), new StallTxoFilter(this, tipAgeMs, 1)));
     }
 
     public Map<BlockTransactionHashIndex, WalletNode> getSpendableUtxos(BlockTransaction replacedTransaction) {
-        return getWalletTxos(List.of(new SpentTxoFilter(replacedTransaction == null ? null : replacedTransaction.getHash()), new FrozenTxoFilter(), new CoinbaseTxoFilter(this)));
+        return getWalletTxos(List.of(new SpentTxoFilter(replacedTransaction == null ? null : replacedTransaction.getHash()), new FrozenTxoFilter(), new CoinbaseTxoFilter(this), new StallTxoFilter(this, tipAgeMs, 1)));
     }
 
     public Map<BlockTransactionHashIndex, WalletNode> getWalletTxos(Collection<TxoFilter> txoFilters) {

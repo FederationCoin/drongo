@@ -7,6 +7,7 @@ import com.sparrowwallet.drongo.Utils;
 import com.sparrowwallet.drongo.bip47.PaymentAddress;
 import com.sparrowwallet.drongo.bip47.PaymentCode;
 import com.sparrowwallet.drongo.crypto.*;
+import com.sparrowwallet.drongo.crypto.MlDsa44;
 import com.sparrowwallet.drongo.policy.PolicyType;
 import com.sparrowwallet.drongo.protocol.ScriptType;
 import com.sparrowwallet.drongo.silentpayments.SilentPaymentScanAddress;
@@ -493,6 +494,13 @@ public class Keystore extends Persistable {
         return copy;
     }
 
+    public MlDsa44.Keypair getMlDsaKeypair(int index) throws MnemonicException {
+        if(seed == null) {
+            throw new IllegalArgumentException("Keystore does not contain a seed for ML-DSA CHILD derivation");
+        }
+        return MlDsa44.keygen(MlDsa44.childSeed(seed.getSeedBytes(), index));
+    }
+
     public static Keystore fromSeed(DeterministicSeed seed, PolicyType policyType, List<ChildNumber> derivation) throws MnemonicException {
         Keystore keystore = new Keystore();
         keystore.setSeed(seed);
@@ -518,10 +526,8 @@ public class Keystore extends Persistable {
         keystore.setKeyDerivation(new KeyDerivation(masterFingerprint, KeyDerivation.writePath(derivation)));
 
         if(policyType == PolicyType.SINGLE_SP) {
-            DeterministicKey scanKey = xprv.getKey(KeyDerivation.getBip352ScanDerivation(derivation));
-            DeterministicKey spendKey = xprv.getKey(KeyDerivation.getBip352SpendDerivation(derivation));
-            SilentPaymentScanAddress spScanAddress = new SilentPaymentScanAddress(ECKey.fromPrivate(scanKey.getPrivKey()), ECKey.fromPublicOnly(spendKey));
-            keystore.setSilentPaymentScanAddress(spScanAddress);
+            // Heritage: silent payments / Taproot. Not a spend on this chain.
+            return;
         } else {
             DeterministicKey derivedKey = xprv.getKey(derivation);
             DeterministicKey derivedKeyPublicOnly = derivedKey.dropPrivateBytes().dropParent();
