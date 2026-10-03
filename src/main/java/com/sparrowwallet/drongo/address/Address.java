@@ -52,6 +52,9 @@ public abstract class Address {
         if(getScriptType().isParkedOnThisChain()) {
             throw new InvalidAddressException(ScriptType.TAPROOT_NOT_ENABLED_MESSAGE);
         }
+        if(!(this instanceof MlDsaAddress) && !getScriptType().isOfferedForNewWallets()) {
+            throw new InvalidAddressException("This chain pays ML-DSA-44 witness v0 programs only");
+        }
     }
 
     public byte[] getOutputScriptData() {
@@ -129,7 +132,7 @@ public abstract class Address {
                                 return new P2WPKHAddress(witnessProgram);
                             }
                             if(witnessProgram.length == 32) {
-                                return new P2WSHAddress(witnessProgram);
+                                return new MlDsaAddress(witnessProgram);
                             }
                         } else if(witnessVersion == 1) {
                             if(data.encoding != Bech32.Encoding.BECH32M) {
