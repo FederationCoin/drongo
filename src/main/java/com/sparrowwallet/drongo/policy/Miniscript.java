@@ -7,6 +7,7 @@ public class Miniscript {
     private static final Pattern KEYHASH_PATTERN = Pattern.compile("pkh?\\(");
     private static final Pattern TAPROOT_PATTERN = Pattern.compile("tr\\(");
     private static final Pattern SILENT_PAYMENTS_PATTERN = Pattern.compile("sp\\(");
+    private static final Pattern MLDSA_SINGLE_PATTERN = Pattern.compile("mldsa\\(");
     private static final Pattern MULTI_PATTERN = Pattern.compile("multi\\((\\d+)");
 
     private String script;
@@ -36,6 +37,11 @@ public class Miniscript {
 
         Matcher silentPaymentsMatcher = SILENT_PAYMENTS_PATTERN.matcher(script);
         if(silentPaymentsMatcher.find()) {
+            return 1;
+        }
+
+        Matcher mldsaMatcher = MLDSA_SINGLE_PATTERN.matcher(script);
+        if(mldsaMatcher.find()) {
             return 1;
         }
 
