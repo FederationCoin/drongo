@@ -7,7 +7,7 @@ public class Miniscript {
     private static final Pattern KEYHASH_PATTERN = Pattern.compile("pkh?\\(");
     private static final Pattern TAPROOT_PATTERN = Pattern.compile("tr\\(");
     private static final Pattern SILENT_PAYMENTS_PATTERN = Pattern.compile("sp\\(");
-    private static final Pattern MLDSA_SINGLE_PATTERN = Pattern.compile("mldsa\\(");
+    private static final Pattern MLDSA_SINGLE_PATTERN = Pattern.compile("mldsa87\\(|mldsa\\(");
     private static final Pattern MULTI_PATTERN = Pattern.compile("multi\\((\\d+)");
 
     private String script;

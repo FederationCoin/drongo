@@ -47,6 +47,14 @@ public class PolicyTest {
         Policy mldsaMulti = Policy.getPolicy(PolicyType.MULTI_HD, ScriptType.MLDSA_MULTI, List.of(keystore1, keystore2, keystore3), 2);
         Assertions.assertEquals("mldsamulti(sortedmulti(2,keystore1,keystore2,keystore3))", mldsaMulti.getMiniscript().toString().toLowerCase(Locale.ROOT));
         Assertions.assertEquals(2, mldsaMulti.getNumSignaturesRequired());
+
+        Policy mldsa87 = Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.MLDSA87_SINGLE, List.of(keystore1), 1);
+        Assertions.assertEquals("mldsa87(keystore1)", mldsa87.getMiniscript().toString().toLowerCase(Locale.ROOT));
+        Assertions.assertEquals(1, mldsa87.getNumSignaturesRequired());
+
+        Policy mldsa87Multi = Policy.getPolicy(PolicyType.MULTI_HD, ScriptType.MLDSA87_MULTI, List.of(keystore1, keystore2, keystore3), 2);
+        Assertions.assertEquals("mldsa87multi(sortedmulti(2,keystore1,keystore2,keystore3))", mldsa87Multi.getMiniscript().toString().toLowerCase(Locale.ROOT));
+        Assertions.assertEquals(2, mldsa87Multi.getNumSignaturesRequired());
     }
 
     @Test

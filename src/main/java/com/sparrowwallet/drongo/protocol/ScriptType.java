@@ -1528,6 +1528,192 @@ public enum ScriptType {
         public List<PolicyType> getAllowedPolicyTypes() {
             return List.of(MULTI_HD);
         }
+    },
+    MLDSA87_SINGLE("MLDSA87", "Dilithium 87 single key", "m/0'") {
+        @Override
+        public Address getAddress(byte[] program) {
+            return new MlDsaAddress(program);
+        }
+
+        @Override
+        public Address getAddress(PolicyType policyType, ECKey key) {
+            throw new ProtocolException("ML-DSA-87 single-key address is a KEY-tagged program, not an ECKey");
+        }
+
+        @Override
+        public Address getAddress(Script script) {
+            return getAddress(getHashFromScript(script));
+        }
+
+        @Override
+        public Script getOutputScript(byte[] program) {
+            return MLDSA_SINGLE.getOutputScript(program);
+        }
+
+        @Override
+        public Script getOutputScript(PolicyType policyType, ECKey key) {
+            throw new ProtocolException("ML-DSA-87 output script is a KEY-tagged program, not an ECKey");
+        }
+
+        @Override
+        public Script getOutputScript(Script script) {
+            return getOutputScript(getHashFromScript(script));
+        }
+
+        @Override
+        public String getOutputDescriptor(ECKey key) {
+            throw new ProtocolException("Bitcoin output descriptors are not a spend on this chain");
+        }
+
+        @Override
+        public String getOutputDescriptor(Script script) {
+            throw new ProtocolException("Bitcoin output descriptors are not a spend on this chain");
+        }
+
+        @Override
+        public String getDescriptor() {
+            return "mldsa87(";
+        }
+
+        @Override
+        public boolean isScriptType(Script script) {
+            return MLDSA_SINGLE.isScriptType(script);
+        }
+
+        @Override
+        public byte[] getHashFromScript(Script script) {
+            return script.chunks.get(1).data;
+        }
+
+        @Override
+        public Script getScriptSig(PolicyType policyType, Script scriptPubKey, ECKey pubKey, TransactionSignature signature) {
+            return new Script(new byte[0]);
+        }
+
+        @Override
+        public TransactionInput addSpendingInput(PolicyType policyType, Transaction transaction, TransactionOutput prevOutput, ECKey pubKey, TransactionSignature signature) {
+            byte[] pubkey = new byte[com.sparrowwallet.drongo.crypto.MlDsa87.PUBLIC_KEY_SIZE];
+            byte[] sig = new byte[com.sparrowwallet.drongo.crypto.MlDsa87.SIGNATURE_SIZE];
+            TransactionWitness witness = MlDsa87Spend.send(transaction, pubkey, sig);
+            return transaction.addInput(prevOutput.getHash(), prevOutput.getIndex(), new Script(new byte[0]), witness);
+        }
+
+        @Override
+        public Script getMultisigScriptSig(PolicyType policyType, Script scriptPubKey, int threshold, Map<ECKey, TransactionSignature> pubKeySignatures) {
+            throw new ProtocolException("MLDSA87_SINGLE is not a multisig script type");
+        }
+
+        @Override
+        public TransactionInput addMultisigSpendingInput(PolicyType policyType, Transaction transaction, TransactionOutput prevOutput, int threshold, Map<ECKey, TransactionSignature> pubKeySignatures) {
+            throw new ProtocolException("Use MlDsa87Multisig.send");
+        }
+
+        @Override
+        public TransactionSignature.Type getSignatureType() {
+            return TransactionSignature.Type.ECDSA;
+        }
+
+        @Override
+        public List<PolicyType> getAllowedPolicyTypes() {
+            return List.of(SINGLE_HD);
+        }
+    },
+    MLDSA87_MULTI("MLDSA87-MULTI", "Dilithium 87 multisig", "m/0'") {
+        @Override
+        public Address getAddress(byte[] program) {
+            return new MlDsaAddress(program);
+        }
+
+        @Override
+        public Address getAddress(PolicyType policyType, ECKey key) {
+            throw new ProtocolException("ML-DSA-87 policy address is a POLICY-tagged program, not an ECKey");
+        }
+
+        @Override
+        public Address getAddress(Script script) {
+            return getAddress(getHashFromScript(script));
+        }
+
+        @Override
+        public Script getOutputScript(byte[] program) {
+            return MLDSA_SINGLE.getOutputScript(program);
+        }
+
+        @Override
+        public Script getOutputScript(PolicyType policyType, ECKey key) {
+            throw new ProtocolException("ML-DSA-87 policy output is a POLICY-tagged program, not an ECKey");
+        }
+
+        @Override
+        public Script getOutputScript(Script script) {
+            return getOutputScript(getHashFromScript(script));
+        }
+
+        @Override
+        public String getOutputDescriptor(ECKey key) {
+            throw new ProtocolException("Bitcoin output descriptors are not a spend on this chain");
+        }
+
+        @Override
+        public String getOutputDescriptor(Script script) {
+            throw new ProtocolException("Bitcoin output descriptors are not a spend on this chain");
+        }
+
+        @Override
+        public String getDescriptor() {
+            return "mldsa87multi(";
+        }
+
+        @Override
+        public boolean isScriptType(Script script) {
+            return MLDSA_SINGLE.isScriptType(script);
+        }
+
+        @Override
+        public byte[] getHashFromScript(Script script) {
+            return script.chunks.get(1).data;
+        }
+
+        @Override
+        public Script getScriptSig(PolicyType policyType, Script scriptPubKey, ECKey pubKey, TransactionSignature signature) {
+            return new Script(new byte[0]);
+        }
+
+        @Override
+        public TransactionInput addSpendingInput(PolicyType policyType, Transaction transaction, TransactionOutput prevOutput, ECKey pubKey, TransactionSignature signature) {
+            throw new ProtocolException("Use MlDsa87Multisig.send");
+        }
+
+        @Override
+        public Script getMultisigScriptSig(PolicyType policyType, Script scriptPubKey, int threshold, Map<ECKey, TransactionSignature> pubKeySignatures) {
+            throw new ProtocolException("Use MlDsa87Multisig.send");
+        }
+
+        @Override
+        public TransactionInput addMultisigSpendingInput(PolicyType policyType, Transaction transaction, TransactionOutput prevOutput, int threshold, Map<ECKey, TransactionSignature> pubKeySignatures) {
+            List<byte[]> slots = new ArrayList<>();
+            int signed = 0;
+            for(Map.Entry<ECKey, TransactionSignature> entry : pubKeySignatures.entrySet()) {
+                if(entry.getValue() != null && signed < threshold) {
+                    slots.add(new byte[com.sparrowwallet.drongo.crypto.MlDsa87.PUBLIC_KEY_SIZE + com.sparrowwallet.drongo.crypto.MlDsa87.SIGNATURE_SIZE]);
+                    signed++;
+                } else {
+                    slots.add(new byte[32]);
+                }
+            }
+            TransactionWitness witness = MlDsa87Multisig.send(transaction, slots);
+            return transaction.addInput(prevOutput.getHash(), prevOutput.getIndex(), new Script(new byte[0]), witness);
+        }
+
+        @Override
+        public TransactionSignature.Type getSignatureType() {
+            return TransactionSignature.Type.ECDSA;
+        }
+
+        @Override
+        public List<PolicyType> getAllowedPolicyTypes() {
+            return List.of(MULTI_HD);
+        }
     };
 
     private final String name;
@@ -1617,7 +1803,19 @@ public enum ScriptType {
      * Taproot, and anchors stay parseable for existing files but are not listed.
      */
     public boolean isOfferedForNewWallets() {
-        return this == MLDSA_SINGLE || this == MLDSA_MULTI;
+        return this == MLDSA87_SINGLE || this == MLDSA87_MULTI || this == MLDSA_SINGLE || this == MLDSA_MULTI || this == P2WPKH;
+    }
+
+    public boolean isDilithium() {
+        return this == MLDSA_SINGLE || this == MLDSA_MULTI || this == MLDSA87_SINGLE || this == MLDSA87_MULTI;
+    }
+
+    public boolean isDilithium87() {
+        return this == MLDSA87_SINGLE || this == MLDSA87_MULTI;
+    }
+
+    public boolean needsQuantumWarning() {
+        return this == P2WPKH;
     }
 
     /**
@@ -1702,11 +1900,11 @@ public enum ScriptType {
 
     public static final String TAPROOT_NOT_ENABLED_MESSAGE = "Taproot is not enabled on this chain";
 
-    public static final ScriptType[] ADDRESSABLE_TYPES = {P2PKH, P2SH, P2SH_P2WPKH, P2SH_P2WSH, P2WPKH, P2WSH, P2TR, P2A, MLDSA_SINGLE, MLDSA_MULTI};
+    public static final ScriptType[] ADDRESSABLE_TYPES = {P2PKH, P2SH, P2SH_P2WPKH, P2SH_P2WSH, P2WPKH, P2WSH, P2TR, P2A, MLDSA_SINGLE, MLDSA_MULTI, MLDSA87_SINGLE, MLDSA87_MULTI};
 
     public static final ScriptType[] NON_WITNESS_TYPES = {P2PK, P2PKH, P2SH};
 
-    public static final ScriptType[] WITNESS_TYPES = {P2SH_P2WPKH, P2SH_P2WSH, P2WPKH, P2WSH, P2TR, P2A, MLDSA_SINGLE, MLDSA_MULTI};
+    public static final ScriptType[] WITNESS_TYPES = {P2SH_P2WPKH, P2SH_P2WSH, P2WPKH, P2WSH, P2TR, P2A, MLDSA_SINGLE, MLDSA_MULTI, MLDSA87_SINGLE, MLDSA87_MULTI};
 
     public static final byte[] ANCHOR_WITNESS_PROGRAM = new byte[]{78, 115};
 
