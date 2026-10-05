@@ -407,6 +407,13 @@ public class WalletTest {
     }
 
     @Test
+    public void getNodeDoesNotRequireAScriptType() {
+        Wallet wallet = new Wallet();
+        WalletNode node = Assertions.assertDoesNotThrow(() -> wallet.getNode(KeyPurpose.RECEIVE));
+        Assertions.assertNotNull(node);
+    }
+
+    @Test
     public void testAddSilentPaymentChildAttachesDetachedLabel() {
         Wallet wallet = buildValidSpWallet();
         WalletNode purposeNode = wallet.getNode(KeyPurpose.RECEIVE);
@@ -460,6 +467,23 @@ public class WalletTest {
             Wallet wallet = buildMultisigWallet(scriptType, 16);
             wallet.checkWallet();
             Assertions.assertNotNull(new WalletNode(wallet, KeyPurpose.RECEIVE, 0).getAddress());
+        }
+    }
+
+    @Test
+    public void maxCosignersDilithiumMultisig() throws MnemonicException, InvalidWalletException {
+        Assertions.assertEquals(MlDsa44.MAX_KEYS, ScriptType.MLDSA_MULTI.getMaxCosigners());
+        Assertions.assertEquals(com.sparrowwallet.drongo.crypto.MlDsa87.MAX_KEYS, ScriptType.MLDSA87_MULTI.getMaxCosigners());
+
+        for(ScriptType scriptType : List.of(ScriptType.MLDSA_MULTI, ScriptType.MLDSA87_MULTI)) {
+            Wallet wallet = buildMultisigWallet(scriptType, scriptType.getMaxCosigners());
+            wallet.checkWallet();
+            Assertions.assertNotNull(new WalletNode(wallet, KeyPurpose.RECEIVE, 0).getAddress());
+
+            Wallet oversize = buildMultisigWallet(scriptType, scriptType.getMaxCosigners() + 1);
+            InvalidWalletException e = Assertions.assertThrows(InvalidWalletException.class, oversize::checkWallet);
+            Assertions.assertTrue(e.getMessage().contains("maximum of " + scriptType.getMaxCosigners() + " cosigners"));
+            Assertions.assertFalse(oversize.isValid());
         }
     }
 

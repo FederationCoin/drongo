@@ -53,7 +53,7 @@ public abstract class Address {
             throw new InvalidAddressException(ScriptType.TAPROOT_NOT_ENABLED_MESSAGE);
         }
         if(!(this instanceof MlDsaAddress) && !getScriptType().isOfferedForNewWallets()) {
-            throw new InvalidAddressException("This chain pays ML-DSA-44 witness v0 programs only");
+            throw new InvalidAddressException("This chain pays Dilithium 87, Dilithium 44, or secp witness v0 programs");
         }
     }
 
@@ -68,11 +68,11 @@ public abstract class Address {
             return false;
         }
 
-        return Arrays.equals(data, address.data) && getVersion(Network.get()) == address.getVersion(Network.get()) && getScriptType() == address.getScriptType();
+        return Arrays.equals(data, address.data) && getVersion(Network.get()) == address.getVersion(Network.get());
     }
 
     public int hashCode() {
-        return Arrays.hashCode(data) + getVersion(Network.get()) + getScriptType().hashCode();
+        return Arrays.hashCode(data) + getVersion(Network.get());
     }
 
     public static Address fromString(String address) throws InvalidAddressException {
