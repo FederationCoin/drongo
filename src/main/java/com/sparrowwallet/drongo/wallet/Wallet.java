@@ -677,7 +677,9 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
             purposeNode = optionalPurposeNode.get();
         }
 
-        if(scriptType.isDilithium()) {
+        //A wallet being built from a signed PSBT has no script type yet. The Dilithium
+        //look-ahead needs one; everything else fills the same way as before that check.
+        if(scriptType != null && scriptType.isDilithium()) {
             if(getKeystores().stream().anyMatch(Keystore::hasPrivateKey)) {
                 purposeNode.fillToIndex(this, getLookAheadIndex(purposeNode));
             }
@@ -2457,7 +2459,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
             throw new InvalidWalletException("No keystores specified");
         }
 
-        if(!ScriptType.getScriptTypesForPolicyType(policyType).contains(scriptType)) {
+        if(!scriptType.isAllowed(policyType)) {
             throw new InvalidWalletException("Script type of " + scriptType + " is not valid for a policy type of " + policyType);
         }
 

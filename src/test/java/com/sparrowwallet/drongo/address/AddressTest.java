@@ -94,6 +94,8 @@ public class AddressTest {
             String strAddress = address.toString();
             Address checkAddress = Address.fromString(strAddress);
             Assertions.assertArrayEquals(values32, checkAddress.getData());
+            Assertions.assertEquals(address, checkAddress,
+                    "a witness v0 32-byte program is the same payment after parse, even when parse answers Dilithium");
         }
     }
 

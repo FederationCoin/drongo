@@ -1528,6 +1528,11 @@ public enum ScriptType {
         public List<PolicyType> getAllowedPolicyTypes() {
             return List.of(MULTI_HD);
         }
+
+        @Override
+        public int getMaxCosigners() {
+            return MlDsa44.MAX_KEYS;
+        }
     },
     MLDSA87_SINGLE("MLDSA87", "Dilithium 87 single key", "m/0'") {
         @Override
@@ -1713,6 +1718,11 @@ public enum ScriptType {
         @Override
         public List<PolicyType> getAllowedPolicyTypes() {
             return List.of(MULTI_HD);
+        }
+
+        @Override
+        public int getMaxCosigners() {
+            return com.sparrowwallet.drongo.crypto.MlDsa87.MAX_KEYS;
         }
     };
 

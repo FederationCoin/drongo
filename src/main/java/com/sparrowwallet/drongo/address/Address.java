@@ -68,11 +68,11 @@ public abstract class Address {
             return false;
         }
 
-        return Arrays.equals(data, address.data) && getVersion(Network.get()) == address.getVersion(Network.get()) && getScriptType() == address.getScriptType();
+        return Arrays.equals(data, address.data) && getVersion(Network.get()) == address.getVersion(Network.get());
     }
 
     public int hashCode() {
-        return Arrays.hashCode(data) + getVersion(Network.get()) + getScriptType().hashCode();
+        return Arrays.hashCode(data) + getVersion(Network.get());
     }
 
     public static Address fromString(String address) throws InvalidAddressException {

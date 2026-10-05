@@ -13,7 +13,6 @@ import com.sparrowwallet.drongo.policy.PolicyType;
 import com.sparrowwallet.drongo.protocol.*;
 import com.sparrowwallet.drongo.silentpayments.SilentPaymentScanAddress;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -408,7 +407,13 @@ public class WalletTest {
     }
 
     @Test
-    @Disabled("heritage silent-payment child labels; Taproot/SP is not a spend on this chain")
+    public void getNodeDoesNotRequireAScriptType() {
+        Wallet wallet = new Wallet();
+        WalletNode node = Assertions.assertDoesNotThrow(() -> wallet.getNode(KeyPurpose.RECEIVE));
+        Assertions.assertNotNull(node);
+    }
+
+    @Test
     public void testAddSilentPaymentChildAttachesDetachedLabel() {
         Wallet wallet = buildValidSpWallet();
         WalletNode purposeNode = wallet.getNode(KeyPurpose.RECEIVE);
@@ -434,7 +439,6 @@ public class WalletTest {
     }
 
     @Test
-    @Disabled("heritage P2SH cosigner limits; secp256k1 P2SH is not a spend on this chain")
     public void maxCosignersP2shTest() throws MnemonicException, InvalidWalletException {
         //A 15 cosigner P2SH redeem script is 513 bytes and spendable, so it must keep working
         Wallet wallet = buildMultisigWallet(ScriptType.P2SH, 15);
@@ -457,13 +461,29 @@ public class WalletTest {
     }
 
     @Test
-    @Disabled("heritage P2WSH cosigner limits; secp256k1 P2WSH is not a spend on this chain")
     public void maxCosignersSegwitTest() throws MnemonicException, InvalidWalletException {
         //The witness script is exempt from the maximum script element size, so 16 cosigners remains valid for both segwit types
         for(ScriptType scriptType : List.of(ScriptType.P2WSH, ScriptType.P2SH_P2WSH)) {
             Wallet wallet = buildMultisigWallet(scriptType, 16);
             wallet.checkWallet();
             Assertions.assertNotNull(new WalletNode(wallet, KeyPurpose.RECEIVE, 0).getAddress());
+        }
+    }
+
+    @Test
+    public void maxCosignersDilithiumMultisig() throws MnemonicException, InvalidWalletException {
+        Assertions.assertEquals(MlDsa44.MAX_KEYS, ScriptType.MLDSA_MULTI.getMaxCosigners());
+        Assertions.assertEquals(com.sparrowwallet.drongo.crypto.MlDsa87.MAX_KEYS, ScriptType.MLDSA87_MULTI.getMaxCosigners());
+
+        for(ScriptType scriptType : List.of(ScriptType.MLDSA_MULTI, ScriptType.MLDSA87_MULTI)) {
+            Wallet wallet = buildMultisigWallet(scriptType, scriptType.getMaxCosigners());
+            wallet.checkWallet();
+            Assertions.assertNotNull(new WalletNode(wallet, KeyPurpose.RECEIVE, 0).getAddress());
+
+            Wallet oversize = buildMultisigWallet(scriptType, scriptType.getMaxCosigners() + 1);
+            InvalidWalletException e = Assertions.assertThrows(InvalidWalletException.class, oversize::checkWallet);
+            Assertions.assertTrue(e.getMessage().contains("maximum of " + scriptType.getMaxCosigners() + " cosigners"));
+            Assertions.assertFalse(oversize.isValid());
         }
     }
 
