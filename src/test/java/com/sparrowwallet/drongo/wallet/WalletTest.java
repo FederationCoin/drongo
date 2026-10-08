@@ -664,4 +664,22 @@ public class WalletTest {
 
         return transaction;
     }
+
+    @Test
+    public void dilithium87ReceiveAddressCompletes() throws MnemonicException {
+        String words = "absent essay fox snake vast pumpkin height crouch silent bulb excuse razor";
+        DeterministicSeed seed = new DeterministicSeed(words, "", 0, DeterministicSeed.Type.BIP39);
+        Wallet wallet = new Wallet();
+        wallet.setPolicyType(PolicyType.SINGLE_HD);
+        wallet.setScriptType(ScriptType.MLDSA87_SINGLE);
+        wallet.getKeystores().add(Keystore.fromSeed(seed, PolicyType.SINGLE_HD, ScriptType.MLDSA87_SINGLE.getDefaultDerivation()));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.MLDSA87_SINGLE, wallet.getKeystores(), 1));
+
+        WalletNode receive0 = new WalletNode(wallet, KeyPurpose.RECEIVE, 0);
+        Address address = receive0.getAddress();
+        Assertions.assertEquals(32, address.getData().length);
+        Assertions.assertFalse(address.toString().isEmpty());
+        Assertions.assertEquals(34, receive0.getOutputScript().getProgram().length);
+        Assertions.assertEquals(64, receive0.getOutputDescriptor().length());
+    }
 }

@@ -837,13 +837,13 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     private byte[] mlDsaProgram(WalletNode node) {
         try {
             if(scriptType == ScriptType.MLDSA_SINGLE) {
-                if(getKeystores().isEmpty() || !getKeystores().getFirst().hasPrivateKey()) {
+                if(getKeystores().isEmpty() || !getKeystores().getFirst().hasSeed()) {
                     throw new IllegalStateException("ML-DSA-44 has no public child. Watch-only needs a Sparrow wallet file with derived addresses, or the seed.");
                 }
                 return MlDsa44.keyHash(getKeystores().getFirst().getMlDsaKeypair(mlDsaChildIndex(node)).pubkey());
             }
             if(scriptType == ScriptType.MLDSA87_SINGLE) {
-                if(getKeystores().isEmpty() || !getKeystores().getFirst().hasPrivateKey()) {
+                if(getKeystores().isEmpty() || !getKeystores().getFirst().hasSeed()) {
                     throw new IllegalStateException("ML-DSA-87 has no public child. Watch-only needs a Sparrow wallet file with derived addresses, or the seed.");
                 }
                 return com.sparrowwallet.drongo.crypto.MlDsa87.keyHash(getKeystores().getFirst().getMlDsa87Keypair(mlDsaChildIndex(node)).pubkey());
