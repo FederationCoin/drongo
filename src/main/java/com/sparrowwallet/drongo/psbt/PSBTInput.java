@@ -97,6 +97,10 @@ public class PSBTInput {
         this.index = index;
     }
 
+    public PSBT getPSBT() {
+        return psbt;
+    }
+
     PSBTInput(PSBT psbt, ScriptType scriptType, int index, Transaction utxo, int utxoIndex, Long sequence, Script redeemScript, Script witnessScript,
               Map<ECKey, KeyDerivation> derivedPublicKeys, Map<String, String> proprietary, ECKey tapInternalKey, boolean alwaysAddNonWitnessTx, byte[] silentPaymentsTweak, Map<ECKey, KeyDerivation> silentPaymentsSpendDerivations) {
         this(psbt, index);

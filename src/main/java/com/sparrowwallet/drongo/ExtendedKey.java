@@ -154,8 +154,8 @@ public class ExtendedKey {
     }
 
     public enum Header {
-        xprv("xprv", 0x0488ADE4, ScriptType.P2PKH, true, true),
-        xpub("xpub", 0x0488B21E, ScriptType.P2PKH, false, true),
+        xprv("xqir", 0x0488FCE4, ScriptType.P2PKH, true, true),
+        xpub("xqiM", 0x0488FC1E, ScriptType.P2PKH, false, true),
         yprv("yprv", 0x049D7878, ScriptType.P2SH_P2WPKH, true, true),
         ypub("ypub", 0x049D7CB2, ScriptType.P2SH_P2WPKH, false, true),
         zprv("zprv", 0x04b2430c, ScriptType.P2WPKH, true, true),
@@ -164,8 +164,8 @@ public class ExtendedKey {
         Ypub("Ypub", 0x0295b43f, ScriptType.P2SH_P2WSH, false, true),
         Zprv("Zprv", 0x02aa7a99, ScriptType.P2WSH, true, true),
         Zpub("Zpub", 0x02aa7ed3, ScriptType.P2WSH, false, true),
-        tprv("tprv", 0x04358394, ScriptType.P2PKH, true, false),
-        tpub("tpub", 0x043587cf, ScriptType.P2PKH, false, false),
+        tprv("trBb", 0x0435FCE4, ScriptType.P2PKH, true, false),
+        tpub("trB6", 0x0435FC1E, ScriptType.P2PKH, false, false),
         uprv("uprv", 0x044a4e28, ScriptType.P2SH_P2WPKH, true, false),
         upub("upub", 0x044a5262, ScriptType.P2SH_P2WPKH, false, false),
         vprv("vprv", 0x045f18bc, ScriptType.P2WPKH, true, false),
@@ -220,9 +220,22 @@ public class ExtendedKey {
         }
 
         public static Header fromExtendedKey(String xkey) {
-            for(Header extendedKeyHeader : getHeaders(Network.get())) {
-                if(xkey.startsWith(extendedKeyHeader.name)) {
-                    return extendedKeyHeader;
+            try {
+                byte[] serializedKey = Base58.decodeChecked(xkey);
+                if(serializedKey.length >= 4) {
+                    int headerInt = ByteBuffer.wrap(serializedKey).getInt();
+                    Header byInt = getHeader(headerInt, false);
+                    if(byInt != null) {
+                        return byInt;
+                    }
+                }
+            } catch(Exception e) {
+                // Derivation suffix or other non-Base58Check; match the print prefix below.
+            }
+
+            for(Header header : getHeaders(Network.get())) {
+                if(xkey.startsWith(header.name)) {
+                    return header;
                 }
             }
 

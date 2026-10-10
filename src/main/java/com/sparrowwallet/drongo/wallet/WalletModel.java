@@ -205,4 +205,9 @@ public enum WalletModel {
 
         return builder.toString().trim();
     }
+
+    /** Seed, Sparrow file, labels, and transaction export. Hardware and foreign wallets are not a spend. */
+    public boolean isProductImport() {
+        return this == SEED || this == SPARROW || this == LABELS || this == TRANSACTIONS;
+    }
 }

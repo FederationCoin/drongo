@@ -1,5 +1,6 @@
 package com.sparrowwallet.drongo.uri;
 
+import com.sparrowwallet.drongo.ChainEncoding;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -8,14 +9,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 public class BitcoinUriTest {
-    private static final String ADDRESS = "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4";
+    private static final String ADDRESS = ChainEncoding.address("bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4");
 
     @Test
     public void testSamourai() throws BitcoinURIParseException {
-        String uri = "bitcoin:BC1QT4NRM47695YWDG9N30N68JARMXRJNKFMR36994?amount=0,001";
+        String address = ChainEncoding.address("bc1qt4nrm47695ywdg9n30n68jarmxrjnkfmr36994");
+        String uri = "bitcoin:" + address.toUpperCase(Locale.ROOT) + "?amount=0,001";
         BitcoinURI bitcoinURI = new BitcoinURI(uri);
 
-        Assertions.assertEquals("BC1QT4NRM47695YWDG9N30N68JARMXRJNKFMR36994".toLowerCase(Locale.ROOT), bitcoinURI.getAddress().toString());
+        Assertions.assertEquals(address, bitcoinURI.getAddress().toString());
         Assertions.assertEquals(Long.valueOf(100000), bitcoinURI.getAmount());
     }
 

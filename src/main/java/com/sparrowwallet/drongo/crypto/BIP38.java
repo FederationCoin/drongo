@@ -172,6 +172,35 @@ public class BIP38 {
     }
 
     /**
+     * Encrypts a key with no EC multiplication (BIP38 type 0x42). The address hash commits to this
+     * chain's P2PKH encoding, so published Bitcoin ciphertexts will not decrypt here.
+     */
+    public static String encrypt(String passphrase, DumpedPrivateKey dumped) throws UnsupportedEncodingException, GeneralSecurityException {
+        ECKey key = dumped.getKey();
+        String address = new P2PKHAddress(key.getPubKeyHash()).getAddress(Network.MAINNET);
+        byte[] addressHash = Arrays.copyOfRange(Sha256Hash.hashTwice(address.getBytes(StandardCharsets.US_ASCII)), 0, 4);
+        byte[] scryptKey = SCrypt.generate(passphrase.getBytes("UTF8"), addressHash, 16384, 8, 8, 64);
+        byte[] derivedHalf1 = Arrays.copyOfRange(scryptKey, 0, 32);
+        byte[] derivedHalf2 = Arrays.copyOfRange(scryptKey, 32, 64);
+        byte[] keyBytes = key.getPrivKeyBytes();
+        byte[] xored = new byte[32];
+        for(int i = 0; i < 32; i++) {
+            xored[i] = (byte)(keyBytes[i] ^ derivedHalf1[i]);
+        }
+        byte[] encryptedHalf1 = encryptAES(Arrays.copyOfRange(xored, 0, 16), derivedHalf2);
+        byte[] encryptedHalf2 = encryptAES(Arrays.copyOfRange(xored, 16, 32), derivedHalf2);
+
+        byte[] payload = new byte[ENCRYPTED_KEY_LENGTH];
+        payload[0] = 0x01;
+        payload[1] = 0x42;
+        payload[2] = (byte)(key.isCompressed() ? 0xE0 : 0xC0);
+        System.arraycopy(addressHash, 0, payload, 3, 4);
+        System.arraycopy(encryptedHalf1, 0, payload, 7, 16);
+        System.arraycopy(encryptedHalf2, 0, payload, 23, 16);
+        return Base58.encodeChecked(payload);
+    }
+
+    /**
      * Verifies the encrypted key is the length every BIP38 key has. Both decryption paths index fixed offsets up to this length.
      *
      * @param encryptedKey the encrypted key
@@ -212,5 +241,12 @@ public class BIP38 {
         SecretKeySpec aesKey = new SecretKeySpec(key, "AES");
         cipher.init(Cipher.DECRYPT_MODE, aesKey);
         return cipher.doFinal(ciphertext);
+    }
+
+    public static byte[] encryptAES(byte[] plaintext, byte[] key) throws GeneralSecurityException {
+        Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding", Drongo.getProvider());
+        SecretKeySpec aesKey = new SecretKeySpec(key, "AES");
+        cipher.init(Cipher.ENCRYPT_MODE, aesKey);
+        return cipher.doFinal(plaintext);
     }
 }

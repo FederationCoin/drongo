@@ -1,10 +1,13 @@
 package com.sparrowwallet.drongo.wallet;
 
+import com.sparrowwallet.drongo.ExtendedKey;
 import com.sparrowwallet.drongo.KeyDerivation;
 import com.sparrowwallet.drongo.crypto.KeyDeriver;
 import com.sparrowwallet.drongo.policy.PolicyType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.sparrowwallet.drongo.ChainEncoding;
 
 public class DeterministicSeedTest {
     @Test
@@ -25,7 +28,7 @@ public class DeterministicSeedTest {
 
         DeterministicSeed seed = new DeterministicSeed(words, "TREZOR", 0, DeterministicSeed.Type.BIP39);
         Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_HD, KeyDerivation.parsePath("m/0'"));
-        Assertions.assertEquals("xprv9s21ZrQH143K3VPCbxbUtpkh9pRG371UCLDz3BjceqP1jz7XZsQ5EnNkYAEkfeZp62cDNj13ZTEVG1TEro9sZ9grfRmcYWLBhCocViKEJae", keystore.getExtendedMasterPrivateKey().toString());
+        Assertions.assertEquals(ChainEncoding.extendedKey("xprv9s21ZrQH143K3VPCbxbUtpkh9pRG371UCLDz3BjceqP1jz7XZsQ5EnNkYAEkfeZp62cDNj13ZTEVG1TEro9sZ9grfRmcYWLBhCocViKEJae"), keystore.getExtendedMasterPrivateKey().toString());
     }
 
     @Test
@@ -34,6 +37,6 @@ public class DeterministicSeedTest {
 
         DeterministicSeed seed = new DeterministicSeed(words, "TREZOR", 0, DeterministicSeed.Type.BIP39);
         Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_HD, KeyDerivation.parsePath("m/0'"));
-        Assertions.assertEquals("xprv9s21ZrQH143K2WNnKmssvZYM96VAr47iHUQUTUyUXH3sAGNjhJANddnhw3i3y3pBbRAVk5M5qUGFr4rHbEWwXgX4qrvrceifCYQJbbFDems", keystore.getExtendedMasterPrivateKey().toString());
+        Assertions.assertEquals(ChainEncoding.extendedKey("xprv9s21ZrQH143K2WNnKmssvZYM96VAr47iHUQUTUyUXH3sAGNjhJANddnhw3i3y3pBbRAVk5M5qUGFr4rHbEWwXgX4qrvrceifCYQJbbFDems"), keystore.getExtendedMasterPrivateKey().toString());
     }
 }
