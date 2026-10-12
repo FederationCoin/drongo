@@ -211,7 +211,7 @@ public class Script {
 
         for(ScriptType scriptType : SINGLE_KEY_TYPES) {
             if(scriptType.isScriptType(this)) {
-                return new Address[]{scriptType.getAddress(PolicyType.SINGLE_HD, scriptType.getPublicKeyFromScript(this))};
+                return new Address[]{scriptType.getAddress(PolicyType.SINGLE_MLDSA87, scriptType.getPublicKeyFromScript(this))};
             }
         }
 

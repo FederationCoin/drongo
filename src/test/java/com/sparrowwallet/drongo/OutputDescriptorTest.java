@@ -160,13 +160,13 @@ public class OutputDescriptorTest {
         //Single key descriptors have no threshold to state, and must continue to yield a threshold of 1
         OutputDescriptor singleSig = parse("wpkh([04fefef0/84h/0h/0h]xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/0/*)");
         Assertions.assertEquals(1, singleSig.getMultisigThreshold());
-        Assertions.assertEquals(PolicyType.SINGLE_HD, singleSig.toWallet().getPolicyType());
+        Assertions.assertEquals(PolicyType.SINGLE_SEGWIT, singleSig.toWallet().getPolicyType());
 
-        //A single key cosigner descriptor is a MULTI_HD policy, and must render as sortedmulti(1,...) rather than sortedmulti(0,...)
+        //A single key cosigner descriptor is a MULTI_SEGWIT policy, and must render as sortedmulti(1,...) rather than sortedmulti(0,...)
         OutputDescriptor cosigner = parse("sh(" + MULTI_KEY_1 + ")");
         Assertions.assertEquals(1, cosigner.getMultisigThreshold());
         Wallet cosignerWallet = cosigner.toWallet();
-        Assertions.assertEquals(PolicyType.MULTI_HD, cosignerWallet.getPolicyType());
+        Assertions.assertEquals(PolicyType.MULTI_SEGWIT, cosignerWallet.getPolicyType());
         Assertions.assertEquals(1, cosignerWallet.getDefaultPolicy().getNumSignaturesRequired());
     }
 

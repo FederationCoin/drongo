@@ -17,7 +17,7 @@ public class AddressTest {
         Address address1 = roundTrip(Network.MAINNET, new P2WPKHAddress(payload("bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4")));
         Assertions.assertTrue(address1 instanceof P2WPKHAddress);
 
-        Address address2 = roundTrip(Network.MAINNET, new MlDsaAddress(payload("bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3")));
+        Address address2 = roundTrip(Network.MAINNET, new MlDsa87Address(payload("bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3")));
         Assertions.assertTrue(address2 instanceof MlDsaAddress);
 
         Address address3 = roundTrip(Network.MAINNET, new P2PKHAddress(hash160("19Sp9dLinHy3dKo2Xxj53ouuZWAoVGGhg8")));
@@ -29,7 +29,7 @@ public class AddressTest {
         Address address5 = roundTrip(Network.TESTNET, new P2WPKHAddress(payload("tb1qawkzyj2l5yck5jq4wyhkc4837x088580y9uyk8")));
         Assertions.assertTrue(address5 instanceof P2WPKHAddress);
 
-        Address address6 = roundTrip(Network.TESTNET, new MlDsaAddress(payload("tb1q8kdkthp5a6vfrdas84efkpv25ul3s9wpzc755cra8av48xq4a7wsjcsdma")));
+        Address address6 = roundTrip(Network.TESTNET, new MlDsa87Address(payload("tb1q8kdkthp5a6vfrdas84efkpv25ul3s9wpzc755cra8av48xq4a7wsjcsdma")));
         Assertions.assertTrue(address6 instanceof MlDsaAddress);
 
         Address address7 = roundTrip(Network.TESTNET, new P2PKHAddress(hash160("mng6R5oLWBBo8iFWU9Mx4zFy5pWhrWMeW2")));
@@ -58,7 +58,7 @@ public class AddressTest {
         Address address5 = roundTrip(Network.TESTNET, new P2WPKHAddress(payload("tb1qawkzyj2l5yck5jq4wyhkc4837x088580y9uyk8")));
         Assertions.assertTrue(address5 instanceof P2WPKHAddress);
 
-        Address address6 = roundTrip(Network.TESTNET, new MlDsaAddress(payload("tb1q8kdkthp5a6vfrdas84efkpv25ul3s9wpzc755cra8av48xq4a7wsjcsdma")));
+        Address address6 = roundTrip(Network.TESTNET, new MlDsa87Address(payload("tb1q8kdkthp5a6vfrdas84efkpv25ul3s9wpzc755cra8av48xq4a7wsjcsdma")));
         Assertions.assertTrue(address6 instanceof MlDsaAddress);
 
         Address address7 = roundTrip(Network.TESTNET, new P2PKHAddress(hash160("mng6R5oLWBBo8iFWU9Mx4zFy5pWhrWMeW2")));

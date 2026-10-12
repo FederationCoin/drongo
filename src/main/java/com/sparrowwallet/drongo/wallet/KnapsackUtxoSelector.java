@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class KnapsackUtxoSelector extends SingleSetUtxoSelector {
-    private static final long MIN_CHANGE = Transaction.SATOSHIS_PER_BITCOIN / 1000;
+    private static final long MIN_CHANGE = Transaction.TOKENS_PER_COIN / 1000;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final long noInputsFee;

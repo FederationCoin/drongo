@@ -27,7 +27,7 @@ public class Bip322Test {
     @Test
     public void signMessageBip322() {
         ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
-        Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_HD, privKey);
+        Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_SEGWIT, privKey);
         Assertions.assertEquals(ChainEncoding.address("bc1q9vza2e8x573nczrlzms0wvx3gsqjx7vavgkx0l"), address.toString());
 
         String signature = Bip322.signMessageBip322(ScriptType.P2WPKH, "", privKey);
@@ -75,7 +75,7 @@ public class Bip322Test {
     @Test
     public void signMessageBip322Taproot() {
         ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
-        Address address = ScriptType.P2TR.getAddress(PolicyType.SINGLE_HD, privKey);
+        Address address = ScriptType.P2TR.getAddress(PolicyType.SINGLE_SEGWIT, privKey);
         Assertions.assertEquals(ChainEncoding.address("bc1ppv609nr0vr25u07u95waq5lucwfm6tde4nydujnu8npg4q75mr5sxq8lt3"), address.toString());
 
         String signature = Bip322.signMessageBip322(ScriptType.P2TR, "Hello World", privKey);
@@ -85,7 +85,7 @@ public class Bip322Test {
     @Test
     public void verifyMessageBip322Taproot() throws SignatureException {
         ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
-        Address address = ScriptType.P2TR.getAddress(PolicyType.SINGLE_HD, privKey);
+        Address address = ScriptType.P2TR.getAddress(PolicyType.SINGLE_SEGWIT, privKey);
         Assertions.assertEquals(ChainEncoding.address("bc1ppv609nr0vr25u07u95waq5lucwfm6tde4nydujnu8npg4q75mr5sxq8lt3"), address.toString());
 
         String message1 = "Hello World";
@@ -99,7 +99,7 @@ public class Bip322Test {
     @Test
     public void signMessageBip322NestedSegwit() {
         ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
-        Address address = ScriptType.P2SH_P2WPKH.getAddress(PolicyType.SINGLE_HD, privKey);
+        Address address = ScriptType.P2SH_P2WPKH.getAddress(PolicyType.SINGLE_SEGWIT, privKey);
         Assertions.assertEquals(ChainEncoding.address("37qyp7jQAzqb2rCBpMvVtLDuuzKAUCVnJb"), address.toString());
 
         Assertions.assertThrows(UnsupportedOperationException.class, () -> Bip322.signMessageBip322(ScriptType.P2SH_P2WPKH, "Hello World", privKey));
@@ -108,7 +108,7 @@ public class Bip322Test {
     @Test
     public void verifyMessageBip322NestedSegwit() throws SignatureException {
         ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
-        Address address = ScriptType.P2SH_P2WPKH.getAddress(PolicyType.SINGLE_HD, privKey);
+        Address address = ScriptType.P2SH_P2WPKH.getAddress(PolicyType.SINGLE_SEGWIT, privKey);
         Assertions.assertEquals(ChainEncoding.address("37qyp7jQAzqb2rCBpMvVtLDuuzKAUCVnJb"), address.toString());
 
         String message1 = "Hello World";
@@ -120,7 +120,7 @@ public class Bip322Test {
     @Test
     public void getBip322Psbt() {
         ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
-        Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_HD, privKey);
+        Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_SEGWIT, privKey);
 
         PSBT psbt = Bip322.getBip322Psbt(ScriptType.P2WPKH, address, "Hello World");
         Assertions.assertEquals(1, psbt.getPsbtInputs().size());
@@ -134,7 +134,7 @@ public class Bip322Test {
     @Test
     public void getBip322PsbtMessageRoundTrip() throws com.sparrowwallet.drongo.psbt.PSBTParseException {
         ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
-        Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_HD, privKey);
+        Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_SEGWIT, privKey);
 
         String message = "UTF-8 support: öäüéàè 测试文本 😄";
         PSBT psbt = Bip322.getBip322Psbt(ScriptType.P2WPKH, address, message);
@@ -147,7 +147,7 @@ public class Bip322Test {
     @Test
     public void getBip322PsbtTaproot() {
         ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
-        Address address = ScriptType.P2TR.getAddress(PolicyType.SINGLE_HD, privKey);
+        Address address = ScriptType.P2TR.getAddress(PolicyType.SINGLE_SEGWIT, privKey);
 
         PSBT psbt = Bip322.getBip322Psbt(ScriptType.P2TR, address, "Hello World");
         Assertions.assertEquals(1, psbt.getPsbtInputs().size());
@@ -160,10 +160,10 @@ public class Bip322Test {
     public void getBip322SignatureFromPsbt() {
         ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         ECKey pubKey = ECKey.fromPublicOnly(privKey);
-        Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_HD, privKey);
+        Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_SEGWIT, privKey);
 
         PSBT psbt = Bip322.getBip322Psbt(ScriptType.P2WPKH, address, "Hello World");
-        psbt.getPsbtInputs().get(0).sign(ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_HD, privKey));
+        psbt.getPsbtInputs().get(0).sign(ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_SEGWIT, privKey));
 
         String sigFromPsbt = Bip322.getBip322SignatureFromPsbt(ScriptType.P2WPKH, psbt, pubKey);
         String sigDirect = Bip322.signMessageBip322(ScriptType.P2WPKH, "Hello World", privKey);
@@ -174,10 +174,10 @@ public class Bip322Test {
     public void getBip322SignatureFromPsbtTaproot() {
         ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         ECKey pubKey = ECKey.fromPublicOnly(privKey);
-        Address address = ScriptType.P2TR.getAddress(PolicyType.SINGLE_HD, privKey);
+        Address address = ScriptType.P2TR.getAddress(PolicyType.SINGLE_SEGWIT, privKey);
 
         PSBT psbt = Bip322.getBip322Psbt(ScriptType.P2TR, address, "Hello World");
-        psbt.getPsbtInputs().get(0).sign(ScriptType.P2TR.getOutputKey(PolicyType.SINGLE_HD, privKey));
+        psbt.getPsbtInputs().get(0).sign(ScriptType.P2TR.getOutputKey(PolicyType.SINGLE_SEGWIT, privKey));
 
         String sigFromPsbt = Bip322.getBip322SignatureFromPsbt(ScriptType.P2TR, psbt, pubKey);
         String sigDirect = Bip322.signMessageBip322(ScriptType.P2TR, "Hello World", privKey);
@@ -188,7 +188,7 @@ public class Bip322Test {
     public void getBip322SignatureFromUnsignedPsbt() {
         ECKey privKey = ChainEncoding.keyFromPublishedWif("L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k");
         ECKey pubKey = ECKey.fromPublicOnly(privKey);
-        Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_HD, privKey);
+        Address address = ScriptType.P2WPKH.getAddress(PolicyType.SINGLE_SEGWIT, privKey);
 
         PSBT psbt = Bip322.getBip322Psbt(ScriptType.P2WPKH, address, "Hello World");
         Assertions.assertThrows(IllegalArgumentException.class, () -> Bip322.getBip322SignatureFromPsbt(ScriptType.P2WPKH, psbt, pubKey));

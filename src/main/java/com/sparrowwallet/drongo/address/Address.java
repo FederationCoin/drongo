@@ -53,7 +53,7 @@ public abstract class Address {
             throw new InvalidAddressException(ScriptType.TAPROOT_NOT_ENABLED_MESSAGE);
         }
         if(!(this instanceof MlDsaAddress) && !getScriptType().isOfferedForNewWallets()) {
-            throw new InvalidAddressException("This chain pays Dilithium 87, Dilithium 44, or secp witness v0 programs");
+            throw new InvalidAddressException("This chain pays Dilithium 87, Dilithium 44, or SegWit witness v0 programs");
         }
     }
 
@@ -132,7 +132,7 @@ public abstract class Address {
                                 return new P2WPKHAddress(witnessProgram);
                             }
                             if(witnessProgram.length == 32) {
-                                return new MlDsaAddress(witnessProgram);
+                                return new MlDsa87Address(witnessProgram);
                             }
                         } else if(witnessVersion == 1) {
                             if(data.encoding != Bech32.Encoding.BECH32M) {

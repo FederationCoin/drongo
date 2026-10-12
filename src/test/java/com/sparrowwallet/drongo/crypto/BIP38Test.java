@@ -32,24 +32,6 @@ public class BIP38Test {
     }
 
     @Test
-    public void testNoCompressionNoECThisChain() throws GeneralSecurityException, UnsupportedEncodingException {
-        ECKey key = ChainEncoding.keyFromPublishedWif("5KN7MzqK5wt2TP1fQCYyHBtDrXdJuXbUzm4A9rKAteGu3Qi5CVR");
-        DumpedPrivateKey dumped = key.getPrivateKeyEncoded();
-        String encrypted = BIP38.encrypt("TestingOneTwoThree", dumped);
-        Assertions.assertEquals(dumped.toString(), BIP38.decrypt("TestingOneTwoThree", encrypted).toString());
-        Assertions.assertEquals(dumped.toString(), BIP38.decrypt("Satoshi", BIP38.encrypt("Satoshi", dumped)).toString());
-    }
-
-    @Test
-    public void testCompressionNoECThisChain() throws GeneralSecurityException, UnsupportedEncodingException {
-        ECKey key = ChainEncoding.keyFromPublishedWif("L44B5gGEpqEDRS9vVPz7QT35jcBG2r3CZwSwQ4fCewXAhAhqGVpP");
-        DumpedPrivateKey dumped = key.getPrivateKeyEncoded();
-        String encrypted = BIP38.encrypt("TestingOneTwoThree", dumped);
-        Assertions.assertEquals(dumped.toString(), BIP38.decrypt("TestingOneTwoThree", encrypted).toString());
-        Assertions.assertEquals(dumped.toString(), BIP38.decrypt("Satoshi", BIP38.encrypt("Satoshi", dumped)).toString());
-    }
-
-    @Test
     public void testIncorrectPassphrase() {
         Assertions.assertThrows(InvalidPasswordException.class, () -> BIP38.decrypt("TestingOneTwoThreeFour", NO_EC_UNCOMPRESSED));
         Assertions.assertThrows(InvalidPasswordException.class, () -> BIP38.decrypt("TestingOneTwoThreeFour", NO_EC_COMPRESSED));

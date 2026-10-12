@@ -16,19 +16,19 @@ import static com.sparrowwallet.drongo.Utils.uint64ToByteStreamLE;
 
 public class Transaction extends ChildMessage {
     public static final int MAX_BLOCK_SIZE_VBYTES = 1000 * 1000;
-    public static final long MAX_BITCOIN = 21 * 1000 * 1000L;
-    public static final long SATOSHIS_PER_BITCOIN = 100 * 1000 * 1000L;
-    public static final long MAX_SATOSHIS = MAX_BITCOIN * SATOSHIS_PER_BITCOIN;
+    public static final long MAX_COIN = 21 * 1000 * 1000L;
+    public static final long TOKENS_PER_COIN = 100 * 1000 * 1000L;
+    public static final long MAX_TOKENS = MAX_COIN * TOKENS_PER_COIN;
     public static final long MAX_BLOCK_LOCKTIME = 500000000L;
     public static final int WITNESS_SCALE_FACTOR = 4;
     public static final int DEFAULT_SEGWIT_FLAG = 1;
     public static final int COINBASE_MATURITY_THRESHOLD = 100;
 
-    //Min feerate for defining dust, defined in sats/vByte
+    //Min feerate for defining dust, defined in tokens/vB
     //From: https://github.com/bitcoin/bitcoin/blob/0.19/src/policy/policy.h#L50
     public static final double DUST_RELAY_TX_FEE = 3d;
 
-    //Default min feerate, defined in sats/vByte
+    //Default min feerate, defined in tokens/vB
     public static final double DEFAULT_MIN_RELAY_FEE = 1d;
 
     public static final byte LEAF_VERSION_TAPSCRIPT = (byte)0xc0;
@@ -405,7 +405,7 @@ public class Transaction extends ChildMessage {
     }
 
     public TransactionOutput addOutput(long value, ECKey pubkey) {
-        return addOutput(new TransactionOutput(this, value, ScriptType.P2PK.getOutputScript(PolicyType.SINGLE_HD, pubkey)));
+        return addOutput(new TransactionOutput(this, value, ScriptType.P2PK.getOutputScript(PolicyType.SINGLE_MLDSA87, pubkey)));
     }
 
     public TransactionOutput addOutput(TransactionOutput output) {
@@ -442,12 +442,12 @@ public class Transaction extends ChildMessage {
             } catch(ArithmeticException e) {
                 throw new VerificationException.ExcessiveValue();
             }
-            if(value > MAX_SATOSHIS) {
+            if(value > MAX_TOKENS) {
                 throw new VerificationException.ExcessiveValue();
             }
         }
 
-        if(valueOut > MAX_SATOSHIS) {
+        if(valueOut > MAX_TOKENS) {
             throw new VerificationException.ExcessiveValue();
         }
 
@@ -779,7 +779,7 @@ public class Transaction extends ChildMessage {
      * @param spentUtxos   the ordered list of spent UTXOs corresponding to the inputs of this transaction
      * @param inputIndex   input the signature is being calculated for
      * @param scriptType   the script type byte the message is domain separated by
-     * @param scriptCode   for BARE and WITNESS_V0, the script the legacy rules already use; ignored otherwise
+     * @param scriptCode   empty for every product WITNESS_V0 spend; for BARE, the script the legacy rules already use; ignored otherwise
      * @param sigHashType  the hash type byte, which must carry the opt-in bit
      * @param annex        annex data for taproot and tapscript, or null
      * @param tapLeafHash  the BIP341 leaf hash, required for TAPSCRIPT

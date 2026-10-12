@@ -26,8 +26,8 @@ public class UnifiedSigHashPSBTTest {
     private static final long VALUE_TWO = 250000L;
 
     private PSBT twoInputPsbt(SigHash sigHash) {
-        Script spkOne = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_HD, KEY_ONE);
-        Script spkTwo = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_HD, KEY_TWO);
+        Script spkOne = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_MLDSA87, KEY_ONE);
+        Script spkTwo = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_MLDSA87, KEY_TWO);
 
         Transaction transaction = new Transaction();
         transaction.setVersion(2);
@@ -47,7 +47,7 @@ public class UnifiedSigHashPSBTTest {
     }
 
     private ECKey outputKey(ECKey privKey) {
-        return ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_HD, privKey);
+        return ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_MLDSA87, privKey);
     }
 
     @Test
@@ -85,7 +85,7 @@ public class UnifiedSigHashPSBTTest {
 
     /**
      * The PSBT path must reach the same digest as calling the algorithm directly, with the segwit v0
-     * script type byte and the BIP143 script code. Anything else would verify here and be rejected by a node.
+     * script type byte and an empty scriptCode. Anything else would verify here and be rejected by a node.
      */
     @Test
     public void testPsbtDigestMatchesTheAlgorithmDirectly() {
@@ -94,9 +94,8 @@ public class UnifiedSigHashPSBTTest {
         inputs.get(0).sign(outputKey(KEY_ONE));
 
         List<TransactionOutput> spentUtxos = inputs.stream().map(PSBTInput::getUtxo).toList();
-        byte[] scriptCode = ScriptType.P2PKH.getOutputScript(PolicyType.SINGLE_HD, outputKey(KEY_ONE)).getProgram();
         Sha256Hash expected = psbt.getTransaction().hashForUnifiedSignature(spentUtxos, 0, UnifiedScriptType.WITNESS_V0,
-                scriptCode, SigHash.UNIFIED_ALL.byteValue(), null, null, null);
+                new byte[0], SigHash.UNIFIED_ALL.byteValue(), null, null, null);
 
         ECKey pubKey = ECKey.fromPublicOnly(outputKey(KEY_ONE));
         TransactionSignature signature = inputs.get(0).getPartialSignatures().get(pubKey);
@@ -119,9 +118,8 @@ public class UnifiedSigHashPSBTTest {
         PSBT unifiedPsbt = twoInputPsbt(SigHash.UNIFIED_ALL);
         List<PSBTInput> inputs = unifiedPsbt.getPsbtInputs();
         List<TransactionOutput> spentUtxos = inputs.stream().map(PSBTInput::getUtxo).toList();
-        byte[] scriptCode = ScriptType.P2PKH.getOutputScript(PolicyType.SINGLE_HD, outputKey(KEY_ONE)).getProgram();
         Sha256Hash unifiedDigest = unifiedPsbt.getTransaction().hashForUnifiedSignature(spentUtxos, 0, UnifiedScriptType.WITNESS_V0,
-                scriptCode, SigHash.UNIFIED_ALL.byteValue(), null, null, null);
+                new byte[0], SigHash.UNIFIED_ALL.byteValue(), null, null, null);
 
         Assertions.assertFalse(ECKey.fromPublicOnly(outputKey(KEY_ONE)).verify(unifiedDigest, legacySignature),
                 "A legacy signature verified against the unified message");

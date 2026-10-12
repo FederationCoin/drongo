@@ -1,7 +1,6 @@
 package com.sparrowwallet.drongo.crypto;
 
 import com.sparrowwallet.drongo.Utils;
-import com.sparrowwallet.drongo.protocol.SecpCheapOut;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -27,11 +26,5 @@ public class MlDsa87Test {
         byte[] b = MlDsa87.keyHash(MlDsa87.keygen(MlDsa87.childSeed(seed, 1)).pubkey());
         Assertions.assertEquals(32, MlDsa87.policyProgram(2, List.of(a, b)).length);
         Assertions.assertNotEquals(Utils.bytesToHex(a), Utils.bytesToHex(MlDsa44.keyHash(MlDsa44.keygen(seed).pubkey())));
-    }
-
-    @Test
-    public void secpWarningIsNotASettingsDismiss() {
-        Assertions.assertFalse(SecpCheapOut.warnSend().isEmpty());
-        Assertions.assertEquals(SecpCheapOut.warnReceive(), SecpCheapOut.warnSend());
     }
 }

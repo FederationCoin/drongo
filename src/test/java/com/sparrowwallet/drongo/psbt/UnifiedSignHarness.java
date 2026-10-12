@@ -38,7 +38,7 @@ public class UnifiedSignHarness {
 
         if("scriptpubkey".equals(args[0])) {
             ECKey privKey = ECKey.fromPrivate(Utils.hexToBytes(privateKeyHex()));
-            System.out.println(Utils.bytesToHex(ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_HD, privKey).getProgram()));
+            System.out.println(Utils.bytesToHex(ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_MLDSA87, privKey).getProgram()));
             return;
         }
 
@@ -55,8 +55,8 @@ public class UnifiedSignHarness {
         byte stamp = (byte)Integer.parseInt(args[6], 16);
         byte digestType = args.length > 7 ? (byte)Integer.parseInt(args[7], 16) : stamp;
 
-        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_HD, privKey);
-        Script spk = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_HD, privKey);
+        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_MLDSA87, privKey);
+        Script spk = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_MLDSA87, privKey);
 
         Transaction transaction = new Transaction();
         transaction.setVersion(2);

@@ -58,7 +58,7 @@ public class MlDsa87SpendTest {
         Assertions.assertEquals(2, countSignedSlots(twoSig));
         Assertions.assertEquals(Utils.bytesToHex(hashes.get(2)), Utils.bytesToHex(skipHash(twoSig)));
         byte[] sighash = spend.hashForUnifiedSignature(List.of(utxo), 0, UnifiedScriptType.WITNESS_V0,
-                utxo.getScript().getProgram(), SigHash.UNIFIED_ALL.value, null, null, null).getBytes();
+                new byte[0], SigHash.UNIFIED_ALL.value, null, null, null).getBytes();
         Assertions.assertTrue(MlDsa87.verify(firstKey.pubkey(), signedSignature(twoSig, 0), sighash));
         Assertions.assertTrue(MlDsa87.verify(secondKey.pubkey(), signedSignature(twoSig, 1), sighash));
     }

@@ -75,8 +75,8 @@ public class TransactionTest {
         //Each output was range checked, but only an overflow of the sum was caught
         Transaction tx = new Transaction();
         tx.addInput(Sha256Hash.wrap(Utils.hexToBytes(PREV_TXID)), 0, new Script(new byte[0]));
-        tx.addOutput(Transaction.MAX_SATOSHIS - 1, new Script(Utils.hexToBytes(P2PKH_SCRIPT)));
-        tx.addOutput(Transaction.MAX_SATOSHIS - 1, new Script(Utils.hexToBytes(P2PKH_SCRIPT)));
+        tx.addOutput(Transaction.MAX_TOKENS - 1, new Script(Utils.hexToBytes(P2PKH_SCRIPT)));
+        tx.addOutput(Transaction.MAX_TOKENS - 1, new Script(Utils.hexToBytes(P2PKH_SCRIPT)));
 
         Assertions.assertThrows(VerificationException.ExcessiveValue.class, tx::verify);
     }
@@ -298,7 +298,7 @@ public class TransactionTest {
         TransactionSignature signature0 = input0.getScriptSig().getChunks().get(0).getSignature();
 
         Transaction transaction = new Transaction();
-        spent0ScriptType.addSpendingInput(PolicyType.SINGLE_HD, transaction, spent0Output, key0, signature0);
+        spent0ScriptType.addSpendingInput(PolicyType.SINGLE_MLDSA87, transaction, spent0Output, key0, signature0);
 
         transaction.addOutput(3000000000L, vectorAddress("1GWUbNagGsvpwygRCjoczegGVDvpm5fLV8"));
         transaction.addOutput(2000000000L, vectorAddress("19jCd38mHkNcXiGF4AjUCoJBSo7iqqjRHT"));
@@ -340,8 +340,8 @@ public class TransactionTest {
         ECKey pubKey1 = input1.getScriptSig().getChunks().get(1).getPubKey();
 
         Transaction transaction = new Transaction();
-        spent0ScriptType.addSpendingInput(PolicyType.SINGLE_HD, transaction, spent0Output, pubKey0, signature0);
-        spent1ScriptType.addSpendingInput(PolicyType.SINGLE_HD, transaction, spent1Output, pubKey1, signature1);
+        spent0ScriptType.addSpendingInput(PolicyType.SINGLE_MLDSA87, transaction, spent0Output, pubKey0, signature0);
+        spent1ScriptType.addSpendingInput(PolicyType.SINGLE_MLDSA87, transaction, spent1Output, pubKey1, signature1);
 
         transaction.addOutput(922, vectorAddress("1JVsQ4L4HAcn58Gj5uF16dvgFNdVTarY6i"));
         transaction.addOutput(9984568, vectorAddress("1Q7CEaM3CQ6ejGHgDZNbdTTAkoLcPk63nQ"));
@@ -381,7 +381,7 @@ public class TransactionTest {
         pubKeySignatures.put(key2, null);
 
         Transaction transaction = new Transaction();
-        spent0ScriptType.addMultisigSpendingInput(PolicyType.MULTI_HD, transaction, spent0Output, 2, pubKeySignatures);
+        spent0ScriptType.addMultisigSpendingInput(PolicyType.MULTI_MLDSA87, transaction, spent0Output, 2, pubKeySignatures);
 
         transaction.addOutput(833300, vectorAddress("31mKrRn3xQoGppLY5dU92Dbm4kN4ddkknE"));
         transaction.addOutput(1222480000, vectorAddress("1CL9kj1seXif6agPfeh6vpKkzc2Hxq1UpM"));
@@ -417,7 +417,7 @@ public class TransactionTest {
 
         Transaction transaction = new Transaction();
         transaction.setSegwitFlag(1);
-        TransactionInput input = ScriptType.P2SH_P2WPKH.addSpendingInput(PolicyType.SINGLE_HD, transaction, spent0Output, pubKey0, signature0);
+        TransactionInput input = ScriptType.P2SH_P2WPKH.addSpendingInput(PolicyType.SINGLE_MLDSA87, transaction, spent0Output, pubKey0, signature0);
         input.setSequenceNumber(TransactionInput.SEQUENCE_RBF_ENABLED);
 
         transaction.addOutput(4000, vectorAddress("1LiQZqSwPqb615uyxDKTaN9Tg4CER98cgJ"));
@@ -461,7 +461,7 @@ public class TransactionTest {
 
         Transaction transaction = new Transaction();
         transaction.setSegwitFlag(1);
-        TransactionInput input = ScriptType.P2SH_P2WSH.addMultisigSpendingInput(PolicyType.MULTI_HD, transaction, spent0Output, 2, pubKeySignatures);
+        TransactionInput input = ScriptType.P2SH_P2WSH.addMultisigSpendingInput(PolicyType.MULTI_MLDSA87, transaction, spent0Output, 2, pubKeySignatures);
 
         transaction.addOutput(59287429, vectorAddress("3PBjKH4FRuEKy4sD3NfL7tqfZTG5K42owu"));
         transaction.addOutput(212571, vectorAddress("3KRUgU4XGuErXkjBtFhksPzTGJ4AMwF4jB"));
@@ -495,7 +495,7 @@ public class TransactionTest {
         Transaction transaction = new Transaction();
         transaction.setVersion(2);
         transaction.setSegwitFlag(1);
-        spent0ScriptType.addSpendingInput(PolicyType.SINGLE_HD, transaction, spent0Output, key0, signature0);
+        spent0ScriptType.addSpendingInput(PolicyType.SINGLE_MLDSA87, transaction, spent0Output, key0, signature0);
 
         transaction.addOutput(211584990, vectorAddress("bc1q9k6aan6ncahvlslw8w54jzv897k55zh077un6s"));
         transaction.addOutput(1806203, vectorAddress("3QLFcgKFNzo262FYRFgGfrUNiUurpQbDZv"));
@@ -537,7 +537,7 @@ public class TransactionTest {
 
         Transaction transaction = new Transaction();
         transaction.setSegwitFlag(1);
-        spent0ScriptType.addMultisigSpendingInput(PolicyType.MULTI_HD, transaction, spent0Output, 2, pubKeySignatures);
+        spent0ScriptType.addMultisigSpendingInput(PolicyType.MULTI_MLDSA87, transaction, spent0Output, 2, pubKeySignatures);
 
         transaction.addOutput(10900000, vectorAddress("3Dt17mpd8FDXBjP56rCD7a4Sx7wpL91uhn"));
         transaction.addOutput(332500000, vectorAddress("1K6igqzm36x8jxRTavPhgWXLVcVZVDTGc9"));

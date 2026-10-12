@@ -141,7 +141,7 @@ public enum ScriptType {
 
         @Override
         public List<PolicyType> getAllowedPolicyTypes() {
-            return List.of(SINGLE_HD);
+            return List.of();
         }
     },
     P2PKH("P2PKH", "Legacy (P2PKH)", "m/44'/0'/0'") {
@@ -268,7 +268,7 @@ public enum ScriptType {
 
         @Override
         public List<PolicyType> getAllowedPolicyTypes() {
-            return List.of(SINGLE_HD);
+            return List.of(SINGLE_SEGWIT);
         }
     },
     MULTISIG("Bare Multisig", "Bare Multisig", "m/44'/0'/0'") {
@@ -475,7 +475,7 @@ public enum ScriptType {
 
         @Override
         public List<PolicyType> getAllowedPolicyTypes() {
-            return List.of(MULTI_HD);
+            return List.of();
         }
     },
     P2SH("P2SH", "Legacy (P2SH)", "m/45'") {
@@ -622,7 +622,7 @@ public enum ScriptType {
 
         @Override
         public List<PolicyType> getAllowedPolicyTypes() {
-            return List.of(MULTI_HD);
+            return List.of(MULTI_SEGWIT);
         }
 
         @Override
@@ -739,7 +739,7 @@ public enum ScriptType {
 
         @Override
         public List<PolicyType> getAllowedPolicyTypes() {
-            return List.of(SINGLE_HD);
+            return List.of(SINGLE_SEGWIT);
         }
     },
     P2SH_P2WSH("P2SH-P2WSH", "Nested Segwit (P2SH-P2WSH)", "m/48'/0'/0'/1'") {
@@ -847,7 +847,7 @@ public enum ScriptType {
 
         @Override
         public List<PolicyType> getAllowedPolicyTypes() {
-            return List.of(MULTI_HD);
+            return List.of(MULTI_SEGWIT);
         }
     },
     P2WPKH("P2WPKH", "Native Segwit (P2WPKH)", "m/84'/0'/0'") {
@@ -963,7 +963,7 @@ public enum ScriptType {
 
         @Override
         public List<PolicyType> getAllowedPolicyTypes() {
-            return List.of(SINGLE_HD);
+            return List.of(SINGLE_SEGWIT);
         }
     },
     P2WSH("P2WSH", "Native Segwit (P2WSH)", "m/48'/0'/0'/2'") {
@@ -1085,7 +1085,7 @@ public enum ScriptType {
 
         @Override
         public List<PolicyType> getAllowedPolicyTypes() {
-            return List.of(MULTI_HD);
+            return List.of(MULTI_SEGWIT);
         }
     },
     P2TR("P2TR", "Taproot (P2TR)", "m/86'/0'/0'") {
@@ -1211,7 +1211,7 @@ public enum ScriptType {
 
         @Override
         public List<PolicyType> getAllowedPolicyTypes() {
-            return List.of(SINGLE_HD, SINGLE_SP);
+            return List.of(SINGLE_SP);
         }
     },
     P2A("P2A", "Anchor (P2A)", "m/86'/0'/0'") {
@@ -1338,7 +1338,7 @@ public enum ScriptType {
     MLDSA_SINGLE("MLDSA", "ML-DSA-44 single key", "m/0'") {
         @Override
         public Address getAddress(byte[] program) {
-            return new MlDsaAddress(program);
+            return new MlDsa44Address(program);
         }
 
         @Override
@@ -1371,12 +1371,12 @@ public enum ScriptType {
 
         @Override
         public String getOutputDescriptor(ECKey key) {
-            throw new ProtocolException("Bitcoin output descriptors are not a spend on this chain");
+            throw new ProtocolException("ML-DSA descriptor uses a Dilithium key, not an ECKey");
         }
 
         @Override
         public String getOutputDescriptor(Script script) {
-            throw new ProtocolException("Bitcoin output descriptors are not a spend on this chain");
+            return getDescriptor() + Utils.bytesToHex(getHashFromScript(script)) + getCloseDescriptor();
         }
 
         @Override
@@ -1429,13 +1429,13 @@ public enum ScriptType {
 
         @Override
         public List<PolicyType> getAllowedPolicyTypes() {
-            return List.of(SINGLE_HD);
+            return List.of(SINGLE_MLDSA44);
         }
     },
     MLDSA_MULTI("MLDSA-MULTI", "ML-DSA-44 multisig", "m/0'") {
         @Override
         public Address getAddress(byte[] program) {
-            return new MlDsaAddress(program);
+            return new MlDsa44MultiAddress(program);
         }
 
         @Override
@@ -1465,12 +1465,12 @@ public enum ScriptType {
 
         @Override
         public String getOutputDescriptor(ECKey key) {
-            throw new ProtocolException("Bitcoin output descriptors are not a spend on this chain");
+            throw new ProtocolException("ML-DSA descriptor uses a Dilithium key, not an ECKey");
         }
 
         @Override
         public String getOutputDescriptor(Script script) {
-            throw new ProtocolException("Bitcoin output descriptors are not a spend on this chain");
+            return getDescriptor() + Utils.bytesToHex(getHashFromScript(script)) + getCloseDescriptor();
         }
 
         @Override
@@ -1526,7 +1526,7 @@ public enum ScriptType {
 
         @Override
         public List<PolicyType> getAllowedPolicyTypes() {
-            return List.of(MULTI_HD);
+            return List.of(MULTI_MLDSA44);
         }
 
         @Override
@@ -1537,7 +1537,7 @@ public enum ScriptType {
     MLDSA87_SINGLE("MLDSA87", "Dilithium 87 single key", "m/0'") {
         @Override
         public Address getAddress(byte[] program) {
-            return new MlDsaAddress(program);
+            return new MlDsa87Address(program);
         }
 
         @Override
@@ -1567,12 +1567,12 @@ public enum ScriptType {
 
         @Override
         public String getOutputDescriptor(ECKey key) {
-            throw new ProtocolException("Bitcoin output descriptors are not a spend on this chain");
+            throw new ProtocolException("ML-DSA descriptor uses a Dilithium key, not an ECKey");
         }
 
         @Override
         public String getOutputDescriptor(Script script) {
-            throw new ProtocolException("Bitcoin output descriptors are not a spend on this chain");
+            return getDescriptor() + Utils.bytesToHex(getHashFromScript(script)) + getCloseDescriptor();
         }
 
         @Override
@@ -1620,13 +1620,13 @@ public enum ScriptType {
 
         @Override
         public List<PolicyType> getAllowedPolicyTypes() {
-            return List.of(SINGLE_HD);
+            return List.of(SINGLE_MLDSA87);
         }
     },
     MLDSA87_MULTI("MLDSA87-MULTI", "Dilithium 87 multisig", "m/0'") {
         @Override
         public Address getAddress(byte[] program) {
-            return new MlDsaAddress(program);
+            return new MlDsa87MultiAddress(program);
         }
 
         @Override
@@ -1656,12 +1656,12 @@ public enum ScriptType {
 
         @Override
         public String getOutputDescriptor(ECKey key) {
-            throw new ProtocolException("Bitcoin output descriptors are not a spend on this chain");
+            throw new ProtocolException("ML-DSA descriptor uses a Dilithium key, not an ECKey");
         }
 
         @Override
         public String getOutputDescriptor(Script script) {
-            throw new ProtocolException("Bitcoin output descriptors are not a spend on this chain");
+            return getDescriptor() + Utils.bytesToHex(getHashFromScript(script)) + getCloseDescriptor();
         }
 
         @Override
@@ -1717,7 +1717,7 @@ public enum ScriptType {
 
         @Override
         public List<PolicyType> getAllowedPolicyTypes() {
-            return List.of(MULTI_HD);
+            return List.of(MULTI_MLDSA87);
         }
 
         @Override
@@ -1813,7 +1813,7 @@ public enum ScriptType {
      * Taproot, and anchors stay parseable for existing files but are not listed.
      */
     public boolean isOfferedForNewWallets() {
-        return this == MLDSA87_SINGLE || this == MLDSA87_MULTI || this == MLDSA_SINGLE || this == MLDSA_MULTI || this == P2WPKH;
+        return this == MLDSA87_SINGLE || this == MLDSA87_MULTI || this == MLDSA_SINGLE || this == MLDSA_MULTI || this == P2WPKH || this == P2WSH;
     }
 
     public boolean isDilithium() {
@@ -1822,10 +1822,6 @@ public enum ScriptType {
 
     public boolean isDilithium87() {
         return this == MLDSA87_SINGLE || this == MLDSA87_MULTI;
-    }
-
-    public boolean needsQuantumWarning() {
-        return this == P2WPKH;
     }
 
     /**
@@ -2004,6 +2000,10 @@ public enum ScriptType {
             return 32 + 4 + 1 + ((double)(1312 + 2420) / WITNESS_SCALE_FACTOR) + 4;
         } else if(MLDSA_MULTI.equals(this)) {
             return 32 + 4 + 1 + ((double)(2 * (1312 + 2420) + 32) / WITNESS_SCALE_FACTOR) + 4;
+        } else if(MLDSA87_SINGLE.equals(this)) {
+            return 32 + 4 + 1 + ((double)(2592 + 4627) / WITNESS_SCALE_FACTOR) + 4;
+        } else if(MLDSA87_MULTI.equals(this)) {
+            return 32 + 4 + 1 + ((double)(2 * (2592 + 4627) + 32) / WITNESS_SCALE_FACTOR) + 4;
         } else if(Arrays.asList(WITNESS_TYPES).contains(this)) {
             //Return length of spending input with 75% discount to script size
             return (32 + 4 + 1 + ((double)107 / WITNESS_SCALE_FACTOR) + 4);

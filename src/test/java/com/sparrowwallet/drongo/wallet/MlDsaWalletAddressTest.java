@@ -22,7 +22,7 @@ public class MlDsaWalletAddressTest {
         keystore.setSeed(seed);
         keystore.setSource(KeystoreSource.SW_SEED);
         Wallet wallet = new Wallet("ml");
-        wallet.setPolicyType(PolicyType.SINGLE_HD);
+        wallet.setPolicyType(PolicyType.SINGLE_MLDSA87);
         wallet.setScriptType(ScriptType.MLDSA_SINGLE);
         wallet.getKeystores().add(keystore);
         wallet.setDefaultPolicy(Policy.getPolicy(wallet.getPolicyType(), wallet.getScriptType(), wallet.getKeystores(), 1));

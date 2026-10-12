@@ -180,7 +180,7 @@ public class PSBTInput {
                 case PSBT_IN_WITNESS_UTXO:
                     entry.checkOneByteKey();
                     TransactionOutput witnessTxOutput = new TransactionOutput(null, entry.getData(), 0);
-                    if(witnessTxOutput.getValue() < 0 || witnessTxOutput.getValue() > Transaction.MAX_SATOSHIS) {
+                    if(witnessTxOutput.getValue() < 0 || witnessTxOutput.getValue() > Transaction.MAX_TOKENS) {
                         throw new PSBTParseException("Witness UTXO amount is out of range: " + witnessTxOutput.getValue());
                     }
                     if(!P2SH.isScriptType(witnessTxOutput.getScript()) && !P2WPKH.isScriptType(witnessTxOutput.getScript()) && !P2WSH.isScriptType(witnessTxOutput.getScript()) && !P2TR.isScriptType(witnessTxOutput.getScript())) {
@@ -1591,7 +1591,7 @@ public class PSBTInput {
             }
         } else if(Arrays.asList(WITNESS_TYPES).contains(scriptType)) {
             unifiedScriptType = UnifiedScriptType.WITNESS_V0;
-            scriptCode = connectedScript.getProgram();
+            scriptCode = new byte[0];
         } else {
             unifiedScriptType = UnifiedScriptType.BARE;
             scriptCode = connectedScript.getProgram();

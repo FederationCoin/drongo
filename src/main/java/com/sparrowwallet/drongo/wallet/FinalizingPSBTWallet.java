@@ -65,7 +65,7 @@ public class FinalizingPSBTWallet extends Wallet {
         setGapLimit(0);
         purposeNode.setChildren(new TreeSet<>());
 
-        setPolicyType(numSignatures == 1 ? PolicyType.SINGLE_HD : PolicyType.MULTI_HD);
+        setPolicyType(numSignatures == 1 ? PolicyType.SINGLE_MLDSA87 : PolicyType.MULTI_MLDSA87);
     }
 
     @Override

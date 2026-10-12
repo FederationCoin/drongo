@@ -532,16 +532,13 @@ public class Keystore extends Persistable {
         keystore.setWalletModel(WalletModel.SPARROW);
         keystore.setKeyDerivation(new KeyDerivation(masterFingerprint, KeyDerivation.writePath(derivation)));
 
-        if(policyType == PolicyType.SINGLE_SP) {
-            // Heritage: silent payments / Taproot. Not a spend on this chain.
-            return;
-        } else {
-            DeterministicKey derivedKey = xprv.getKey(derivation);
-            DeterministicKey derivedKeyPublicOnly = derivedKey.dropPrivateBytes().dropParent();
-            ExtendedKey xpub = new ExtendedKey(derivedKeyPublicOnly, derivedKey.getParentFingerprint(), derivation.isEmpty() ? ChildNumber.ZERO : derivation.get(derivation.size() - 1));
-            keystore.setExtendedPublicKey(ExtendedKey.fromDescriptor(xpub.toString()));
+        DeterministicKey derivedKey = xprv.getKey(derivation);
+        DeterministicKey derivedKeyPublicOnly = derivedKey.dropPrivateBytes().dropParent();
+        ExtendedKey xpub = new ExtendedKey(derivedKeyPublicOnly, derivedKey.getParentFingerprint(), derivation.isEmpty() ? ChildNumber.ZERO : derivation.get(derivation.size() - 1));
+        keystore.setExtendedPublicKey(ExtendedKey.fromDescriptor(xpub.toString()));
 
-            int account = ScriptType.getScriptTypesForPolicyType(PolicyType.SINGLE_HD).stream()
+        if(!policyType.isSilentPayment()) {
+            int account = ScriptType.getScriptTypesForPolicyType(policyType).stream()
                     .mapToInt(scriptType -> scriptType.getAccount(keystore.getKeyDerivation().getDerivationPath())).filter(idx -> idx > -1).findFirst().orElse(0);
             List<ChildNumber> bip47Derivation = KeyDerivation.getBip47Derivation(account);
             DeterministicKey bip47Key = xprv.getKey(bip47Derivation);
