@@ -1202,7 +1202,7 @@ public class PSBTInput {
             return SigHash.DEFAULT;
         }
 
-        return SigHash.ALL;
+        return SigHash.UNIFIED_ALL;
     }
 
     public boolean signSilentPayments(ECKey spendPrivateKey) {
