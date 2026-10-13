@@ -229,6 +229,12 @@ public class Script {
             return new Address[]{P2A.getAddress(P2A.getDataFromScript(this))};
         }
 
+        for(ScriptType scriptType : new ScriptType[]{MLDSA_SINGLE, MLDSA87_SINGLE, MLDSA_MULTI, MLDSA87_MULTI}) {
+            if(scriptType.isScriptType(this)) {
+                return new Address[]{scriptType.getAddress(this)};
+            }
+        }
+
         throw new NonStandardScriptException("Cannot find addresses in non standard script: " + toString());
     }
 

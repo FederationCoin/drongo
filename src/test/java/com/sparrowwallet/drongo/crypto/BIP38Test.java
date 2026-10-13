@@ -1,6 +1,7 @@
 package com.sparrowwallet.drongo.crypto;
 
 import com.sparrowwallet.drongo.ChainEncoding;
+import com.sparrowwallet.drongo.policy.PolicyType;
 import com.sparrowwallet.drongo.protocol.Base58;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -50,5 +51,15 @@ public class BIP38Test {
         Assertions.assertThrows(GeneralSecurityException.class, () -> BIP38.decrypt("TestingOneTwoThree", Base58.encodeChecked(unknownType)));
         Assertions.assertThrows(GeneralSecurityException.class, () -> BIP38.decryptNoEC("TestingOneTwoThree", truncated));
         Assertions.assertThrows(GeneralSecurityException.class, () -> BIP38.decryptEC("TestingOneTwoThree", truncated));
+    }
+
+    @Test
+    public void decryptVisitorIsSecpOnly() {
+        Assertions.assertThrows(GeneralSecurityException.class,
+                () -> BIP38.decrypt(PolicyType.SINGLE_MLDSA87, "TestingOneTwoThree", NO_EC_UNCOMPRESSED));
+        Assertions.assertThrows(GeneralSecurityException.class,
+                () -> BIP38.decrypt(PolicyType.SINGLE_MLDSA44, "TestingOneTwoThree", NO_EC_UNCOMPRESSED));
+        Assertions.assertThrows(InvalidPasswordException.class,
+                () -> BIP38.decrypt(PolicyType.SINGLE_SEGWIT, "TestingOneTwoThree", NO_EC_UNCOMPRESSED));
     }
 }

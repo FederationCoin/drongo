@@ -21,10 +21,17 @@ public class MlDsa87Test {
         Assertions.assertEquals(4627, signature.length);
         Assertions.assertTrue(MlDsa87.verify(key.pubkey(), signature, message));
         Assertions.assertEquals(32, MlDsa87.keyHash(key.pubkey()).length);
-        Assertions.assertEquals(32, MlDsa87.childSeed(seed, 0).length);
         byte[] a = MlDsa87.keyHash(key.pubkey());
-        byte[] b = MlDsa87.keyHash(MlDsa87.keygen(MlDsa87.childSeed(seed, 1)).pubkey());
-        Assertions.assertEquals(32, MlDsa87.policyProgram(2, List.of(a, b)).length);
+        byte[] otherSeed = new byte[32];
+        Arrays.fill(otherSeed, (byte)0x23);
+        byte[] b = MlDsa87.keyHash(MlDsa87.keygen(otherSeed).pubkey());
+        Assertions.assertEquals(71, MlDsa87.policyProgram(2, List.of(a, b)).length);
+        IllegalArgumentException equal = Assertions.assertThrows(IllegalArgumentException.class,
+                () -> MlDsa87.policyProgram(1, List.of(a, a.clone())));
+        Assertions.assertTrue(equal.getMessage().contains("strictly increasing"));
+        IllegalArgumentException shortHash = Assertions.assertThrows(IllegalArgumentException.class,
+                () -> MlDsa87.policyProgram(1, List.of(new byte[31])));
+        Assertions.assertTrue(shortHash.getMessage().contains("32"));
         Assertions.assertNotEquals(Utils.bytesToHex(a), Utils.bytesToHex(MlDsa44.keyHash(MlDsa44.keygen(seed).pubkey())));
     }
 }

@@ -10,6 +10,14 @@ public final class SettlementFee {
         return virtualBytes <= 0 ? 0 : virtualBytes / VSIZE_DIVISOR;
     }
 
+    /**
+     * Tokens per virtual byte at the chain floor. Same rule as {@link #minimumTokens(long)}:
+     * 1 token per {@link #VSIZE_DIVISOR} vB, as a rate for fee-rate maps.
+     */
+    public static double minimumRateTokensPerVb() {
+        return (double) minimumTokens(VSIZE_DIVISOR) / (double) VSIZE_DIVISOR;
+    }
+
     public static boolean feeMeetsMinimum(long feeTokens, long virtualBytes) {
         return feeTokens >= minimumTokens(virtualBytes);
     }

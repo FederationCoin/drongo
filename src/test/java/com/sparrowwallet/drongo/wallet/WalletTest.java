@@ -688,7 +688,7 @@ public class WalletTest {
         Address address = receive0.getAddress();
         Assertions.assertEquals(32, address.getData().length);
         Assertions.assertFalse(address.toString().isEmpty());
-        Assertions.assertEquals(34, receive0.getOutputScript().getProgram().length);
+        Assertions.assertEquals(36, receive0.getOutputScript().getProgram().length);
         Assertions.assertEquals(64, receive0.getOutputDescriptor().length());
     }
 }

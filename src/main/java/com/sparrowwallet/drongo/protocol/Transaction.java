@@ -24,9 +24,8 @@ public class Transaction extends ChildMessage {
     public static final int DEFAULT_SEGWIT_FLAG = 1;
     public static final int COINBASE_MATURITY_THRESHOLD = 100;
 
-    //Min feerate for defining dust, defined in tokens/vB
-    //From: https://github.com/bitcoin/bitcoin/blob/0.19/src/policy/policy.h#L50
-    public static final double DUST_RELAY_TX_FEE = 3d;
+    // Dust feerate is the chain minimum (1 token per 12 vB), not Bitcoin's 3 sat/vB.
+    public static final double DUST_RELAY_TX_FEE = 1.0d / SettlementFee.VSIZE_DIVISOR;
 
     //Default min feerate, defined in tokens/vB
     public static final double DEFAULT_MIN_RELAY_FEE = 1d;
@@ -925,6 +924,7 @@ public class Transaction extends ChildMessage {
             throw new RuntimeException(e);  // Cannot happen.
         }
 
+        // SHA256 TaggedHash("UnifiedSighash"), not Blake2b.
         return Sha256Hash.wrap(Utils.taggedHash("UnifiedSighash", bos.toByteArray()));
     }
 

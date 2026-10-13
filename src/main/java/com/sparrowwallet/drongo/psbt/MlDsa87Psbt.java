@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Half-signed ML-DSA-87 PSBT slots. Signed = pubkey||sig. Skip = 32-byte key hash.
+ * Half-signed ML-DSA-87 PSBT slots. Signed = pubkey||sig. Skip = empty.
  */
 public final class MlDsa87Psbt {
     private MlDsa87Psbt() {
@@ -50,7 +50,7 @@ public final class MlDsa87Psbt {
             if(hex != null) {
                 slots.add(Utils.hexToBytes(hex));
             } else {
-                slots.add(Arrays.copyOf(hash, 32));
+                slots.add(new byte[0]);
             }
         }
         return MlDsa87Multisig.send(transaction, slots);

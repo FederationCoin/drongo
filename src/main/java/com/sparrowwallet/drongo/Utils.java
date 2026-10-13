@@ -444,6 +444,7 @@ public class Utils {
         return out;
     }
 
+    /** SHA256 TaggedHash: SHA256(SHA256(tag) || SHA256(tag) || msg). Unified sighash uses tag UnifiedSighash. */
     public static byte[] taggedHash(String tag, byte[] msg) {
         byte[] hash = Sha256Hash.hash(tag.getBytes(StandardCharsets.UTF_8));
         ByteBuffer buffer = ByteBuffer.allocate(hash.length + hash.length + msg.length);

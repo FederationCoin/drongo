@@ -28,4 +28,15 @@ public class SettlementFeeTest {
                 "The chain has a minimum fee of 1 token per 12 vB, totaling 13 tokens for your transaction.",
                 SettlementFee.chainMinimumSentence(161));
     }
+
+    @Test
+    public void dustRelayTracksChainMinimum() {
+        Assertions.assertEquals(SettlementFee.minimumRateTokensPerVb(), Transaction.DUST_RELAY_TX_FEE);
+    }
+
+    @Test
+    public void rateIsIntegerFloorOverDivisor() {
+        Assertions.assertEquals(1L, SettlementFee.minimumTokens(SettlementFee.VSIZE_DIVISOR));
+        Assertions.assertEquals(1.0d / SettlementFee.VSIZE_DIVISOR, SettlementFee.minimumRateTokensPerVb());
+    }
 }

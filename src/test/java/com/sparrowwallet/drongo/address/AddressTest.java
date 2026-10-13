@@ -20,11 +20,10 @@ public class AddressTest {
         Address address2 = roundTrip(Network.MAINNET, new MlDsa87Address(payload("bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3")));
         Assertions.assertTrue(address2 instanceof MlDsaAddress);
 
-        Address address3 = roundTrip(Network.MAINNET, new P2PKHAddress(hash160("19Sp9dLinHy3dKo2Xxj53ouuZWAoVGGhg8")));
-        Assertions.assertTrue(address3 instanceof P2PKHAddress);
-
-        Address address4 = roundTrip(Network.MAINNET, new P2SHAddress(hash160("34jnjFM4SbaB7Q8aMtNDG849RQ1gUYgpgo")));
-        Assertions.assertTrue(address4 instanceof P2SHAddress);
+        Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.MAINNET, new P2PKHAddress(hash160("19Sp9dLinHy3dKo2Xxj53ouuZWAoVGGhg8")).toString(Network.MAINNET)));
+        Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.MAINNET, new P2SHAddress(hash160("34jnjFM4SbaB7Q8aMtNDG849RQ1gUYgpgo")).toString(Network.MAINNET)));
 
         Address address5 = roundTrip(Network.TESTNET, new P2WPKHAddress(payload("tb1qawkzyj2l5yck5jq4wyhkc4837x088580y9uyk8")));
         Assertions.assertTrue(address5 instanceof P2WPKHAddress);
@@ -32,23 +31,10 @@ public class AddressTest {
         Address address6 = roundTrip(Network.TESTNET, new MlDsa87Address(payload("tb1q8kdkthp5a6vfrdas84efkpv25ul3s9wpzc755cra8av48xq4a7wsjcsdma")));
         Assertions.assertTrue(address6 instanceof MlDsaAddress);
 
-        Address address7 = roundTrip(Network.TESTNET, new P2PKHAddress(hash160("mng6R5oLWBBo8iFWU9Mx4zFy5pWhrWMeW2")));
-        Assertions.assertTrue(address7 instanceof P2PKHAddress);
-
-        Address address8 = roundTrip(Network.TESTNET, new P2PKHAddress(hash160("n1S1rnnZm3RdW9iuAF6Hjk3gLZWGc59zDi")));
-        Assertions.assertTrue(address8 instanceof P2PKHAddress);
-
-        Address address9 = roundTrip(Network.TESTNET, new P2SHAddress(hash160("2NCZUtUt6gzXyBiPEQi5yQyrgR6f6F6Ki6A")));
-        Assertions.assertTrue(address9 instanceof P2SHAddress);
-
-        Address address10 = roundTrip(Network.SIGNET, new P2SHAddress(hash160("2NCZUtUt6gzXyBiPEQi5yQyrgR6f6F6Ki6A")));
-        Assertions.assertTrue(address10 instanceof P2SHAddress);
-
-        Address address11 = roundTrip(Network.MAINNET, new P2TRAddress(payload("bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqzk5jj0")));
-        Assertions.assertTrue(address11 instanceof P2TRAddress);
-
-        Address address12 = roundTrip(Network.TESTNET, new P2TRAddress(payload("tb1pqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsesf3hn0c")));
-        Assertions.assertTrue(address12 instanceof P2TRAddress);
+        Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.TESTNET, new P2PKHAddress(hash160("mng6R5oLWBBo8iFWU9Mx4zFy5pWhrWMeW2")).toString(Network.TESTNET)));
+        Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.MAINNET, new P2TRAddress(payload("bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqzk5jj0")).toString(Network.MAINNET)));
     }
 
     @Test
@@ -61,17 +47,10 @@ public class AddressTest {
         Address address6 = roundTrip(Network.TESTNET, new MlDsa87Address(payload("tb1q8kdkthp5a6vfrdas84efkpv25ul3s9wpzc755cra8av48xq4a7wsjcsdma")));
         Assertions.assertTrue(address6 instanceof MlDsaAddress);
 
-        Address address7 = roundTrip(Network.TESTNET, new P2PKHAddress(hash160("mng6R5oLWBBo8iFWU9Mx4zFy5pWhrWMeW2")));
-        Assertions.assertTrue(address7 instanceof P2PKHAddress);
-
-        Address address8 = roundTrip(Network.TESTNET, new P2PKHAddress(hash160("n1S1rnnZm3RdW9iuAF6Hjk3gLZWGc59zDi")));
-        Assertions.assertTrue(address8 instanceof P2PKHAddress);
-
-        Address address9 = roundTrip(Network.TESTNET, new P2SHAddress(hash160("2NCZUtUt6gzXyBiPEQi5yQyrgR6f6F6Ki6A")));
-        Assertions.assertTrue(address9 instanceof P2SHAddress);
-
-        Address address12 = roundTrip(Network.TESTNET, new P2TRAddress(payload("tb1pqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsesf3hn0c")));
-        Assertions.assertTrue(address12 instanceof P2TRAddress);
+        Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.TESTNET, new P2PKHAddress(hash160("mng6R5oLWBBo8iFWU9Mx4zFy5pWhrWMeW2")).toString(Network.TESTNET)));
+        Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.TESTNET, new P2TRAddress(payload("tb1pqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsesf3hn0c")).toString(Network.TESTNET)));
     }
 
     @Test
@@ -81,7 +60,7 @@ public class AddressTest {
 
         for(int i = 0; i < 100; i++) {
             random.nextBytes(values);
-            Address address = (i % 2 == 0 ? new P2PKHAddress(values) : new P2WPKHAddress(values));
+            Address address = new P2WPKHAddress(values);
             String strAddress = address.toString();
             Address checkAddress = Address.fromString(strAddress);
             Assertions.assertArrayEquals(values, checkAddress.getData());
@@ -92,10 +71,7 @@ public class AddressTest {
             random.nextBytes(values32);
             Address address = new P2WSHAddress(values32);
             String strAddress = address.toString();
-            Address checkAddress = Address.fromString(strAddress);
-            Assertions.assertArrayEquals(values32, checkAddress.getData());
-            Assertions.assertEquals(address, checkAddress,
-                    "a witness v0 32-byte program is the same payment after parse, even when parse answers Dilithium");
+            Assertions.assertThrows(InvalidAddressException.class, () -> Address.fromString(strAddress));
         }
     }
 

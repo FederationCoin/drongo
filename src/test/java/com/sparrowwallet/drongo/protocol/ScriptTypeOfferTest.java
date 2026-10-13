@@ -17,9 +17,9 @@ public class ScriptTypeOfferTest {
         Assertions.assertEquals(List.of(ScriptType.MLDSA87_SINGLE), d87);
         Assertions.assertEquals(List.of(ScriptType.MLDSA_SINGLE), ScriptType.getAddressableScriptTypes(PolicyType.SINGLE_MLDSA44));
         Assertions.assertEquals(List.of(ScriptType.P2WPKH), ScriptType.getAddressableScriptTypes(PolicyType.SINGLE_SEGWIT));
-        Assertions.assertEquals(List.of(ScriptType.MLDSA87_MULTI), ScriptType.getAddressableScriptTypes(PolicyType.MULTI_MLDSA87));
-        Assertions.assertEquals(List.of(ScriptType.MLDSA_MULTI), ScriptType.getAddressableScriptTypes(PolicyType.MULTI_MLDSA44));
-        Assertions.assertEquals(List.of(ScriptType.P2WSH), ScriptType.getAddressableScriptTypes(PolicyType.MULTI_SEGWIT));
+        Assertions.assertTrue(ScriptType.getAddressableScriptTypes(PolicyType.MULTI_MLDSA87).isEmpty());
+        Assertions.assertTrue(ScriptType.getAddressableScriptTypes(PolicyType.MULTI_MLDSA44).isEmpty());
+        Assertions.assertTrue(ScriptType.getAddressableScriptTypes(PolicyType.MULTI_SEGWIT).isEmpty());
         Assertions.assertTrue(ScriptType.getAddressableScriptTypes(PolicyType.SINGLE_SP).isEmpty());
         Assertions.assertEquals(ScriptType.MLDSA87_SINGLE, PolicyType.SINGLE_MLDSA87.getDefaultScriptType());
         Assertions.assertTrue(PolicyType.SINGLE_MLDSA87.isOfferedForNewWallets());
@@ -31,7 +31,14 @@ public class ScriptTypeOfferTest {
         Assertions.assertTrue(ScriptType.P2WPKH.isAllowed(PolicyType.SINGLE_SEGWIT));
         Assertions.assertFalse(ScriptType.P2PKH.isAllowed(PolicyType.SINGLE_MLDSA87));
         Assertions.assertTrue(ScriptType.P2WPKH.isOfferedForNewWallets());
-        Assertions.assertTrue(ScriptType.P2WSH.isOfferedForNewWallets());
+        Assertions.assertFalse(ScriptType.P2WSH.isOfferedForNewWallets());
+        Assertions.assertFalse(ScriptType.MLDSA_MULTI.isOfferedForNewWallets());
+        Assertions.assertFalse(ScriptType.MLDSA87_MULTI.isOfferedForNewWallets());
+        Assertions.assertTrue(ScriptType.MLDSA_SINGLE.isOfferedForNewWallets());
+        Assertions.assertTrue(ScriptType.MLDSA87_SINGLE.isOfferedForNewWallets());
+        Assertions.assertEquals(TransactionSignature.Type.UNIFIED, ScriptType.MLDSA_SINGLE.getSignatureType());
+        Assertions.assertEquals(TransactionSignature.Type.UNIFIED, ScriptType.MLDSA87_SINGLE.getSignatureType());
+        Assertions.assertEquals(TransactionSignature.Type.ECDSA, ScriptType.P2WPKH.getSignatureType());
         Assertions.assertFalse(ScriptType.getScriptTypesForPolicyType(PolicyType.SINGLE_MLDSA87).contains(ScriptType.P2TR));
         Assertions.assertTrue(ScriptType.P2TR.isParkedOnThisChain());
         Assertions.assertFalse(ScriptType.P2WPKH.isParkedOnThisChain());

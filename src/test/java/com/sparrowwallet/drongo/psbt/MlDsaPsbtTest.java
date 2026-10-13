@@ -58,7 +58,7 @@ public class MlDsaPsbtTest {
 
         TransactionWitness oneSig = MlDsaPsbt.finalizeMultisig(spend, wallet1.getPsbtInputs().get(0), ordered);
         Assertions.assertEquals(1, signedSlots(oneSig.getPushes()));
-        Assertions.assertTrue(hasSkipHash(oneSig.getPushes(), MlDsa44.keyHash(k3.pubkey())));
+        Assertions.assertTrue(oneSig.getPushes().stream().anyMatch(p -> p.length == 0));
 
         PSBT wallet2 = new PSBT(wallet1.serialize());
         MlDsaPsbt.signInput(wallet2, 0, k2, spent);
@@ -66,34 +66,17 @@ public class MlDsaPsbtTest {
 
         TransactionWitness twoSigs = MlDsaPsbt.finalizeMultisig(spend, wallet2.getPsbtInputs().get(0), ordered);
         Assertions.assertEquals(2, signedSlots(twoSigs.getPushes()));
-        Assertions.assertTrue(hasSkipHash(twoSigs.getPushes(), MlDsa44.keyHash(k3.pubkey())));
-        for(byte[] push : twoSigs.getPushes()) {
-            if(push.length == 32) {
-                Assertions.assertEquals(32, push.length);
-                Assertions.assertArrayEquals(MlDsa44.keyHash(k3.pubkey()), push);
-            }
-        }
+        Assertions.assertEquals(1, twoSigs.getPushes().stream().filter(p -> p.length == 0).count());
     }
 
     private static int signedSlots(List<byte[]> stack) {
         int n = 0;
-        for(int i = 0; i < stack.size(); i++) {
-            if(stack.get(i).length == MlDsa44.PUBLIC_KEY_SIZE
-                    && i + 1 < stack.size()
-                    && stack.get(i + 1).length == MlDsa44.SIGNATURE_SIZE) {
+        int signed = MlDsa44.PUBLIC_KEY_SIZE + MlDsa44.SIGNATURE_SIZE;
+        for(byte[] push : stack) {
+            if(push.length == signed) {
                 n++;
-                i++;
             }
         }
         return n;
-    }
-
-    private static boolean hasSkipHash(List<byte[]> stack, byte[] hash) {
-        for(byte[] push : stack) {
-            if(push.length == 32 && Arrays.equals(push, hash)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

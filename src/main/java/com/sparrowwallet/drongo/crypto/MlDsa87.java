@@ -8,6 +8,7 @@ import org.bouncycastle.pqc.crypto.mldsa.MLDSAParameters;
 import org.bouncycastle.pqc.crypto.mldsa.MLDSAPrivateKeyParameters;
 import org.bouncycastle.pqc.crypto.mldsa.MLDSAPublicKeyParameters;
 import org.bouncycastle.pqc.crypto.mldsa.MLDSASigner;
+import com.sparrowwallet.drongo.protocol.KeyHashOrder;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -27,8 +28,6 @@ public final class MlDsa87 {
     public static final int MAX_KEYS = 12;
     public static final byte[] CONTEXT = "FederationCoin".getBytes(StandardCharsets.US_ASCII);
     private static final byte[] KEY_TAG = "FCN-MLDSA87-KEY".getBytes(StandardCharsets.US_ASCII);
-    private static final byte[] POLICY_TAG = "FCN-MLDSA87-POLICY".getBytes(StandardCharsets.US_ASCII);
-    private static final byte[] CHILD_TAG = "FCN-MLDSA87-CHILD".getBytes(StandardCharsets.US_ASCII);
 
     public record Keypair(byte[] pubkey, byte[] secret) {}
 
@@ -41,15 +40,6 @@ public final class MlDsa87 {
         byte[] out = new byte[32];
         digest.doFinal(out, 0);
         return out;
-    }
-
-    public static byte[] childSeed(byte[] master, int index) {
-        ByteBuffer buf = ByteBuffer.allocate(1 + CHILD_TAG.length + master.length + 4);
-        buf.put((byte)0x11);
-        buf.put(CHILD_TAG);
-        buf.put(master);
-        buf.putInt(index);
-        return blake2b256(buf.array());
     }
 
     public static Keypair keygen(byte[] seed) {
@@ -103,24 +93,19 @@ public final class MlDsa87 {
             throw new IllegalArgumentException("ML-DSA-87 policy threshold");
         }
         List<byte[]> ordered = new ArrayList<>(keyHashes);
-        ordered.sort((a, b) -> {
-            for(int i = 0; i < 32; i++) {
-                int d = (a[i] & 0xff) - (b[i] & 0xff);
-                if(d != 0) {
-                    return d;
-                }
-            }
-            return 0;
-        });
-        ByteBuffer buf = ByteBuffer.allocate(1 + POLICY_TAG.length + 2 + ordered.size() * 32);
-        buf.put((byte)0x12);
-        buf.put(POLICY_TAG);
-        buf.put((byte)threshold);
-        buf.put((byte)ordered.size());
         for(byte[] hash : ordered) {
-            buf.put(hash);
+            if(hash == null || hash.length != 32) {
+                throw new IllegalArgumentException("ML-DSA-87 policy hash must be 32 bytes");
+            }
         }
-        return blake2b256(buf.array());
+        ordered.sort(KeyHashOrder.INSTANCE);
+        for(int i = 1; i < ordered.size(); i++) {
+            if(Arrays.equals(ordered.get(i - 1), ordered.get(i))) {
+                throw new IllegalArgumentException("ML-DSA-87 policy hashes must be strictly increasing");
+            }
+        }
+        return com.sparrowwallet.drongo.protocol.ModernSig.policyScript(
+                threshold, ordered, com.sparrowwallet.drongo.protocol.ModernSig.PARAM_DILITHIUM_87).getProgram();
     }
 
     private static SecureRandom zeros() {

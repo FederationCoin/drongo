@@ -26,6 +26,11 @@ public enum PolicyType {
         public boolean isHomogeneousMultisig() {
             return true;
         }
+
+        @Override
+        public boolean isOfferedForNewWallets() {
+            return false;
+        }
     },
     SINGLE_MLDSA44("Dilithium 44 single key", "Dilithium 44 single key", MLDSA_SINGLE) {
         @Override
@@ -48,6 +53,11 @@ public enum PolicyType {
         public boolean isHomogeneousMultisig() {
             return true;
         }
+
+        @Override
+        public boolean isOfferedForNewWallets() {
+            return false;
+        }
     },
     SINGLE_SEGWIT("SegWit single key", "Native SegWit single key", P2WPKH) {
         @Override
@@ -69,6 +79,11 @@ public enum PolicyType {
         @Override
         public boolean isHomogeneousMultisig() {
             return true;
+        }
+
+        @Override
+        public boolean isOfferedForNewWallets() {
+            return false;
         }
     },
     SINGLE_SP("Single Signature SP", "Single Signature SP (Silent Payments)", P2TR) {

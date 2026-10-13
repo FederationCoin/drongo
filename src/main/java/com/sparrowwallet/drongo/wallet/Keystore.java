@@ -494,18 +494,12 @@ public class Keystore extends Persistable {
         return copy;
     }
 
-    public MlDsa44.Keypair getMlDsaKeypair(int index) throws MnemonicException {
-        if(seed == null) {
-            throw new IllegalArgumentException("Keystore does not contain a seed for ML-DSA CHILD derivation");
-        }
-        return MlDsa44.keygen(MlDsa44.childSeed(seed.getSeedBytes(), index));
+    public MlDsa44.Keypair getMlDsaKeypair(WalletNode node) throws MnemonicException {
+        return MlDsa44.keygen(getKey(node).getPrivKeyBytes());
     }
 
-    public com.sparrowwallet.drongo.crypto.MlDsa87.Keypair getMlDsa87Keypair(int index) throws MnemonicException {
-        if(seed == null) {
-            throw new IllegalArgumentException("Keystore does not contain a seed for ML-DSA-87 CHILD derivation");
-        }
-        return com.sparrowwallet.drongo.crypto.MlDsa87.keygen(com.sparrowwallet.drongo.crypto.MlDsa87.childSeed(seed.getSeedBytes(), index));
+    public com.sparrowwallet.drongo.crypto.MlDsa87.Keypair getMlDsa87Keypair(WalletNode node) throws MnemonicException {
+        return com.sparrowwallet.drongo.crypto.MlDsa87.keygen(getKey(node).getPrivKeyBytes());
     }
 
     public static Keystore fromSeed(DeterministicSeed seed, PolicyType policyType, List<ChildNumber> derivation) throws MnemonicException {

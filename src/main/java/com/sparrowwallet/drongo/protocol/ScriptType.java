@@ -1353,10 +1353,10 @@ public enum ScriptType {
 
         @Override
         public Script getOutputScript(byte[] program) {
-            List<ScriptChunk> chunks = new ArrayList<>();
-            chunks.add(new ScriptChunk(OP_0, null));
-            chunks.add(new ScriptChunk(program.length, program));
-            return new Script(chunks);
+            if(program.length != 32 && ModernSig.isTemplate(new Script(program))) {
+                return new Script(program);
+            }
+            return ModernSig.singleScript(program, ModernSig.PARAM_DILITHIUM_44);
         }
 
         @Override
@@ -1386,17 +1386,18 @@ public enum ScriptType {
 
         @Override
         public boolean isScriptType(Script script) {
-            List<ScriptChunk> chunks = script.chunks;
-            if(chunks.size() != 2 || !chunks.get(0).equalsOpCode(OP_0)) {
-                return false;
-            }
-            byte[] program = chunks.get(1).data;
-            return program != null && program.length == 32;
+            ModernSig.Single single = ModernSig.matchSingle(script);
+            return single != null && single.algorithm() == ModernSig.ALGO_DILITHIUM
+                    && single.param() == ModernSig.PARAM_DILITHIUM_44;
         }
 
         @Override
         public byte[] getHashFromScript(Script script) {
-            return script.chunks.get(1).data;
+            ModernSig.Single single = ModernSig.matchSingle(script);
+            if(single == null) {
+                throw new ProtocolException("not a Dilithium-44 single locking script");
+            }
+            return single.fingerprint();
         }
 
         @Override
@@ -1424,7 +1425,7 @@ public enum ScriptType {
 
         @Override
         public TransactionSignature.Type getSignatureType() {
-            return TransactionSignature.Type.ECDSA;
+            return TransactionSignature.Type.UNIFIED;
         }
 
         @Override
@@ -1445,12 +1446,15 @@ public enum ScriptType {
 
         @Override
         public Address getAddress(Script script) {
-            return getAddress(getHashFromScript(script));
+            return getAddress(script.getProgram());
         }
 
         @Override
         public Script getOutputScript(byte[] program) {
-            return MLDSA_SINGLE.getOutputScript(program);
+            if(program.length != 32 && ModernSig.matchPolicy(new Script(program)) != null) {
+                return new Script(program);
+            }
+            throw new ProtocolException("ML-DSA policy output is a CHECKMODERNPOLICY locking script");
         }
 
         @Override
@@ -1460,7 +1464,7 @@ public enum ScriptType {
 
         @Override
         public Script getOutputScript(Script script) {
-            return getOutputScript(getHashFromScript(script));
+            return new Script(script.getProgram());
         }
 
         @Override
@@ -1470,7 +1474,7 @@ public enum ScriptType {
 
         @Override
         public String getOutputDescriptor(Script script) {
-            return getDescriptor() + Utils.bytesToHex(getHashFromScript(script)) + getCloseDescriptor();
+            return getDescriptor() + Utils.bytesToHex(script.getProgram()) + getCloseDescriptor();
         }
 
         @Override
@@ -1480,12 +1484,14 @@ public enum ScriptType {
 
         @Override
         public boolean isScriptType(Script script) {
-            return MLDSA_SINGLE.isScriptType(script);
+            ModernSig.Policy policy = ModernSig.matchPolicy(script);
+            return policy != null && policy.algorithm() == ModernSig.ALGO_DILITHIUM
+                    && policy.param() == ModernSig.PARAM_DILITHIUM_44;
         }
 
         @Override
         public byte[] getHashFromScript(Script script) {
-            return script.chunks.get(1).data;
+            return script.getProgram();
         }
 
         @Override
@@ -1512,7 +1518,7 @@ public enum ScriptType {
                     slots.add(new byte[MlDsa44.PUBLIC_KEY_SIZE + MlDsa44.SIGNATURE_SIZE]);
                     signed++;
                 } else {
-                    slots.add(new byte[32]);
+                    slots.add(new byte[0]);
                 }
             }
             TransactionWitness witness = MlDsaSpend.sendMultisig(transaction, slots);
@@ -1521,7 +1527,7 @@ public enum ScriptType {
 
         @Override
         public TransactionSignature.Type getSignatureType() {
-            return TransactionSignature.Type.ECDSA;
+            return TransactionSignature.Type.UNIFIED;
         }
 
         @Override
@@ -1552,7 +1558,10 @@ public enum ScriptType {
 
         @Override
         public Script getOutputScript(byte[] program) {
-            return MLDSA_SINGLE.getOutputScript(program);
+            if(program.length != 32 && ModernSig.isTemplate(new Script(program))) {
+                return new Script(program);
+            }
+            return ModernSig.singleScript(program, ModernSig.PARAM_DILITHIUM_87);
         }
 
         @Override
@@ -1582,12 +1591,18 @@ public enum ScriptType {
 
         @Override
         public boolean isScriptType(Script script) {
-            return MLDSA_SINGLE.isScriptType(script);
+            ModernSig.Single single = ModernSig.matchSingle(script);
+            return single != null && single.algorithm() == ModernSig.ALGO_DILITHIUM
+                    && single.param() == ModernSig.PARAM_DILITHIUM_87;
         }
 
         @Override
         public byte[] getHashFromScript(Script script) {
-            return script.chunks.get(1).data;
+            ModernSig.Single single = ModernSig.matchSingle(script);
+            if(single == null) {
+                throw new ProtocolException("not a Dilithium-87 single locking script");
+            }
+            return single.fingerprint();
         }
 
         @Override
@@ -1615,7 +1630,7 @@ public enum ScriptType {
 
         @Override
         public TransactionSignature.Type getSignatureType() {
-            return TransactionSignature.Type.ECDSA;
+            return TransactionSignature.Type.UNIFIED;
         }
 
         @Override
@@ -1636,12 +1651,15 @@ public enum ScriptType {
 
         @Override
         public Address getAddress(Script script) {
-            return getAddress(getHashFromScript(script));
+            return getAddress(script.getProgram());
         }
 
         @Override
         public Script getOutputScript(byte[] program) {
-            return MLDSA_SINGLE.getOutputScript(program);
+            if(program.length != 32 && ModernSig.matchPolicy(new Script(program)) != null) {
+                return new Script(program);
+            }
+            throw new ProtocolException("ML-DSA-87 policy output is a CHECKMODERNPOLICY locking script");
         }
 
         @Override
@@ -1651,7 +1669,7 @@ public enum ScriptType {
 
         @Override
         public Script getOutputScript(Script script) {
-            return getOutputScript(getHashFromScript(script));
+            return new Script(script.getProgram());
         }
 
         @Override
@@ -1661,7 +1679,7 @@ public enum ScriptType {
 
         @Override
         public String getOutputDescriptor(Script script) {
-            return getDescriptor() + Utils.bytesToHex(getHashFromScript(script)) + getCloseDescriptor();
+            return getDescriptor() + Utils.bytesToHex(script.getProgram()) + getCloseDescriptor();
         }
 
         @Override
@@ -1671,12 +1689,14 @@ public enum ScriptType {
 
         @Override
         public boolean isScriptType(Script script) {
-            return MLDSA_SINGLE.isScriptType(script);
+            ModernSig.Policy policy = ModernSig.matchPolicy(script);
+            return policy != null && policy.algorithm() == ModernSig.ALGO_DILITHIUM
+                    && policy.param() == ModernSig.PARAM_DILITHIUM_87;
         }
 
         @Override
         public byte[] getHashFromScript(Script script) {
-            return script.chunks.get(1).data;
+            return script.getProgram();
         }
 
         @Override
@@ -1703,7 +1723,7 @@ public enum ScriptType {
                     slots.add(new byte[com.sparrowwallet.drongo.crypto.MlDsa87.PUBLIC_KEY_SIZE + com.sparrowwallet.drongo.crypto.MlDsa87.SIGNATURE_SIZE]);
                     signed++;
                 } else {
-                    slots.add(new byte[32]);
+                    slots.add(new byte[0]);
                 }
             }
             TransactionWitness witness = MlDsa87Multisig.send(transaction, slots);
@@ -1712,7 +1732,7 @@ public enum ScriptType {
 
         @Override
         public TransactionSignature.Type getSignatureType() {
-            return TransactionSignature.Type.ECDSA;
+            return TransactionSignature.Type.UNIFIED;
         }
 
         @Override
@@ -1813,7 +1833,7 @@ public enum ScriptType {
      * Taproot, and anchors stay parseable for existing files but are not listed.
      */
     public boolean isOfferedForNewWallets() {
-        return this == MLDSA87_SINGLE || this == MLDSA87_MULTI || this == MLDSA_SINGLE || this == MLDSA_MULTI || this == P2WPKH || this == P2WSH;
+        return this == MLDSA87_SINGLE || this == MLDSA_SINGLE || this == P2WPKH;
     }
 
     public boolean isDilithium() {
