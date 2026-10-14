@@ -494,12 +494,38 @@ public class Keystore extends Persistable {
         return copy;
     }
 
+    public byte[] getHdSeedBytes() throws MnemonicException {
+        return getMasterPrivateKey().getPrivKeyBytes();
+    }
+
+    public byte[] deriveMlDsaSeed(DilithiumKind kind, WalletNode node, int slot) throws MnemonicException {
+        int pos = kind.isPolicy() ? MlDsaSeed.policyIndex(node.getIndex(), slot) : node.getIndex();
+        boolean change = node.getKeyPurpose() == KeyPurpose.CHANGE;
+        return MlDsaSeed.derive(getHdSeedBytes(), kind.seedKind(), MlDsaSeed.kdfIndex(pos, change));
+    }
+
+    public DilithiumKind.Keypair getDilithiumKeypair(DilithiumKind kind, WalletNode node, int slot) throws MnemonicException {
+        return kind.keygen(deriveMlDsaSeed(kind, node, slot));
+    }
+
     public MlDsa44.Keypair getMlDsaKeypair(WalletNode node) throws MnemonicException {
-        return MlDsa44.keygen(getKey(node).getPrivKeyBytes());
+        DilithiumKind.Keypair pair = getDilithiumKeypair(DilithiumKind.SINGLE_44, node, 0);
+        return new MlDsa44.Keypair(pair.pubkey(), pair.secret());
     }
 
     public com.sparrowwallet.drongo.crypto.MlDsa87.Keypair getMlDsa87Keypair(WalletNode node) throws MnemonicException {
-        return com.sparrowwallet.drongo.crypto.MlDsa87.keygen(getKey(node).getPrivKeyBytes());
+        DilithiumKind.Keypair pair = getDilithiumKeypair(DilithiumKind.SINGLE_87, node, 0);
+        return new com.sparrowwallet.drongo.crypto.MlDsa87.Keypair(pair.pubkey(), pair.secret());
+    }
+
+    public MlDsa44.Keypair getMlDsaPolicyKeypair(WalletNode node, int slot) throws MnemonicException {
+        DilithiumKind.Keypair pair = getDilithiumKeypair(DilithiumKind.POLICY_44, node, slot);
+        return new MlDsa44.Keypair(pair.pubkey(), pair.secret());
+    }
+
+    public com.sparrowwallet.drongo.crypto.MlDsa87.Keypair getMlDsa87PolicyKeypair(WalletNode node, int slot) throws MnemonicException {
+        DilithiumKind.Keypair pair = getDilithiumKeypair(DilithiumKind.POLICY_87, node, slot);
+        return new com.sparrowwallet.drongo.crypto.MlDsa87.Keypair(pair.pubkey(), pair.secret());
     }
 
     public static Keystore fromSeed(DeterministicSeed seed, PolicyType policyType, List<ChildNumber> derivation) throws MnemonicException {

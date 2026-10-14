@@ -63,8 +63,17 @@ public final class ModernSig {
         return new Script(chunks);
     }
 
+    public static boolean isKnownKind(int algorithm, int param) {
+        return algorithm == ALGO_DILITHIUM && (param == PARAM_DILITHIUM_44 || param == PARAM_DILITHIUM_87);
+    }
+
     public static boolean isTemplate(Script script) {
-        return matchSingle(script) != null || matchPolicy(script) != null;
+        Single single = matchSingle(script);
+        if(single != null) {
+            return isKnownKind(single.algorithm(), single.param());
+        }
+        Policy policy = matchPolicy(script);
+        return policy != null && isKnownKind(policy.algorithm(), policy.param());
     }
 
     public static Single matchSingle(Script script) {

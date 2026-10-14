@@ -20,9 +20,9 @@ public class PolicyTypeTest {
     @Test
     public void offeredAndSegwitVisit() {
         Assertions.assertTrue(PolicyType.SINGLE_MLDSA87.isOfferedForNewWallets());
-        Assertions.assertFalse(PolicyType.MULTI_MLDSA87.isOfferedForNewWallets());
+        Assertions.assertTrue(PolicyType.MULTI_MLDSA87.isOfferedForNewWallets());
         Assertions.assertTrue(PolicyType.SINGLE_MLDSA44.isOfferedForNewWallets());
-        Assertions.assertFalse(PolicyType.MULTI_MLDSA44.isOfferedForNewWallets());
+        Assertions.assertTrue(PolicyType.MULTI_MLDSA44.isOfferedForNewWallets());
         Assertions.assertTrue(PolicyType.SINGLE_SEGWIT.isOfferedForNewWallets());
         Assertions.assertFalse(PolicyType.MULTI_SEGWIT.isOfferedForNewWallets());
         Assertions.assertFalse(PolicyType.SINGLE_SP.isOfferedForNewWallets());

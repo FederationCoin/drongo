@@ -5,6 +5,7 @@ import com.sparrowwallet.drongo.Network;
 import com.sparrowwallet.drongo.Utils;
 import com.sparrowwallet.drongo.address.*;
 import com.sparrowwallet.drongo.crypto.ChildNumber;
+import com.sparrowwallet.drongo.crypto.DilithiumKind;
 import com.sparrowwallet.drongo.crypto.ECKey;
 import com.sparrowwallet.drongo.crypto.MlDsa44;
 import com.sparrowwallet.drongo.policy.PolicyType;
@@ -1833,7 +1834,9 @@ public enum ScriptType {
      * Taproot, and anchors stay parseable for existing files but are not listed.
      */
     public boolean isOfferedForNewWallets() {
-        return this == MLDSA87_SINGLE || this == MLDSA_SINGLE || this == P2WPKH;
+        return this == MLDSA87_SINGLE || this == MLDSA87_MULTI
+                || this == MLDSA_SINGLE || this == MLDSA_MULTI
+                || this == P2WPKH;
     }
 
     public boolean isDilithium() {
@@ -1842,6 +1845,19 @@ public enum ScriptType {
 
     public boolean isDilithium87() {
         return this == MLDSA87_SINGLE || this == MLDSA87_MULTI;
+    }
+
+    /**
+     * Closed Dilithium kind for this script type, or null when this is not Dilithium.
+     */
+    public DilithiumKind getDilithiumKind() {
+        return switch(this) {
+            case MLDSA_SINGLE -> DilithiumKind.SINGLE_44;
+            case MLDSA87_SINGLE -> DilithiumKind.SINGLE_87;
+            case MLDSA_MULTI -> DilithiumKind.POLICY_44;
+            case MLDSA87_MULTI -> DilithiumKind.POLICY_87;
+            default -> null;
+        };
     }
 
     /**

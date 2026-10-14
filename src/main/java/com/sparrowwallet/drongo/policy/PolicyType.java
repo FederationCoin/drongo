@@ -26,11 +26,6 @@ public enum PolicyType {
         public boolean isHomogeneousMultisig() {
             return true;
         }
-
-        @Override
-        public boolean isOfferedForNewWallets() {
-            return false;
-        }
     },
     SINGLE_MLDSA44("Dilithium 44 single key", "Dilithium 44 single key", MLDSA_SINGLE) {
         @Override
@@ -52,11 +47,6 @@ public enum PolicyType {
         @Override
         public boolean isHomogeneousMultisig() {
             return true;
-        }
-
-        @Override
-        public boolean isOfferedForNewWallets() {
-            return false;
         }
     },
     SINGLE_SEGWIT("SegWit single key", "Native SegWit single key", P2WPKH) {
@@ -146,6 +136,10 @@ public enum PolicyType {
 
     public boolean isOfferedForNewWallets() {
         return true;
+    }
+
+    public static java.util.List<PolicyType> offeredForNewWallets() {
+        return java.util.Arrays.stream(values()).filter(PolicyType::isOfferedForNewWallets).toList();
     }
 
     public boolean isSegwit() {
