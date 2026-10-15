@@ -34,7 +34,9 @@ public final class MlDsaSeed {
     }
 
     /**
-     * Blake2b-256(tag || hd_seed || kind_id || le32(index)).
+     * Blake2b-256(tag || seed_material || kind_id || le32(index)).
+     * Single-key material is the HD seed or that keystore's root xprv.
+     * Policy material is that slot's root xprv, never a wallet-wide HD seed.
      */
     public static byte[] derive(byte[] hdSeed, Kind kind, int index) {
         if(hdSeed == null || hdSeed.length == 0) {
