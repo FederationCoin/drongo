@@ -87,10 +87,10 @@ public class BIP38 {
         if(!policyType.accept(SECP_SINGLE)) {
             throw new GeneralSecurityException("BIP38 is secp-only");
         }
-        return decrypt(passphrase, encryptedKey);
+        return decryptSecp(passphrase, encryptedKey);
     }
 
-    public static DumpedPrivateKey decrypt(String passphrase, String encryptedKey) throws UnsupportedEncodingException, GeneralSecurityException {
+    private static DumpedPrivateKey decryptSecp(String passphrase, String encryptedKey) throws UnsupportedEncodingException, GeneralSecurityException {
         byte[] encryptedKeyBytes = Base58.decodeChecked(encryptedKey);
         verifyLength(encryptedKeyBytes);
 

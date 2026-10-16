@@ -71,7 +71,10 @@ public class AddressTest {
             random.nextBytes(values32);
             Address address = new P2WSHAddress(values32);
             String strAddress = address.toString();
-            Assertions.assertThrows(InvalidAddressException.class, () -> Address.fromString(strAddress));
+            Address parsed = Address.fromString(strAddress);
+            Assertions.assertInstanceOf(P2WSHAddress.class, parsed);
+            Assertions.assertArrayEquals(values32, parsed.getData());
+            Assertions.assertThrows(InvalidAddressException.class, parsed::requireSendable);
         }
     }
 
@@ -152,6 +155,51 @@ public class AddressTest {
     private static byte[] hash160(String base58) {
         byte[] decoded = Base58.decodeChecked(base58);
         return Arrays.copyOfRange(decoded, 1, decoded.length);
+    }
+
+    @Test
+    public void dilithiumPolicyRoundTripAtCharLimit() throws InvalidAddressException {
+        List<byte[]> hashes = new java.util.ArrayList<>();
+        for(int i = 0; i < 12; i++) {
+            byte[] hash = new byte[32];
+            hash[0] = (byte)(i + 1);
+            hashes.add(hash);
+        }
+        byte[] program = com.sparrowwallet.drongo.crypto.MlDsa87.policyProgram(12, hashes);
+        Assertions.assertEquals(com.sparrowwallet.drongo.protocol.ModernSig.POLICY_SCRIPT_MAX, program.length);
+        Address encoded = new MlDsa87MultiAddress(program);
+        String text = encoded.toString(Network.MAINNET);
+        Assertions.assertTrue(text.length() <= com.sparrowwallet.drongo.protocol.ModernSig.BECH32_CHAR_LIMIT);
+        Address parsed = Address.fromString(Network.MAINNET, text);
+        Assertions.assertInstanceOf(MlDsa87MultiAddress.class, parsed);
+        Assertions.assertArrayEquals(program, parsed.getOutputScript().getProgram());
+    }
+
+    @Test
+    public void fromStringRefusesUnknownKindAndWitnessV1() {
+        Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.MAINNET, new P2PKHAddress(hash160("19Sp9dLinHy3dKo2Xxj53ouuZWAoVGGhg8")).toString(Network.MAINNET)));
+        byte[] v1Program = new byte[32];
+        v1Program[0] = 0x11;
+        String v1 = Bech32.encode(Network.MAINNET.getBech32AddressHRP(), 1, Bech32.Encoding.BECH32M, v1Program);
+        InvalidAddressException v1Thrown = Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.MAINNET, v1));
+        Assertions.assertTrue(v1Thrown.getMessage().toLowerCase().contains("witness v1"));
+        byte[] fingerprint = new byte[32];
+        fingerprint[0] = 0x11;
+        java.util.List<com.sparrowwallet.drongo.protocol.ScriptChunk> chunks = new java.util.ArrayList<>();
+        chunks.add(new com.sparrowwallet.drongo.protocol.ScriptChunk(fingerprint.length, fingerprint));
+        chunks.add(new com.sparrowwallet.drongo.protocol.ScriptChunk(com.sparrowwallet.drongo.protocol.Script.encodeToOpN(2), null));
+        chunks.add(new com.sparrowwallet.drongo.protocol.ScriptChunk(com.sparrowwallet.drongo.protocol.Script.encodeToOpN(1), null));
+        chunks.add(new com.sparrowwallet.drongo.protocol.ScriptChunk(com.sparrowwallet.drongo.protocol.ScriptOpCodes.OP_CHECKMODERNSIG, null));
+        byte[] script = new com.sparrowwallet.drongo.protocol.Script(chunks).getProgram();
+        byte[] five = Bech32.convertBits(script, 0, script.length, 8, 5, true);
+        String unknown = Bech32.encode(Network.MAINNET.getBech32AddressHRP(), Bech32.Encoding.BECH32, five);
+        InvalidAddressException thrown = Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.MAINNET, unknown));
+        Assertions.assertTrue(thrown.getMessage().toLowerCase().contains("witness")
+                || thrown.getMessage().toLowerCase().contains("dilithium")
+                || thrown.getMessage().toLowerCase().contains("invalid"));
     }
 
     @AfterEach

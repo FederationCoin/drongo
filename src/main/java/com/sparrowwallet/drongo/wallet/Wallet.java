@@ -211,9 +211,10 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
             throw new IllegalStateException("Cannot add payment code wallet, BIP47 extended private key not present");
         }
 
+        PolicyType childPolicy = PolicyType.forScript(childScriptType, false);
         Wallet childWallet = new Wallet(childScriptType + "-" + externalPaymentCode.toString());
         childWallet.setLabel(label);
-        childWallet.setPolicyType(PolicyType.SINGLE_MLDSA87);
+        childWallet.setPolicyType(childPolicy);
         childWallet.setScriptType(childScriptType);
         childWallet.setGapLimit(5);
 
@@ -228,7 +229,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
         keystore.setExtendedPublicKey(new ExtendedKey(pubKey, keystore.getBip47ExtendedPrivateKey().getParentFingerprint(), derivation.get(derivation.size() - 1)));
 
         childWallet.getKeystores().add(keystore);
-        childWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_MLDSA87, scriptType, childWallet.getKeystores(), 1));
+        childWallet.setDefaultPolicy(Policy.getPolicy(childPolicy, childScriptType, childWallet.getKeystores(), 1));
 
         childWallet.setMasterWallet(this);
         getChildWallets().add(childWallet);
@@ -277,7 +278,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     public Wallet getNotificationWallet() {
         if(isMasterWallet() && hasPaymentCode()) {
             Wallet notificationWallet = new Wallet();
-            notificationWallet.setPolicyType(PolicyType.SINGLE_MLDSA87);
+            notificationWallet.setPolicyType(PolicyType.forScript(ScriptType.P2PKH, false));
             notificationWallet.setScriptType(ScriptType.P2PKH);
             notificationWallet.setGapLimit(0);
 
@@ -291,7 +292,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
             keystore.setBip47ExtendedPrivateKey(masterKeystore.getBip47ExtendedPrivateKey());
 
             notificationWallet.getKeystores().add(keystore);
-            notificationWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_MLDSA87, ScriptType.P2PKH, notificationWallet.getKeystores(), 1));
+            notificationWallet.setDefaultPolicy(Policy.getPolicy(notificationWallet.getPolicyType(), ScriptType.P2PKH, notificationWallet.getKeystores(), 1));
 
             return notificationWallet;
         }
@@ -678,7 +679,8 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
             purposeNode = optionalPurposeNode.get();
         }
 
-        if(scriptType != null && scriptType.isDilithium()) {
+        DilithiumKind nodeKind = scriptType == null ? null : scriptType.getDilithiumKind();
+        if(nodeKind != null) {
             if(getKeystores().stream().anyMatch(Keystore::hasPrivateKey)) {
                 purposeNode.fillToIndex(this, getLookAheadIndex(purposeNode));
             }
@@ -746,7 +748,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public Address getAddress(WalletNode node) {
-        if(scriptType.isDilithium()) {
+        if(scriptType.getDilithiumKind() != null) {
             if(node.isPurposeNode()) {
                 return scriptType.getAddress(new byte[32]);
             }
@@ -765,7 +767,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public Script getOutputScript(WalletNode node) {
-        if(scriptType.isDilithium()) {
+        if(scriptType.getDilithiumKind() != null) {
             return getAddress(node).getOutputScript();
         }
         if(policyType.isSingleKey()) {
@@ -781,7 +783,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public String getOutputDescriptor(WalletNode node) {
-        if(scriptType.isDilithium()) {
+        if(scriptType.getDilithiumKind() != null) {
             return Utils.bytesToHex(mlDsaProgram(node));
         }
         if(policyType.isSingleKey()) {
@@ -806,7 +808,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
         StringBuilder text = new StringBuilder();
         text.append(threshold).append("-of-").append(count).append(' ');
         text.append(scriptType.getDescription());
-        text.append(". Backup the seeds plus this policy.\n");
+        text.append(". Backup every seed on this machine plus this policy.\n");
         text.append("Tagged KDF from the HD seed (kind and index). Sorted key hashes at receive 0:\n");
         if(getKeystores().stream().anyMatch(Keystore::hasPrivateKey)) {
             try {
@@ -1781,7 +1783,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
                 WalletNode signingNode = walletOutputScripts.get(scriptPubKey);
 
                 // BIP32-derivation fallback for inputs beyond the wallet's derived address range
-                if(signingNode == null && useDerivationFallback && policyType != PolicyType.SINGLE_SP) {
+                if(signingNode == null && useDerivationFallback && !policyType.isSilentPayment()) {
                     signingNode = getSigningNodeFromDerivation(psbtInput, scriptPubKey);
                 }
 
@@ -1992,7 +1994,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
                             int slot = signingWallet.getKeystores().indexOf(keystore);
                             DilithiumPsbt.signInput(psbt, inputIndex, kind,
                                     keystore.getDilithiumKeypair(kind, signingEntry.getValue(), slot), spent);
-                        } else if(psbtInput.getSilentPaymentsTweak() != null && keystore.getSilentPaymentScanAddress() != null && signingWallet.getPolicyType() == PolicyType.SINGLE_SP) {
+                        } else if(psbtInput.getSilentPaymentsTweak() != null && keystore.getSilentPaymentScanAddress() != null && signingWallet.getPolicyType().isSilentPayment()) {
                             ECKey spendPrivKey = keystore.getSpendPrivateKey(psbtInput.getSilentPaymentsSpendDerivations());
                             psbtInput.signSilentPayments(spendPrivKey);
                         } else {
@@ -2279,7 +2281,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
                 return;
             }
 
-            finalizedTxInput = inputScriptType.addMultisigSpendingInput(PolicyType.MULTI_MLDSA87, transaction, utxo, inputThreshold, pubKeySignatures);
+            finalizedTxInput = inputScriptType.addMultisigSpendingInput(PolicyType.forScript(inputScriptType, true), transaction, utxo, inputThreshold, pubKeySignatures);
         } else if(inputThreshold == 1) {
             ECKey pubKey;
             TransactionSignature signature;
@@ -2290,7 +2292,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
                 pubKey = P2TR.getPublicKeyFromScript(utxo.getScript());
                 signature = psbtInput.getTapKeyPathSignature();
             } else if(psbtInput.getPartialSignatures().size() == 1) {
-                policyType = PolicyType.SINGLE_MLDSA87;
+                policyType = PolicyType.forScript(inputScriptType, false);
                 Map.Entry<ECKey, TransactionSignature> entry = psbtInput.getPartialSignatures().entrySet().iterator().next();
                 pubKey = entry.getKey();
                 signature = entry.getValue();

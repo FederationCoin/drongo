@@ -143,7 +143,10 @@ public abstract class Address {
                             if(witnessProgram.length == 20) {
                                 return new P2WPKHAddress(witnessProgram);
                             }
-                            throw new InvalidAddressException("Witness v0 32-byte programs are not Dilithium addresses");
+                            if(witnessProgram.length == 32) {
+                                return new P2WSHAddress(witnessProgram);
+                            }
+                            throw new InvalidAddressException("Invalid witness v0 program length " + witnessProgram.length);
                         }
                         throw new InvalidAddressException("This chain does not use witness v1 or later addresses");
                     }

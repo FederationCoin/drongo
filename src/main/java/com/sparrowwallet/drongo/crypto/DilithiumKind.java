@@ -142,7 +142,7 @@ public enum DilithiumKind {
             List<byte[]> slots = new ArrayList<>();
             int item = pubkeySize() + signatureSize();
             for(int i = 0; i < Math.max(1, keyCount); i++) {
-                slots.add(i < threshold ? new byte[item] : new byte[32]);
+                slots.add(i < threshold ? new byte[item] : new byte[0]);
             }
             return MlDsa44Multisig.send(transaction, slots);
         }
@@ -194,7 +194,7 @@ public enum DilithiumKind {
             List<byte[]> slots = new ArrayList<>();
             int item = pubkeySize() + signatureSize();
             for(int i = 0; i < Math.max(1, keyCount); i++) {
-                slots.add(i < threshold ? new byte[item] : new byte[32]);
+                slots.add(i < threshold ? new byte[item] : new byte[0]);
             }
             return MlDsa87Multisig.send(transaction, slots);
         }

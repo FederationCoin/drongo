@@ -15,6 +15,7 @@ public class PolicyTypeTest {
         Assertions.assertEquals(PolicyType.MULTI_SEGWIT, PolicyType.forScript(ScriptType.P2WSH, true));
         Assertions.assertEquals(PolicyType.SINGLE_SEGWIT, PolicyType.forScript(ScriptType.P2PKH, false));
         Assertions.assertEquals(PolicyType.MULTI_SEGWIT, PolicyType.forScript(ScriptType.P2SH, true));
+        Assertions.assertEquals(PolicyType.SINGLE_SP, PolicyType.forScript(ScriptType.P2TR, false));
     }
 
     @Test

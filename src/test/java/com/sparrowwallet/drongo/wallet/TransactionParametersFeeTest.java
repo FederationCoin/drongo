@@ -9,21 +9,33 @@ import java.util.Set;
 
 public class TransactionParametersFeeTest {
     @Test
-    public void requiredFeeNeverBelowChainMinimum() {
-        TransactionParameters zeroRate = new TransactionParameters(
-                List.of(), List.of(), List.of(), List.of(), Set.of(),
-                0.0, 0.0, 0.0, null, null, false, false, false);
-        Assertions.assertEquals(13L, zeroRate.getRequiredFeeAmount(161));
-        Assertions.assertEquals(SettlementFee.minimumTokens(12), zeroRate.getRequiredFeeAmount(12));
+    public void remainderVsizeUsesIntegerFloor() {
+        TransactionParameters params = parameters(0.0);
+        Assertions.assertEquals(0L, params.getRequiredFeeAmount(11.9));
+        Assertions.assertEquals(1L, params.getRequiredFeeAmount(12.0));
+        Assertions.assertEquals(1L, params.getRequiredFeeAmount(23.9));
+        Assertions.assertEquals(13L, params.getRequiredFeeAmount(161.0));
+        Assertions.assertEquals(SettlementFee.minimumTokens(161), params.getRequiredFeeAmount(161.4));
+    }
 
-        TransactionParameters highRate = new TransactionParameters(
-                List.of(), List.of(), List.of(), List.of(), Set.of(),
-                2.0, 0.0, 0.0, null, null, false, false, false);
-        Assertions.assertEquals(24L, highRate.getRequiredFeeAmount(12));
+    @Test
+    public void exactDivisibleVsizeMatchesFloor() {
+        TransactionParameters params = parameters(0.0);
+        Assertions.assertEquals(2L, params.getRequiredFeeAmount(24.0));
+        Assertions.assertEquals(SettlementFee.minimumTokens(24), params.getRequiredFeeAmount(24));
+    }
 
-        TransactionParameters userFeeBelow = new TransactionParameters(
+    @Test
+    public void requestedFeeAboveFloorWins() {
+        TransactionParameters params = new TransactionParameters(
                 List.of(), List.of(), List.of(), List.of(), Set.of(),
-                1.0, 0.0, 0.0, 0L, null, false, false, false);
-        Assertions.assertEquals(1L, userFeeBelow.getRequiredFeeAmount(12));
+                0.0, 0.0, 0.0, 50L, null, false, false, false);
+        Assertions.assertEquals(50L, params.getRequiredFeeAmount(12.0));
+    }
+
+    private static TransactionParameters parameters(double feeRate) {
+        return new TransactionParameters(
+                List.of(), List.of(), List.of(), List.of(), Set.of(),
+                feeRate, 0.0, 0.0, null, null, false, false, false);
     }
 }
