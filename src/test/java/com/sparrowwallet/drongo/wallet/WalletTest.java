@@ -60,6 +60,21 @@ public class WalletTest {
     }
 
     @Test
+    public void createWalletTransactionRefusesUserOpReturn() throws MnemonicException {
+        String words = "absent essay fox snake vast pumpkin height crouch silent bulb excuse razor";
+        DeterministicSeed seed = new DeterministicSeed(words, "", 0, DeterministicSeed.Type.BIP39);
+        Wallet wallet = new Wallet();
+        wallet.setPolicyType(PolicyType.SINGLE_MLDSA87);
+        wallet.setScriptType(ScriptType.MLDSA87_SINGLE);
+        wallet.getKeystores().add(Keystore.fromSeed(seed, PolicyType.SINGLE_MLDSA87, wallet.getScriptType().getDefaultDerivation()));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_MLDSA87, ScriptType.MLDSA87_SINGLE, wallet.getKeystores(), 1));
+        TransactionParameters params = new TransactionParameters(
+                List.of(), List.of(), List.of(), List.of(new byte[]{0x01}), Collections.emptySet(),
+                0.0, 0.0, 0.0, null, null, false, false, false);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> wallet.createWalletTransaction(params));
+    }
+
+    @Test
     public void encryptTest() throws MnemonicException {
         String words = "absent essay fox snake vast pumpkin height crouch silent bulb excuse razor";
         DeterministicSeed seed = new DeterministicSeed(words, "pp", 0, DeterministicSeed.Type.BIP39);

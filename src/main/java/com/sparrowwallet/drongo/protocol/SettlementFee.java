@@ -11,8 +11,8 @@ public final class SettlementFee {
     }
 
     /**
-     * Tokens per virtual byte at the chain floor. Same rule as {@link #minimumTokens(long)}:
-     * 1 token per {@link #VSIZE_DIVISOR} vB, as a rate for fee-rate maps.
+     * Display rate for fee-rate maps (1 / {@link #VSIZE_DIVISOR}). Not the consensus
+     * floor. The floor is {@link #minimumTokens(long)} (integer division).
      */
     public static double minimumRateTokensPerVb() {
         return (double) minimumTokens(VSIZE_DIVISOR) / (double) VSIZE_DIVISOR;

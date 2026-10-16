@@ -10,7 +10,6 @@ import com.sparrowwallet.drongo.crypto.ECKey;
 import com.sparrowwallet.drongo.crypto.Key;
 import com.sparrowwallet.drongo.crypto.MlDsa44;
 import com.sparrowwallet.drongo.psbt.DilithiumPsbt;
-import com.sparrowwallet.drongo.psbt.MlDsaPsbt;
 import com.sparrowwallet.drongo.policy.Policy;
 import com.sparrowwallet.drongo.policy.PolicyType;
 import com.sparrowwallet.drongo.protocol.*;
@@ -1183,6 +1182,9 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public WalletTransaction createWalletTransaction(TransactionParameters params) throws InsufficientFundsException {
+        if(params.opReturns() != null && !params.opReturns().isEmpty()) {
+            throw new IllegalArgumentException("User OP_RETURN outputs are not created");
+        }
         long totalPaymentAmount = params.getTotalPaymentAmount();
         Map<BlockTransactionHashIndex, WalletNode> availableTxos = getWalletTxos(params.txoFilters());
         long totalAvailableValue = availableTxos.keySet().stream().mapToLong(BlockTransactionHashIndex::getValue).sum();

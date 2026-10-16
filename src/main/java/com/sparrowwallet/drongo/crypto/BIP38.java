@@ -42,6 +42,7 @@ import java.util.Arrays;
 
 import static com.sparrowwallet.drongo.crypto.ECKey.CURVE;
 
+/** secp-only BIP38. Dilithium wallets are refused via {@link #decrypt(PolicyType, String, String)}. */
 public class BIP38 {
     private static final int ENCRYPTED_KEY_LENGTH = 39;
 
