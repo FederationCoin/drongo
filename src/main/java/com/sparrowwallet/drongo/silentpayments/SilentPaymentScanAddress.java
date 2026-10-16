@@ -42,11 +42,11 @@ public class SilentPaymentScanAddress extends SilentPaymentAddress {
 
     public static SilentPaymentScanAddress from(DeterministicSeed deterministicSeed, int account) throws MnemonicException {
         Wallet spWallet = new Wallet();
-        spWallet.setPolicyType(PolicyType.SINGLE_HD);
+        spWallet.setPolicyType(PolicyType.SINGLE_MLDSA87);
         spWallet.setScriptType(ScriptType.P2WPKH);
-        Keystore spKeystore = Keystore.fromSeed(deterministicSeed, PolicyType.SINGLE_HD, KeyDerivation.getBip352Derivation(account));
+        Keystore spKeystore = Keystore.fromSeed(deterministicSeed, PolicyType.SINGLE_MLDSA87, KeyDerivation.getBip352Derivation(account));
         spWallet.getKeystores().add(spKeystore);
-        spWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, spWallet.getKeystores(), 1));
+        spWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_MLDSA87, ScriptType.P2WPKH, spWallet.getKeystores(), 1));
 
         WalletNode spendNode = new WalletNode(spWallet, "m/0'/0");
         WalletNode scanNode = new WalletNode(spWallet, "m/1'/0");

@@ -19,7 +19,7 @@ public class UnifiedSigHashSafetyTest {
     private static final ECKey KEY = ECKey.fromPrivate(Utils.hexToBytes("11".repeat(32)));
 
     private PSBT signedPsbt(SigHash sigHash) {
-        Script spk = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_HD, KEY);
+        Script spk = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_MLDSA87, KEY);
         Transaction transaction = new Transaction();
         transaction.setVersion(2);
         transaction.addInput(Sha256Hash.wrap(Utils.hexToBytes("aa".repeat(32))), 0, new Script(new byte[0]));
@@ -29,7 +29,7 @@ public class UnifiedSigHashSafetyTest {
         PSBTInput psbtInput = psbt.getPsbtInputs().getFirst();
         psbtInput.setWitnessUtxo(new TransactionOutput(null, 100000L, spk.getProgram()));
         psbtInput.setSigHash(sigHash);
-        psbtInput.sign(ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_HD, KEY));
+        psbtInput.sign(ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_MLDSA87, KEY));
         return psbt;
     }
 

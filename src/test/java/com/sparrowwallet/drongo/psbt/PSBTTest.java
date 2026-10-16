@@ -1267,7 +1267,7 @@ public class PSBTTest {
         scriptPubKeys.put("P2PKH", ScriptType.P2PKH.getOutputScript(key.getPubKeyHash()));
         scriptPubKeys.put("MULTISIG", witnessScript);
         scriptPubKeys.put("P2WPKH", ScriptType.P2WPKH.getOutputScript(key.getPubKeyHash()));
-        scriptPubKeys.put("P2SH_P2WPKH", ScriptType.P2SH_P2WPKH.getOutputScript(PolicyType.SINGLE_HD, key));
+        scriptPubKeys.put("P2SH_P2WPKH", ScriptType.P2SH_P2WPKH.getOutputScript(PolicyType.SINGLE_MLDSA87, key));
         scriptPubKeys.put("P2WSH", ScriptType.P2WSH.getOutputScript(witnessScript));
         scriptPubKeys.put("P2TR", ScriptType.P2TR.getOutputScript(key.getPubKeyXCoord()));
 
@@ -1817,7 +1817,7 @@ public class PSBTTest {
 
     @Test
     public void outputAmountOutOfRangeIsRejected() {
-        byte[] excessive = new PSBT(buildMatchesTransaction(new byte[0], Transaction.MAX_SATOSHIS + 1)).serialize();
+        byte[] excessive = new PSBT(buildMatchesTransaction(new byte[0], Transaction.MAX_TOKENS + 1)).serialize();
         Exception e = Assertions.assertThrows(PSBTParseException.class, () -> new PSBT(excessive, false));
         Assertions.assertTrue(e.getMessage().contains("PSBT output amount is out of range"), e.getMessage());
 
@@ -1830,7 +1830,7 @@ public class PSBTTest {
     public void witnessUtxoAmountOutOfRangeIsRejected() throws PSBTParseException {
         PSBT psbt = PSBT.fromString(TWO_INPUTS_TWO_OUTPUTS_PSBT);
         PSBTInput psbtInput = psbt.getPsbtInputs().get(1);
-        psbtInput.setWitnessUtxo(new TransactionOutput(null, Transaction.MAX_SATOSHIS + 1, psbtInput.getWitnessUtxo().getScript()));
+        psbtInput.setWitnessUtxo(new TransactionOutput(null, Transaction.MAX_TOKENS + 1, psbtInput.getWitnessUtxo().getScript()));
 
         String tampered = psbt.toBase64String();
         Exception e = Assertions.assertThrows(PSBTParseException.class, () -> PSBT.fromString(tampered));
@@ -1858,7 +1858,7 @@ public class PSBTTest {
 
         PSBT psbt = new PSBT(tx);
         for(PSBTInput psbtInput : psbt.getPsbtInputs()) {
-            psbtInput.setWitnessUtxo(new TransactionOutput(null, Transaction.MAX_SATOSHIS, P2TR_SCRIPT));
+            psbtInput.setWitnessUtxo(new TransactionOutput(null, Transaction.MAX_TOKENS, P2TR_SCRIPT));
         }
 
         Assertions.assertNull(psbt.getFee(), "A sum of input amounts that overflows a long must report an unknown fee");
@@ -2085,10 +2085,10 @@ public class PSBTTest {
         String words = "absent essay fox snake vast pumpkin height crouch silent bulb excuse razor";
         DeterministicSeed seed = new DeterministicSeed(words, "", 0, DeterministicSeed.Type.BIP39);
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.SINGLE_HD);
+        wallet.setPolicyType(PolicyType.SINGLE_MLDSA87);
         wallet.setScriptType(ScriptType.P2WPKH);
-        wallet.getKeystores().add(Keystore.fromSeed(seed, PolicyType.SINGLE_HD, ScriptType.P2WPKH.getDefaultDerivation()));
-        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, wallet.getKeystores(), 1));
+        wallet.getKeystores().add(Keystore.fromSeed(seed, PolicyType.SINGLE_MLDSA87, ScriptType.P2WPKH.getDefaultDerivation()));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_MLDSA87, ScriptType.P2WPKH, wallet.getKeystores(), 1));
         wallet.getNode(KeyPurpose.RECEIVE).fillToIndex(0);
 
         return wallet;

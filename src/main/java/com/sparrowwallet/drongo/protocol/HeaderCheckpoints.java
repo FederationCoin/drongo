@@ -39,9 +39,16 @@ public class HeaderCheckpoints {
     }
 
     private static HeaderCheckpoints load(Network network) {
-        // Blake2b is from height 0 on this chain. Difficulty-period pins start at 2015;
-        // until there is history to pin, every network anchors at genesis.
-        return new HeaderCheckpoints(network, Collections.emptyList(), Collections.emptyList());
+        String resource = "/checkpoints/" + network.getName() + ".txt";
+        InputStream in = HeaderCheckpoints.class.getResourceAsStream(resource);
+        if(in == null) {
+            return new HeaderCheckpoints(network, Collections.emptyList(), Collections.emptyList());
+        }
+        try(in) {
+            return parse(network, in);
+        } catch(IOException e) {
+            throw new IllegalStateException("Could not read checkpoints for " + network, e);
+        }
     }
 
     static HeaderCheckpoints parse(Network network, InputStream inputStream) throws IOException {

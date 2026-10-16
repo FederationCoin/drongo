@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Slots-only ML-DSA-87 witness. Signed = pk+sig, skipped = 32-byte hash.
+ * Policy witness is n items in output hash order: empty skip or pubkey‖sig.
  */
 public final class MlDsa87Multisig {
     private MlDsa87Multisig() {
@@ -16,17 +16,12 @@ public final class MlDsa87Multisig {
         List<byte[]> stack = new ArrayList<>();
         int signed = MlDsa87.PUBLIC_KEY_SIZE + MlDsa87.SIGNATURE_SIZE;
         for(byte[] slot : slots) {
-            if(slot.length == 32) {
-                stack.add(slot);
+            if(slot.length == 0) {
+                stack.add(new byte[0]);
             } else if(slot.length == signed) {
-                byte[] pubkey = new byte[MlDsa87.PUBLIC_KEY_SIZE];
-                byte[] signature = new byte[MlDsa87.SIGNATURE_SIZE];
-                System.arraycopy(slot, 0, pubkey, 0, pubkey.length);
-                System.arraycopy(slot, pubkey.length, signature, 0, signature.length);
-                stack.add(pubkey);
-                stack.add(signature);
+                stack.add(slot);
             } else {
-                throw new ProtocolException("ML-DSA-87 multisig slot length " + slot.length);
+                throw new ProtocolException("ML-DSA-87 policy witness item length " + slot.length);
             }
         }
         return new TransactionWitness(transaction, stack);

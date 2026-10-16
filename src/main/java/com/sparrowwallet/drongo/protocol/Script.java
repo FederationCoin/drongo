@@ -211,7 +211,7 @@ public class Script {
 
         for(ScriptType scriptType : SINGLE_KEY_TYPES) {
             if(scriptType.isScriptType(this)) {
-                return new Address[]{scriptType.getAddress(PolicyType.SINGLE_HD, scriptType.getPublicKeyFromScript(this))};
+                return new Address[]{scriptType.getAddress(PolicyType.SINGLE_MLDSA87, scriptType.getPublicKeyFromScript(this))};
             }
         }
 
@@ -227,6 +227,12 @@ public class Script {
 
         if(P2A.isScriptType(this)) {
             return new Address[]{P2A.getAddress(P2A.getDataFromScript(this))};
+        }
+
+        for(ScriptType scriptType : new ScriptType[]{MLDSA_SINGLE, MLDSA87_SINGLE, MLDSA_MULTI, MLDSA87_MULTI}) {
+            if(scriptType.isScriptType(this)) {
+                return new Address[]{scriptType.getAddress(this)};
+            }
         }
 
         throw new NonStandardScriptException("Cannot find addresses in non standard script: " + toString());

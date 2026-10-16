@@ -93,6 +93,33 @@ public class UnifiedSigHashTest {
     }
 
     /**
+     * Product v0 spends hash empty scriptCode under SHA256 TaggedHash("UnifiedSighash"). The three
+     * hex strings are the node's sighash_tests unified_empty_scriptcode_product_v0 vectors
+     * (stored-byte order).
+     */
+    @Test
+    public void testProductV0EmptyScriptCodeMatchesNode() {
+        Sha256Hash secp = productV0Digest(Utils.hexToBytes("0014" + "11".repeat(20)));
+        Sha256Hash d44 = productV0Digest(Utils.hexToBytes("0020" + "44".repeat(32)));
+        Sha256Hash d87 = productV0Digest(Utils.hexToBytes("0020" + "87".repeat(32)));
+        Assertions.assertNotEquals(secp, d44);
+        Assertions.assertNotEquals(d44, d87);
+        Assertions.assertEquals("cbe315aa43df656f81e26a77692d60c26fec6933609ef3006834bb8828cc02ea", Utils.bytesToHex(secp.getBytes()));
+        Assertions.assertEquals("31026e9adedd9d8452efc6def91e9f5d446d787bf02eba10429c1a028ce4aa07", Utils.bytesToHex(d44.getBytes()));
+        Assertions.assertEquals("990f0636c1fd41de8666378c90349aa59ffa799f76af6bf37b324b10a07c6daa", Utils.bytesToHex(d87.getBytes()));
+    }
+
+    private static Sha256Hash productV0Digest(byte[] scriptPubKey) {
+        Transaction tx = new Transaction();
+        tx.setVersion(2);
+        tx.addInput(Sha256Hash.wrap("0000000000000000000000000000000000000000000000000000000000000001"), 0, new Script(new byte[0]));
+        tx.addOutput(25000L, new Script(new byte[]{(byte)ScriptOpCodes.OP_TRUE}));
+        List<TransactionOutput> spent = List.of(new TransactionOutput(null, 50000L, scriptPubKey));
+        return tx.hashForUnifiedSignature(spent, 0, UnifiedScriptType.WITNESS_V0, new byte[0],
+                SigHash.UNIFIED_ALL.byteValue(), null, null, null);
+    }
+
+    /**
      * The fixture column is the wire byte the message commits to, so look it up by that rather than by
      * the enum's declaration order. Reordering the enum would otherwise silently pair every vector with
      * the wrong script type, in the one test whose job is to catch exactly that.

@@ -5,10 +5,11 @@ import com.sparrowwallet.drongo.address.Address;
 import com.sparrowwallet.drongo.bip47.PaymentCode;
 import com.sparrowwallet.drongo.crypto.ChildNumber;
 import com.sparrowwallet.drongo.crypto.DeterministicKey;
+import com.sparrowwallet.drongo.crypto.DilithiumKind;
 import com.sparrowwallet.drongo.crypto.ECKey;
 import com.sparrowwallet.drongo.crypto.Key;
 import com.sparrowwallet.drongo.crypto.MlDsa44;
-import com.sparrowwallet.drongo.psbt.MlDsaPsbt;
+import com.sparrowwallet.drongo.psbt.DilithiumPsbt;
 import com.sparrowwallet.drongo.policy.Policy;
 import com.sparrowwallet.drongo.policy.PolicyType;
 import com.sparrowwallet.drongo.protocol.*;
@@ -197,7 +198,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public Wallet addChildWallet(PaymentCode externalPaymentCode, ScriptType childScriptType, String label) {
-        if(policyType != PolicyType.SINGLE_HD) {
+        if(!policyType.isSingleKey() || policyType.isSilentPayment()) {
             throw new IllegalStateException("Cannot add payment code wallet to " + policyType.getName() + " wallet");
         }
 
@@ -210,9 +211,10 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
             throw new IllegalStateException("Cannot add payment code wallet, BIP47 extended private key not present");
         }
 
+        PolicyType childPolicy = PolicyType.forScript(childScriptType, false);
         Wallet childWallet = new Wallet(childScriptType + "-" + externalPaymentCode.toString());
         childWallet.setLabel(label);
-        childWallet.setPolicyType(PolicyType.SINGLE_HD);
+        childWallet.setPolicyType(childPolicy);
         childWallet.setScriptType(childScriptType);
         childWallet.setGapLimit(5);
 
@@ -227,7 +229,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
         keystore.setExtendedPublicKey(new ExtendedKey(pubKey, keystore.getBip47ExtendedPrivateKey().getParentFingerprint(), derivation.get(derivation.size() - 1)));
 
         childWallet.getKeystores().add(keystore);
-        childWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, scriptType, childWallet.getKeystores(), 1));
+        childWallet.setDefaultPolicy(Policy.getPolicy(childPolicy, childScriptType, childWallet.getKeystores(), 1));
 
         childWallet.setMasterWallet(this);
         getChildWallets().add(childWallet);
@@ -261,7 +263,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public boolean hasPaymentCode() {
-        return getKeystores().size() == 1 && getKeystores().get(0).getBip47ExtendedPrivateKey() != null && policyType == PolicyType.SINGLE_HD
+        return getKeystores().size() == 1 && getKeystores().get(0).getBip47ExtendedPrivateKey() != null && policyType.isSingleKey()
                 && PaymentCode.SEGWIT_SCRIPT_TYPES.contains(scriptType);
     }
 
@@ -276,7 +278,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     public Wallet getNotificationWallet() {
         if(isMasterWallet() && hasPaymentCode()) {
             Wallet notificationWallet = new Wallet();
-            notificationWallet.setPolicyType(PolicyType.SINGLE_HD);
+            notificationWallet.setPolicyType(PolicyType.forScript(ScriptType.P2PKH, false));
             notificationWallet.setScriptType(ScriptType.P2PKH);
             notificationWallet.setGapLimit(0);
 
@@ -290,7 +292,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
             keystore.setBip47ExtendedPrivateKey(masterKeystore.getBip47ExtendedPrivateKey());
 
             notificationWallet.getKeystores().add(keystore);
-            notificationWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2PKH, notificationWallet.getKeystores(), 1));
+            notificationWallet.setDefaultPolicy(Policy.getPolicy(notificationWallet.getPolicyType(), ScriptType.P2PKH, notificationWallet.getKeystores(), 1));
 
             return notificationWallet;
         }
@@ -332,11 +334,11 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public boolean canSendSilentPayments() {
-        return getKeystores().size() == 1 && (policyType == PolicyType.SINGLE_HD || policyType == PolicyType.SINGLE_SP) && SilentPayment.VALID_INPUT_SCRIPT_TYPES.contains(scriptType);
+        return getKeystores().size() == 1 && (policyType.isSingleKey()) && SilentPayment.VALID_INPUT_SCRIPT_TYPES.contains(scriptType);
     }
 
     public boolean hasSilentPaymentScanAddress() {
-        return getKeystores().size() == 1 && policyType == PolicyType.SINGLE_SP && keystores.getFirst().getSilentPaymentScanAddress() != null;
+        return getKeystores().size() == 1 && policyType != null && policyType.isSilentPayment() && keystores.getFirst().getSilentPaymentScanAddress() != null;
     }
 
     public SilentPaymentScanAddress getSilentPaymentScanAddress() {
@@ -586,7 +588,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public int getGapLimit() {
-        return policyType == PolicyType.SINGLE_SP ? 0 : (gapLimit == null ? DEFAULT_LOOKAHEAD : gapLimit);
+        return hasSilentPaymentScanAddress() ? 0 : (gapLimit == null ? DEFAULT_LOOKAHEAD : gapLimit);
     }
 
     public void gapLimit(Integer gapLimit) {
@@ -677,9 +679,8 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
             purposeNode = optionalPurposeNode.get();
         }
 
-        //A wallet being built from a signed PSBT has no script type yet. The Dilithium
-        //look-ahead needs one; everything else fills the same way as before that check.
-        if(scriptType != null && scriptType.isDilithium()) {
+        DilithiumKind nodeKind = scriptType == null ? null : scriptType.getDilithiumKind();
+        if(nodeKind != null) {
             if(getKeystores().stream().anyMatch(Keystore::hasPrivateKey)) {
                 purposeNode.fillToIndex(this, getLookAheadIndex(purposeNode));
             }
@@ -730,7 +731,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public ECKey getPubKey(WalletNode node) {
-        if(policyType == PolicyType.MULTI_HD) {
+        if(policyType.isHomogeneousMultisig()) {
             throw new IllegalStateException("Attempting to retrieve a single key for a multisig policy wallet");
         }
 
@@ -739,7 +740,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public List<ECKey> getPubKeys(WalletNode node) {
-        if(policyType == PolicyType.SINGLE_HD || policyType == PolicyType.SINGLE_SP) {
+        if(policyType.isSingleKey()) {
             throw new IllegalStateException("Attempting to retrieve multiple keys for a singlesig policy wallet");
         }
 
@@ -747,16 +748,16 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public Address getAddress(WalletNode node) {
-        if(scriptType.isDilithium()) {
+        if(scriptType.getDilithiumKind() != null) {
             if(node.isPurposeNode()) {
-                return new com.sparrowwallet.drongo.address.MlDsaAddress(new byte[32]);
+                return scriptType.getAddress(new byte[32]);
             }
-            return new com.sparrowwallet.drongo.address.MlDsaAddress(mlDsaProgram(node));
+            return scriptType.getAddress(mlDsaProgram(node));
         }
-        if(policyType == PolicyType.SINGLE_HD || policyType == PolicyType.SINGLE_SP) {
+        if(policyType.isSingleKey()) {
             ECKey pubKey = node.getPubKey();
             return scriptType.getAddress(policyType, pubKey);
-        } else if(policyType == PolicyType.MULTI_HD) {
+        } else if(policyType.isHomogeneousMultisig()) {
             List<ECKey> pubKeys = node.getPubKeys();
             Script script = ScriptType.MULTISIG.getOutputScript(defaultPolicy.getNumSignaturesRequired(), pubKeys);
             return scriptType.getAddress(script);
@@ -766,13 +767,13 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public Script getOutputScript(WalletNode node) {
-        if(scriptType.isDilithium()) {
+        if(scriptType.getDilithiumKind() != null) {
             return getAddress(node).getOutputScript();
         }
-        if(policyType == PolicyType.SINGLE_HD || policyType == PolicyType.SINGLE_SP) {
+        if(policyType.isSingleKey()) {
             ECKey pubKey = node.getPubKey();
             return scriptType.getOutputScript(policyType, pubKey);
-        } else if(policyType == PolicyType.MULTI_HD) {
+        } else if(policyType.isHomogeneousMultisig()) {
             List<ECKey> pubKeys = node.getPubKeys();
             Script script = ScriptType.MULTISIG.getOutputScript(defaultPolicy.getNumSignaturesRequired(), pubKeys);
             return scriptType.getOutputScript(script);
@@ -782,13 +783,13 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public String getOutputDescriptor(WalletNode node) {
-        if(scriptType.isDilithium()) {
+        if(scriptType.getDilithiumKind() != null) {
             return Utils.bytesToHex(mlDsaProgram(node));
         }
-        if(policyType == PolicyType.SINGLE_HD || policyType == PolicyType.SINGLE_SP) {
+        if(policyType.isSingleKey()) {
             ECKey pubKey = node.getPubKey();
             return scriptType.getOutputDescriptor(pubKey);
-        } else if(policyType == PolicyType.MULTI_HD) {
+        } else if(policyType.isHomogeneousMultisig()) {
             List<ECKey> pubKeys = node.getPubKeys();
             Script script = ScriptType.MULTISIG.getOutputScript(defaultPolicy.getNumSignaturesRequired(), pubKeys);
             return scriptType.getOutputDescriptor(script);
@@ -797,34 +798,28 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
         }
     }
 
-    /**
-     * Receive uses CHILD index n. Change uses the high half of the 32-bit index
-     * so it cannot collide with mill receive at 0. No public child.
-     */
-    public static int mlDsaChildIndex(WalletNode node) {
-        int index = node.getIndex();
-        return node.getKeyPurpose() == KeyPurpose.CHANGE ? index | Integer.MIN_VALUE : index;
-    }
-
     public String getMlDsaPolicyBackup() {
+        DilithiumKind kind = scriptType == null ? null : scriptType.getDilithiumKind();
+        if(kind == null) {
+            throw new IllegalStateException("not a Dilithium wallet");
+        }
         int threshold = defaultPolicy == null ? 1 : defaultPolicy.getNumSignaturesRequired();
         int count = Math.max(1, getKeystores().size());
         StringBuilder text = new StringBuilder();
-        text.append(threshold).append("-of-").append(count);
-        text.append(" ML-DSA-44. Backup the seeds plus this policy, not a Bitcoin output descriptor.\n");
-        if(scriptType == ScriptType.MLDSA_SINGLE) {
-            text.append("Single-key CHILD derivation. Receive index 0 matches the mill receive address.\n");
-        } else {
-            text.append("Each receive index derives CHILD at that index. Sorted key hashes at receive 0:\n");
-        }
+        text.append(threshold).append("-of-").append(count).append(' ');
+        text.append(scriptType.getDescription());
+        text.append(". Backup every seed on this machine plus this policy.\n");
+        text.append("Tagged KDF from the HD seed (kind and index). Sorted key hashes at receive 0:\n");
         if(getKeystores().stream().anyMatch(Keystore::hasPrivateKey)) {
             try {
                 WalletNode receive0 = new WalletNode(this, KeyPurpose.RECEIVE, 0);
+                int slot = 0;
                 for(Keystore keystore : getKeystores()) {
                     if(keystore.hasPrivateKey()) {
-                        text.append(Utils.bytesToHex(MlDsa44.keyHash(keystore.getMlDsaKeypair(mlDsaChildIndex(receive0)).pubkey())));
+                        text.append(Utils.bytesToHex(kind.keyHash(keystore.getDilithiumKeypair(kind, receive0, slot).pubkey())));
                         text.append('\n');
                     }
+                    slot++;
                 }
                 text.append("Address program: ").append(Utils.bytesToHex(mlDsaProgram(receive0)));
             } catch(MnemonicException e) {
@@ -835,42 +830,28 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     private byte[] mlDsaProgram(WalletNode node) {
-        try {
-            if(scriptType == ScriptType.MLDSA_SINGLE) {
-                if(getKeystores().isEmpty() || !getKeystores().getFirst().hasSeed()) {
-                    throw new IllegalStateException("ML-DSA-44 has no public child. Watch-only needs a Sparrow wallet file with derived addresses, or the seed.");
-                }
-                return MlDsa44.keyHash(getKeystores().getFirst().getMlDsaKeypair(mlDsaChildIndex(node)).pubkey());
-            }
-            if(scriptType == ScriptType.MLDSA87_SINGLE) {
-                if(getKeystores().isEmpty() || !getKeystores().getFirst().hasSeed()) {
-                    throw new IllegalStateException("ML-DSA-87 has no public child. Watch-only needs a Sparrow wallet file with derived addresses, or the seed.");
-                }
-                return com.sparrowwallet.drongo.crypto.MlDsa87.keyHash(getKeystores().getFirst().getMlDsa87Keypair(mlDsaChildIndex(node)).pubkey());
-            }
-            if(scriptType == ScriptType.MLDSA_MULTI) {
-                List<byte[]> hashes = new ArrayList<>();
-                for(Keystore keystore : getKeystores()) {
-                    if(!keystore.hasPrivateKey()) {
-                        throw new IllegalStateException("ML-DSA-44 has no public child. Watch-only needs a Sparrow wallet file with derived addresses, or the seed.");
-                    }
-                    hashes.add(MlDsa44.keyHash(keystore.getMlDsaKeypair(mlDsaChildIndex(node)).pubkey()));
-                }
-                int threshold = defaultPolicy != null ? defaultPolicy.getNumSignaturesRequired() : 1;
-                return MlDsa44.policyProgram(threshold, hashes);
-            }
-            if(scriptType == ScriptType.MLDSA87_MULTI) {
-                List<byte[]> hashes = new ArrayList<>();
-                for(Keystore keystore : getKeystores()) {
-                    if(!keystore.hasPrivateKey()) {
-                        throw new IllegalStateException("ML-DSA-87 has no public child. Watch-only needs a Sparrow wallet file with derived addresses, or the seed.");
-                    }
-                    hashes.add(com.sparrowwallet.drongo.crypto.MlDsa87.keyHash(keystore.getMlDsa87Keypair(mlDsaChildIndex(node)).pubkey()));
-                }
-                int threshold = defaultPolicy != null ? defaultPolicy.getNumSignaturesRequired() : 1;
-                return com.sparrowwallet.drongo.crypto.MlDsa87.policyProgram(threshold, hashes);
-            }
+        DilithiumKind kind = scriptType == null ? null : scriptType.getDilithiumKind();
+        if(kind == null) {
             throw new IllegalStateException("not a Dilithium wallet");
+        }
+        try {
+            if(!kind.isPolicy()) {
+                if(getKeystores().isEmpty() || !getKeystores().getFirst().hasSeed()) {
+                    throw new IllegalStateException("Dilithium has no public child. Watch-only needs a Sparrow wallet file with derived addresses, or the seed.");
+                }
+                return kind.keyHash(getKeystores().getFirst().getDilithiumKeypair(kind, node, 0).pubkey());
+            }
+            List<byte[]> hashes = new ArrayList<>();
+            int slot = 0;
+            for(Keystore keystore : getKeystores()) {
+                if(!keystore.hasPrivateKey()) {
+                    throw new IllegalStateException("Dilithium has no public child. Watch-only needs a Sparrow wallet file with derived addresses, or the seed.");
+                }
+                hashes.add(kind.keyHash(keystore.getDilithiumKeypair(kind, node, slot).pubkey()));
+                slot++;
+            }
+            int threshold = defaultPolicy != null ? defaultPolicy.getNumSignaturesRequired() : 1;
+            return kind.policyProgram(threshold, hashes);
         } catch(MnemonicException e) {
             throw new IllegalStateException(e);
         }
@@ -1154,30 +1135,12 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
      */
     public int getInputWeightUnits() {
         Transaction transaction = new Transaction();
-        if(scriptType.isDilithium()) {
-            TransactionOutput prevTxOut = transaction.addOutput(1L, new com.sparrowwallet.drongo.address.MlDsaAddress(new byte[32]));
-            TransactionWitness witness;
-            if(scriptType == ScriptType.MLDSA_SINGLE) {
-                witness = com.sparrowwallet.drongo.protocol.MlDsa44Spend.send(transaction, new byte[MlDsa44.PUBLIC_KEY_SIZE], new byte[MlDsa44.SIGNATURE_SIZE]);
-            } else if(scriptType == ScriptType.MLDSA87_SINGLE) {
-                witness = com.sparrowwallet.drongo.protocol.MlDsa87Spend.send(transaction, new byte[com.sparrowwallet.drongo.crypto.MlDsa87.PUBLIC_KEY_SIZE], new byte[com.sparrowwallet.drongo.crypto.MlDsa87.SIGNATURE_SIZE]);
-            } else if(scriptType == ScriptType.MLDSA87_MULTI) {
-                int count = Math.max(1, getKeystores().size());
-                int threshold = defaultPolicy != null ? defaultPolicy.getNumSignaturesRequired() : 1;
-                List<byte[]> slots = new ArrayList<>();
-                for(int i = 0; i < count; i++) {
-                    slots.add(i < threshold ? new byte[com.sparrowwallet.drongo.crypto.MlDsa87.PUBLIC_KEY_SIZE + com.sparrowwallet.drongo.crypto.MlDsa87.SIGNATURE_SIZE] : new byte[32]);
-                }
-                witness = com.sparrowwallet.drongo.protocol.MlDsa87Multisig.send(transaction, slots);
-            } else {
-                int count = Math.max(1, getKeystores().size());
-                int threshold = defaultPolicy != null ? defaultPolicy.getNumSignaturesRequired() : 1;
-                List<byte[]> slots = new ArrayList<>();
-                for(int i = 0; i < count; i++) {
-                    slots.add(i < threshold ? new byte[MlDsa44.PUBLIC_KEY_SIZE + MlDsa44.SIGNATURE_SIZE] : new byte[32]);
-                }
-                witness = com.sparrowwallet.drongo.protocol.MlDsa44Multisig.send(transaction, slots);
-            }
+        DilithiumKind kind = scriptType.getDilithiumKind();
+        if(kind != null) {
+            TransactionOutput prevTxOut = transaction.addOutput(1L, scriptType.getAddress(new byte[32]));
+            int count = Math.max(1, getKeystores().size());
+            int threshold = defaultPolicy != null ? defaultPolicy.getNumSignaturesRequired() : 1;
+            TransactionWitness witness = kind.dummyWitness(transaction, count, threshold);
             TransactionInput txInput = transaction.addInput(prevTxOut.getHash(), prevTxOut.getIndex(), new Script(new byte[0]), witness);
             int wu = txInput.getLength() * WITNESS_SCALE_FACTOR;
             if(txInput.hasWitness()) {
@@ -1191,11 +1154,11 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
         TransactionOutput prevTxOut = transaction.addOutput(1L, receiveNode.getAddress());
 
         TransactionInput txInput = null;
-        if(getPolicyType().equals(PolicyType.SINGLE_HD) || getPolicyType().equals(PolicyType.SINGLE_SP)) {
+        if(getPolicyType().isSingleKey()) {
             ECKey pubKey = receiveNode.getPubKey();
             TransactionSignature signature = TransactionSignature.dummy(getScriptType().getSignatureType(), SigHash.UNIFIED_ALL.value);
             txInput = getScriptType().addSpendingInput(getPolicyType(), transaction, prevTxOut, pubKey, signature);
-        } else if(getPolicyType().equals(PolicyType.MULTI_HD)) {
+        } else if(getPolicyType().isHomogeneousMultisig()) {
             List<ECKey> pubKeys = receiveNode.getPubKeys();
             int threshold = getDefaultPolicy().getNumSignaturesRequired();
             Map<ECKey, TransactionSignature> pubKeySignatures = new TreeMap<>(new ECKey.LexicographicECKeyComparator());
@@ -1221,6 +1184,9 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public WalletTransaction createWalletTransaction(TransactionParameters params) throws InsufficientFundsException {
+        if(params.opReturns() != null && !params.opReturns().isEmpty()) {
+            throw new IllegalArgumentException("User OP_RETURN outputs are not created");
+        }
         long totalPaymentAmount = params.getTotalPaymentAmount();
         Map<BlockTransactionHashIndex, WalletNode> availableTxos = getWalletTxos(params.txoFilters());
         long totalAvailableValue = availableTxos.keySet().stream().mapToLong(BlockTransactionHashIndex::getValue).sum();
@@ -1273,7 +1239,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
             for(int i = 1; i < numSets; i += 2) {
                 Payment fakeMixPayment;
                 Payment.Type type = Payment.Type.FAKE_MIX;
-                if(policyType == PolicyType.SINGLE_SP) {
+                if(policyType.isSilentPayment()) {
                     SilentPaymentAddress spChangeAddress = getSilentPaymentScanAddress().getChangeAddress().getSilentPaymentAddress();
                     fakeMixPayment = new SilentPayment(spChangeAddress, "(" + type.toDisplayString() + ")", totalPaymentAmount, false, type);
                 } else {
@@ -1288,7 +1254,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
             for(Payment payment : txPayments) {
                 if(payment instanceof SilentPayment silentPayment) {
                     TransactionOutput output = transaction.addOutput(payment.getAmount(), new Script(new byte[0]));
-                    if(policyType == PolicyType.SINGLE_SP && getSilentPaymentScanAddress().getSilentPaymentAddress().equals(silentPayment.getSilentPaymentAddress())) {
+                    if(policyType.isSilentPayment() && getSilentPaymentScanAddress().getSilentPaymentAddress().equals(silentPayment.getSilentPaymentAddress())) {
                         outputs.add(new WalletTransaction.SilentPaymentConsolidationOutput(output, silentPayment));
                     } else {
                         outputs.add(new WalletTransaction.SilentPaymentOutput(output, silentPayment));
@@ -1365,7 +1331,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
                 //Add change output(s)
                 Map<WalletNode, Long> changeMap = new LinkedHashMap<>();
                 setChangeAmts = getSetChangeAmounts(selectedUtxoSets, totalPaymentAmount, changeFeeRequiredAmt);
-                if(policyType == PolicyType.SINGLE_SP) {
+                if(policyType.isSilentPayment()) {
                     SilentPaymentAddress spChangeAddress = getSilentPaymentScanAddress().getChangeAddress().getSilentPaymentAddress();
                     for(Long setChangeAmt : setChangeAmts) {
                         TransactionOutput output = transaction.addOutput(setChangeAmt, new Script(new byte[0]));
@@ -1439,10 +1405,10 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
 
     public static TransactionInput addDummySpendingInput(Transaction transaction, WalletNode walletNode, TransactionOutput prevTxOut) {
         Wallet signingWallet = walletNode.getWallet();
-        if(signingWallet.getPolicyType().equals(PolicyType.SINGLE_HD) || signingWallet.getPolicyType().equals(PolicyType.SINGLE_SP)) {
+        if(signingWallet.getPolicyType().isSingleKey()) {
             ECKey pubKey = walletNode.getPubKey();
             return signingWallet.getScriptType().addSpendingInput(signingWallet.getPolicyType(), transaction, prevTxOut, pubKey, TransactionSignature.dummy(signingWallet.getScriptType().getSignatureType()));
-        } else if(signingWallet.getPolicyType().equals(PolicyType.MULTI_HD)) {
+        } else if(signingWallet.getPolicyType().isHomogeneousMultisig()) {
             List<ECKey> pubKeys = walletNode.getPubKeys();
             int threshold = signingWallet.getDefaultPolicy().getNumSignaturesRequired();
             Map<ECKey, TransactionSignature> pubKeySignatures = new TreeMap<>(new ECKey.LexicographicECKeyComparator());
@@ -1694,7 +1660,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
             }
         } else if(txInput.hasWitness()) {
             unifiedScriptType = UnifiedScriptType.WITNESS_V0;
-            scriptCode = signingScript.getProgram();
+            scriptCode = new byte[0];
         } else {
             unifiedScriptType = UnifiedScriptType.BARE;
             scriptCode = signingScript.getProgram();
@@ -1817,7 +1783,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
                 WalletNode signingNode = walletOutputScripts.get(scriptPubKey);
 
                 // BIP32-derivation fallback for inputs beyond the wallet's derived address range
-                if(signingNode == null && useDerivationFallback && policyType != PolicyType.SINGLE_SP) {
+                if(signingNode == null && useDerivationFallback && !policyType.isSilentPayment()) {
                     signingNode = getSigningNodeFromDerivation(psbtInput, scriptPubKey);
                 }
 
@@ -1926,7 +1892,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
     }
 
     public Integer getRequiredGapLimit(PSBT psbt) {
-        if(policyType == PolicyType.SINGLE_SP) {
+        if(policyType.isSilentPayment()) {
             return null;
         }
 
@@ -2017,19 +1983,18 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
                     PSBTInput psbtInput = signingEntry.getKey();
 
                     if(!psbtInput.isSigned()) {
-                        if(signingWallet.getScriptType().isDilithium()) {
+                        DilithiumKind kind = signingWallet.getScriptType().getDilithiumKind();
+                        if(kind != null) {
                             PSBT psbt = psbtInput.getPSBT();
                             List<TransactionOutput> spent = new ArrayList<>();
                             for(PSBTInput input : psbt.getPsbtInputs()) {
                                 spent.add(input.getUtxo());
                             }
                             int inputIndex = psbt.getPsbtInputs().indexOf(psbtInput);
-                            if(signingWallet.getScriptType().isDilithium87()) {
-                                com.sparrowwallet.drongo.psbt.MlDsa87Psbt.signInput(psbt, inputIndex, keystore.getMlDsa87Keypair(mlDsaChildIndex(signingEntry.getValue())), spent);
-                            } else {
-                                MlDsaPsbt.signInput(psbt, inputIndex, keystore.getMlDsaKeypair(mlDsaChildIndex(signingEntry.getValue())), spent);
-                            }
-                        } else if(psbtInput.getSilentPaymentsTweak() != null && keystore.getSilentPaymentScanAddress() != null && signingWallet.getPolicyType() == PolicyType.SINGLE_SP) {
+                            int slot = signingWallet.getKeystores().indexOf(keystore);
+                            DilithiumPsbt.signInput(psbt, inputIndex, kind,
+                                    keystore.getDilithiumKeypair(kind, signingEntry.getValue(), slot), spent);
+                        } else if(psbtInput.getSilentPaymentsTweak() != null && keystore.getSilentPaymentScanAddress() != null && signingWallet.getPolicyType().isSilentPayment()) {
                             ECKey spendPrivKey = keystore.getSpendPrivateKey(psbtInput.getSilentPaymentsSpendDerivations());
                             psbtInput.signSilentPayments(spendPrivKey);
                         } else {
@@ -2202,18 +2167,17 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
                 }
             };
 
-            if(signingNode != null && signingNode.getWallet().getScriptType().isDilithium()) {
+            DilithiumKind kind = signingNode != null ? signingNode.getWallet().getScriptType().getDilithiumKind() : null;
+            if(kind != null) {
                 Wallet signingWallet = signingNode.getWallet();
                 List<byte[]> hashes = new ArrayList<>();
                 try {
+                    int slot = 0;
                     for(Keystore keystore : signingWallet.getKeystores()) {
                         if(keystore.hasPrivateKey()) {
-                            if(signingWallet.getScriptType().isDilithium87()) {
-                                hashes.add(com.sparrowwallet.drongo.crypto.MlDsa87.keyHash(keystore.getMlDsa87Keypair(mlDsaChildIndex(signingNode)).pubkey()));
-                            } else {
-                                hashes.add(MlDsa44.keyHash(keystore.getMlDsaKeypair(mlDsaChildIndex(signingNode)).pubkey()));
-                            }
+                            hashes.add(kind.keyHash(keystore.getDilithiumKeypair(kind, signingNode, slot).pubkey()));
                         }
+                        slot++;
                     }
                 } catch(MnemonicException e) {
                     throw new IllegalStateException(e);
@@ -2227,23 +2191,11 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
                     }
                     return 0;
                 });
-                boolean single = signingWallet.getScriptType() == ScriptType.MLDSA_SINGLE || signingWallet.getScriptType() == ScriptType.MLDSA87_SINGLE;
-                int need = single ? 1 : signingWallet.getDefaultPolicy().getNumSignaturesRequired();
-                int signed = signingWallet.getScriptType().isDilithium87()
-                        ? com.sparrowwallet.drongo.psbt.MlDsa87Psbt.signedCount(psbtInput, hashes)
-                        : MlDsaPsbt.signedCount(psbtInput, hashes);
-                if(signed >= need) {
+                int need = kind.isPolicy() ? signingWallet.getDefaultPolicy().getNumSignaturesRequired() : 1;
+                int signed = DilithiumPsbt.signedCount(psbtInput, kind, hashes);
+                if(signed == need) {
                     Transaction transaction = new Transaction();
-                    TransactionWitness wit;
-                    if(signingWallet.getScriptType().isDilithium87()) {
-                        wit = single
-                                ? com.sparrowwallet.drongo.psbt.MlDsa87Psbt.finalizeSingle(transaction, psbtInput, hashes.get(0))
-                                : com.sparrowwallet.drongo.psbt.MlDsa87Psbt.finalizeMultisig(transaction, psbtInput, hashes);
-                    } else {
-                        wit = single
-                                ? MlDsaPsbt.finalizeSingle(transaction, psbtInput, hashes.get(0))
-                                : MlDsaPsbt.finalizeMultisig(transaction, psbtInput, hashes);
-                    }
+                    TransactionWitness wit = DilithiumPsbt.finalizeInput(transaction, psbtInput, kind, hashes);
                     TransactionInput finalizedTxInput = transaction.addInput(utxo.getHash(), utxo.getIndex(), new Script(new byte[0]), wit);
                     psbtInput.setFinalScriptSig(finalizedTxInput.getScriptSig());
                     psbtInput.setFinalScriptWitness(finalizedTxInput.getWitness());
@@ -2259,7 +2211,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
 
                 TransactionInput finalizedTxInput;
                 Wallet signingWallet = signingNode.getWallet();
-                if(signingWallet.getPolicyType().equals(PolicyType.SINGLE_HD) || signingWallet.getPolicyType().equals(PolicyType.SINGLE_SP)) {
+                if(signingWallet.getPolicyType().isSingleKey()) {
                     ECKey pubKey = signingNode.getPubKey();
                     TransactionSignature transactionSignature = psbtInput.isTaproot() ? psbtInput.getTapKeyPathSignature() : psbtInput.getPartialSignature(pubKey);
                     if(transactionSignature == null) {
@@ -2267,7 +2219,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
                     }
 
                     finalizedTxInput = signingWallet.getScriptType().addSpendingInput(signingWallet.getPolicyType(), transaction, utxo, pubKey, transactionSignature);
-                } else if(signingWallet.getPolicyType().equals(PolicyType.MULTI_HD)) {
+                } else if(signingWallet.getPolicyType().isHomogeneousMultisig()) {
                     List<ECKey> pubKeys = signingNode.getPubKeys();
 
                     Map<ECKey, TransactionSignature> pubKeySignatures = new TreeMap<>(new ECKey.LexicographicECKeyComparator());
@@ -2329,7 +2281,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
                 return;
             }
 
-            finalizedTxInput = inputScriptType.addMultisigSpendingInput(PolicyType.MULTI_HD, transaction, utxo, inputThreshold, pubKeySignatures);
+            finalizedTxInput = inputScriptType.addMultisigSpendingInput(PolicyType.forScript(inputScriptType, true), transaction, utxo, inputThreshold, pubKeySignatures);
         } else if(inputThreshold == 1) {
             ECKey pubKey;
             TransactionSignature signature;
@@ -2340,7 +2292,7 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
                 pubKey = P2TR.getPublicKeyFromScript(utxo.getScript());
                 signature = psbtInput.getTapKeyPathSignature();
             } else if(psbtInput.getPartialSignatures().size() == 1) {
-                policyType = PolicyType.SINGLE_HD;
+                policyType = PolicyType.forScript(inputScriptType, false);
                 Map.Entry<ECKey, TransactionSignature> entry = psbtInput.getPartialSignatures().entrySet().iterator().next();
                 pubKey = entry.getKey();
                 signature = entry.getValue();
@@ -2362,18 +2314,18 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
         psbtInput.clearNonFinalFields();
     }
 
-    public BitcoinUnit getAutoUnit() {
+    public CoinUnit getAutoUnit() {
         for(KeyPurpose keyPurpose : KeyPurpose.values()) {
             for(WalletNode addressNode : getNode(keyPurpose).getChildren()) {
                 for(BlockTransactionHashIndex output : addressNode.getTransactionOutputs()) {
-                    if(output.getValue() >= BitcoinUnit.getAutoThreshold()) {
-                        return BitcoinUnit.BTC;
+                    if(output.getValue() >= CoinUnit.getAutoThreshold()) {
+                        return CoinUnit.GFCN;
                     }
                 }
             }
         }
 
-        return BitcoinUnit.SATOSHIS;
+        return CoinUnit.TOKENS;
     }
 
     public void clearNodes(Wallet previousWallet) {
@@ -2470,23 +2422,23 @@ public class Wallet extends Persistable implements Comparable<Wallet> {
             throw new InvalidWalletException("Cannot determine number of required signatures to sign a transaction");
         }
 
-        if((policyType.equals(PolicyType.SINGLE_HD) || policyType.equals(PolicyType.SINGLE_SP)) && (numSigs != 1 || keystores.size() != 1)) {
+        if(policyType.isSingleKey() && (numSigs != 1 || keystores.size() != 1)) {
             throw new InvalidWalletException(policyType + " wallet needs " + numSigs + " and has " + keystores.size() + " keystores");
         }
 
-        if(policyType.equals(PolicyType.MULTI_HD) && (numSigs < 1 || numSigs > keystores.size())) {
+        if(policyType.isHomogeneousMultisig() && (numSigs < 1 || numSigs > keystores.size())) {
             throw new InvalidWalletException(policyType + " wallet needs " + numSigs + " and has " + keystores.size() + " keystores");
         }
 
-        if(policyType.equals(PolicyType.MULTI_HD) && keystores.size() > scriptType.getMaxCosigners()) {
+        if(policyType.isHomogeneousMultisig() && keystores.size() > scriptType.getMaxCosigners()) {
             throw new InvalidWalletException(scriptType.getName() + " wallets support a maximum of " + scriptType.getMaxCosigners() + " cosigners, but this wallet has " + keystores.size());
         }
 
-        if(policyType.equals(PolicyType.SINGLE_HD) && keystores.getFirst().getExtendedPublicKey() == null) {
+        if(policyType.isSingleKey() && !policyType.isSilentPayment() && keystores.getFirst().getExtendedPublicKey() == null) {
             throw new InvalidWalletException(policyType + " wallet needs an extended public key");
         }
 
-        if(policyType.equals(PolicyType.SINGLE_SP) && keystores.getFirst().getSilentPaymentScanAddress() == null) {
+        if(policyType.isSilentPayment() && keystores.getFirst().getSilentPaymentScanAddress() == null) {
             throw new InvalidWalletException(policyType + " wallet needs a silent payment scan address");
         }
 

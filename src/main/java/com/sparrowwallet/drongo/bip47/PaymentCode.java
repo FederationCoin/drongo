@@ -83,7 +83,7 @@ public class PaymentCode {
     }
 
     public Address getNotificationAddress() {
-        return ScriptType.P2PKH.getAddress(PolicyType.SINGLE_HD, getNotificationKey());
+        return ScriptType.P2PKH.getAddress(PolicyType.SINGLE_MLDSA87, getNotificationKey());
     }
 
     public ECKey getKey(int index) {

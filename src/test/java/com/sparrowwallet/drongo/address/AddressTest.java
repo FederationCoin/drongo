@@ -17,38 +17,24 @@ public class AddressTest {
         Address address1 = roundTrip(Network.MAINNET, new P2WPKHAddress(payload("bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4")));
         Assertions.assertTrue(address1 instanceof P2WPKHAddress);
 
-        Address address2 = roundTrip(Network.MAINNET, new MlDsaAddress(payload("bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3")));
+        Address address2 = roundTrip(Network.MAINNET, new MlDsa87Address(payload("bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3")));
         Assertions.assertTrue(address2 instanceof MlDsaAddress);
 
-        Address address3 = roundTrip(Network.MAINNET, new P2PKHAddress(hash160("19Sp9dLinHy3dKo2Xxj53ouuZWAoVGGhg8")));
-        Assertions.assertTrue(address3 instanceof P2PKHAddress);
-
-        Address address4 = roundTrip(Network.MAINNET, new P2SHAddress(hash160("34jnjFM4SbaB7Q8aMtNDG849RQ1gUYgpgo")));
-        Assertions.assertTrue(address4 instanceof P2SHAddress);
+        Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.MAINNET, new P2PKHAddress(hash160("19Sp9dLinHy3dKo2Xxj53ouuZWAoVGGhg8")).toString(Network.MAINNET)));
+        Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.MAINNET, new P2SHAddress(hash160("34jnjFM4SbaB7Q8aMtNDG849RQ1gUYgpgo")).toString(Network.MAINNET)));
 
         Address address5 = roundTrip(Network.TESTNET, new P2WPKHAddress(payload("tb1qawkzyj2l5yck5jq4wyhkc4837x088580y9uyk8")));
         Assertions.assertTrue(address5 instanceof P2WPKHAddress);
 
-        Address address6 = roundTrip(Network.TESTNET, new MlDsaAddress(payload("tb1q8kdkthp5a6vfrdas84efkpv25ul3s9wpzc755cra8av48xq4a7wsjcsdma")));
+        Address address6 = roundTrip(Network.TESTNET, new MlDsa87Address(payload("tb1q8kdkthp5a6vfrdas84efkpv25ul3s9wpzc755cra8av48xq4a7wsjcsdma")));
         Assertions.assertTrue(address6 instanceof MlDsaAddress);
 
-        Address address7 = roundTrip(Network.TESTNET, new P2PKHAddress(hash160("mng6R5oLWBBo8iFWU9Mx4zFy5pWhrWMeW2")));
-        Assertions.assertTrue(address7 instanceof P2PKHAddress);
-
-        Address address8 = roundTrip(Network.TESTNET, new P2PKHAddress(hash160("n1S1rnnZm3RdW9iuAF6Hjk3gLZWGc59zDi")));
-        Assertions.assertTrue(address8 instanceof P2PKHAddress);
-
-        Address address9 = roundTrip(Network.TESTNET, new P2SHAddress(hash160("2NCZUtUt6gzXyBiPEQi5yQyrgR6f6F6Ki6A")));
-        Assertions.assertTrue(address9 instanceof P2SHAddress);
-
-        Address address10 = roundTrip(Network.SIGNET, new P2SHAddress(hash160("2NCZUtUt6gzXyBiPEQi5yQyrgR6f6F6Ki6A")));
-        Assertions.assertTrue(address10 instanceof P2SHAddress);
-
-        Address address11 = roundTrip(Network.MAINNET, new P2TRAddress(payload("bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqzk5jj0")));
-        Assertions.assertTrue(address11 instanceof P2TRAddress);
-
-        Address address12 = roundTrip(Network.TESTNET, new P2TRAddress(payload("tb1pqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsesf3hn0c")));
-        Assertions.assertTrue(address12 instanceof P2TRAddress);
+        Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.TESTNET, new P2PKHAddress(hash160("mng6R5oLWBBo8iFWU9Mx4zFy5pWhrWMeW2")).toString(Network.TESTNET)));
+        Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.MAINNET, new P2TRAddress(payload("bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqzk5jj0")).toString(Network.MAINNET)));
     }
 
     @Test
@@ -58,20 +44,13 @@ public class AddressTest {
         Address address5 = roundTrip(Network.TESTNET, new P2WPKHAddress(payload("tb1qawkzyj2l5yck5jq4wyhkc4837x088580y9uyk8")));
         Assertions.assertTrue(address5 instanceof P2WPKHAddress);
 
-        Address address6 = roundTrip(Network.TESTNET, new MlDsaAddress(payload("tb1q8kdkthp5a6vfrdas84efkpv25ul3s9wpzc755cra8av48xq4a7wsjcsdma")));
+        Address address6 = roundTrip(Network.TESTNET, new MlDsa87Address(payload("tb1q8kdkthp5a6vfrdas84efkpv25ul3s9wpzc755cra8av48xq4a7wsjcsdma")));
         Assertions.assertTrue(address6 instanceof MlDsaAddress);
 
-        Address address7 = roundTrip(Network.TESTNET, new P2PKHAddress(hash160("mng6R5oLWBBo8iFWU9Mx4zFy5pWhrWMeW2")));
-        Assertions.assertTrue(address7 instanceof P2PKHAddress);
-
-        Address address8 = roundTrip(Network.TESTNET, new P2PKHAddress(hash160("n1S1rnnZm3RdW9iuAF6Hjk3gLZWGc59zDi")));
-        Assertions.assertTrue(address8 instanceof P2PKHAddress);
-
-        Address address9 = roundTrip(Network.TESTNET, new P2SHAddress(hash160("2NCZUtUt6gzXyBiPEQi5yQyrgR6f6F6Ki6A")));
-        Assertions.assertTrue(address9 instanceof P2SHAddress);
-
-        Address address12 = roundTrip(Network.TESTNET, new P2TRAddress(payload("tb1pqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsesf3hn0c")));
-        Assertions.assertTrue(address12 instanceof P2TRAddress);
+        Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.TESTNET, new P2PKHAddress(hash160("mng6R5oLWBBo8iFWU9Mx4zFy5pWhrWMeW2")).toString(Network.TESTNET)));
+        Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.TESTNET, new P2TRAddress(payload("tb1pqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsesf3hn0c")).toString(Network.TESTNET)));
     }
 
     @Test
@@ -81,7 +60,7 @@ public class AddressTest {
 
         for(int i = 0; i < 100; i++) {
             random.nextBytes(values);
-            Address address = (i % 2 == 0 ? new P2PKHAddress(values) : new P2WPKHAddress(values));
+            Address address = new P2WPKHAddress(values);
             String strAddress = address.toString();
             Address checkAddress = Address.fromString(strAddress);
             Assertions.assertArrayEquals(values, checkAddress.getData());
@@ -92,10 +71,10 @@ public class AddressTest {
             random.nextBytes(values32);
             Address address = new P2WSHAddress(values32);
             String strAddress = address.toString();
-            Address checkAddress = Address.fromString(strAddress);
-            Assertions.assertArrayEquals(values32, checkAddress.getData());
-            Assertions.assertEquals(address, checkAddress,
-                    "a witness v0 32-byte program is the same payment after parse, even when parse answers Dilithium");
+            Address parsed = Address.fromString(strAddress);
+            Assertions.assertInstanceOf(P2WSHAddress.class, parsed);
+            Assertions.assertArrayEquals(values32, parsed.getData());
+            Assertions.assertThrows(InvalidAddressException.class, parsed::requireSendable);
         }
     }
 
@@ -176,6 +155,51 @@ public class AddressTest {
     private static byte[] hash160(String base58) {
         byte[] decoded = Base58.decodeChecked(base58);
         return Arrays.copyOfRange(decoded, 1, decoded.length);
+    }
+
+    @Test
+    public void dilithiumPolicyRoundTripAtCharLimit() throws InvalidAddressException {
+        List<byte[]> hashes = new java.util.ArrayList<>();
+        for(int i = 0; i < 12; i++) {
+            byte[] hash = new byte[32];
+            hash[0] = (byte)(i + 1);
+            hashes.add(hash);
+        }
+        byte[] program = com.sparrowwallet.drongo.crypto.MlDsa87.policyProgram(12, hashes);
+        Assertions.assertEquals(com.sparrowwallet.drongo.protocol.ModernSig.POLICY_SCRIPT_MAX, program.length);
+        Address encoded = new MlDsa87MultiAddress(program);
+        String text = encoded.toString(Network.MAINNET);
+        Assertions.assertTrue(text.length() <= com.sparrowwallet.drongo.protocol.ModernSig.BECH32_CHAR_LIMIT);
+        Address parsed = Address.fromString(Network.MAINNET, text);
+        Assertions.assertInstanceOf(MlDsa87MultiAddress.class, parsed);
+        Assertions.assertArrayEquals(program, parsed.getOutputScript().getProgram());
+    }
+
+    @Test
+    public void fromStringRefusesUnknownKindAndWitnessV1() {
+        Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.MAINNET, new P2PKHAddress(hash160("19Sp9dLinHy3dKo2Xxj53ouuZWAoVGGhg8")).toString(Network.MAINNET)));
+        byte[] v1Program = new byte[32];
+        v1Program[0] = 0x11;
+        String v1 = Bech32.encode(Network.MAINNET.getBech32AddressHRP(), 1, Bech32.Encoding.BECH32M, v1Program);
+        InvalidAddressException v1Thrown = Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.MAINNET, v1));
+        Assertions.assertTrue(v1Thrown.getMessage().toLowerCase().contains("witness v1"));
+        byte[] fingerprint = new byte[32];
+        fingerprint[0] = 0x11;
+        java.util.List<com.sparrowwallet.drongo.protocol.ScriptChunk> chunks = new java.util.ArrayList<>();
+        chunks.add(new com.sparrowwallet.drongo.protocol.ScriptChunk(fingerprint.length, fingerprint));
+        chunks.add(new com.sparrowwallet.drongo.protocol.ScriptChunk(com.sparrowwallet.drongo.protocol.Script.encodeToOpN(2), null));
+        chunks.add(new com.sparrowwallet.drongo.protocol.ScriptChunk(com.sparrowwallet.drongo.protocol.Script.encodeToOpN(1), null));
+        chunks.add(new com.sparrowwallet.drongo.protocol.ScriptChunk(com.sparrowwallet.drongo.protocol.ScriptOpCodes.OP_CHECKMODERNSIG, null));
+        byte[] script = new com.sparrowwallet.drongo.protocol.Script(chunks).getProgram();
+        byte[] five = Bech32.convertBits(script, 0, script.length, 8, 5, true);
+        String unknown = Bech32.encode(Network.MAINNET.getBech32AddressHRP(), Bech32.Encoding.BECH32, five);
+        InvalidAddressException thrown = Assertions.assertThrows(InvalidAddressException.class,
+                () -> Address.fromString(Network.MAINNET, unknown));
+        Assertions.assertTrue(thrown.getMessage().toLowerCase().contains("witness")
+                || thrown.getMessage().toLowerCase().contains("dilithium")
+                || thrown.getMessage().toLowerCase().contains("invalid"));
     }
 
     @AfterEach
