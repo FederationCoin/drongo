@@ -234,7 +234,7 @@ public class WalletNode extends Persistable implements Comparable<WalletNode> {
     }
 
     public synchronized Set<WalletNode> fillToIndex(int index) {
-        if(wallet.getPolicyType() == PolicyType.SINGLE_SP) {
+        if(wallet.hasSilentPaymentScanAddress()) {
             return Collections.emptySet();
         }
 

@@ -37,15 +37,15 @@ public class VerifiedSignaturesTest {
 
     /** What a caller vouches for: the key this fixture's wallet would hold. */
     private List<ECKey> trusted() {
-        return List.of(ECKey.fromPublicOnly(ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_HD, key())));
+        return List.of(ECKey.fromPublicOnly(ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_MLDSA87, key())));
     }
 
     /**
      * One P2WPKH input signed for real, with the hash type asked for.
      */
     private PSBTInput signedInput(byte sigHashType) {
-        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_HD, key());
-        Script spk = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_HD, key());
+        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_MLDSA87, key());
+        Script spk = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_MLDSA87, key());
 
         Transaction transaction = new Transaction();
         transaction.setVersion(2);
@@ -97,7 +97,7 @@ public class VerifiedSignaturesTest {
     @Test
     public void a_push_that_only_looks_like_a_signature_is_not_counted() {
         PSBTInput psbtInput = signedInput(SigHash.ALL.byteValue());
-        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_HD, key());
+        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_MLDSA87, key());
         TransactionSignature real = psbtInput.getPartialSignature(ECKey.fromPublicOnly(outputKey));
 
         List<byte[]> pushes = new ArrayList<>();
@@ -134,8 +134,8 @@ public class VerifiedSignaturesTest {
     @Test
     public void a_taproot_key_path_signature_verifies_and_a_control_block_does_not() {
         byte unifiedAll = (byte)(SigHash.UNIFIED_FLAG | SigHash.ALL.byteValue());
-        ECKey outputKey = ScriptType.P2TR.getOutputKey(PolicyType.SINGLE_HD, key());
-        Script spk = ScriptType.P2TR.getOutputScript(PolicyType.SINGLE_HD, key());
+        ECKey outputKey = ScriptType.P2TR.getOutputKey(PolicyType.SINGLE_MLDSA87, key());
+        Script spk = ScriptType.P2TR.getOutputScript(PolicyType.SINGLE_MLDSA87, key());
 
         Transaction transaction = new Transaction();
         transaction.setVersion(2);
@@ -146,7 +146,7 @@ public class VerifiedSignaturesTest {
         PSBTInput psbtInput = psbt.getPsbtInputs().get(0);
         psbtInput.setWitnessUtxo(new TransactionOutput(null, VALUE, spk.getProgram()));
         psbtInput.setSigHash(SigHash.fromByte(unifiedAll));
-        psbtInput.sign(ScriptType.P2TR.getOutputKey(PolicyType.SINGLE_HD, key()));
+        psbtInput.sign(ScriptType.P2TR.getOutputKey(PolicyType.SINGLE_MLDSA87, key()));
 
         TransactionSignature keyPath = psbtInput.getTapKeyPathSignature();
         Assertions.assertNotNull(keyPath, "the fixture must carry a key path signature");
@@ -236,8 +236,8 @@ public class VerifiedSignaturesTest {
      */
     @Test
     public void an_input_whose_message_cannot_be_built_answers_nothing() {
-        ECKey outputKey = ScriptType.P2TR.getOutputKey(PolicyType.SINGLE_HD, key());
-        Script spk = ScriptType.P2TR.getOutputScript(PolicyType.SINGLE_HD, key());
+        ECKey outputKey = ScriptType.P2TR.getOutputKey(PolicyType.SINGLE_MLDSA87, key());
+        Script spk = ScriptType.P2TR.getOutputScript(PolicyType.SINGLE_MLDSA87, key());
 
         Transaction transaction = new Transaction();
         transaction.setVersion(2);
@@ -265,8 +265,8 @@ public class VerifiedSignaturesTest {
      */
     @Test
     public void a_script_that_cannot_be_read_answers_nothing() {
-        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_HD, key());
-        Script p2sh = ScriptType.P2SH.getOutputScript(ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_HD, key()));
+        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_MLDSA87, key());
+        Script p2sh = ScriptType.P2SH.getOutputScript(ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_MLDSA87, key()));
 
         Transaction transaction = new Transaction();
         transaction.setVersion(2);
@@ -343,7 +343,7 @@ public class VerifiedSignaturesTest {
     public void nothing_verifies_where_there_is_no_message_to_verify_against() {
         Transaction transaction = new Transaction();
         transaction.addInput(Sha256Hash.ZERO_HASH, 0, new Script(new byte[0]));
-        transaction.addOutput(VALUE, ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_HD, key()));
+        transaction.addOutput(VALUE, ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_MLDSA87, key()));
 
         PSBT psbt = new PSBT(transaction);
         PSBTInput psbtInput = psbt.getPsbtInputs().get(0);
@@ -360,7 +360,7 @@ public class VerifiedSignaturesTest {
     @Test
     public void a_forged_signature_under_a_trusted_key_name_is_not_counted() {
         PSBTInput psbtInput = signedInput(SigHash.ALL.byteValue());
-        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_HD, key());
+        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_MLDSA87, key());
 
         TransactionSignature real = psbtInput.getPartialSignature(ECKey.fromPublicOnly(outputKey));
         byte[] forged = real.encodeToBitcoin();
@@ -379,12 +379,12 @@ public class VerifiedSignaturesTest {
     @Test
     public void a_signature_this_key_made_over_another_transaction_is_not_counted() {
         PSBTInput other = signedInput(SigHash.ALL.byteValue());
-        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_HD, key());
+        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_MLDSA87, key());
         TransactionSignature elsewhere = other.getPartialSignature(ECKey.fromPublicOnly(outputKey));
 
         //A different message: the amount this input spends is committed to, so changing it is enough
         PSBTInput psbtInput = signedInput(SigHash.ALL.byteValue());
-        Script spk = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_HD, key());
+        Script spk = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_MLDSA87, key());
         psbtInput.setWitnessUtxo(new TransactionOutput(null, VALUE - 20_000, spk.getProgram()));
         psbtInput.getPartialSignatures().clear();
         psbtInput.getPartialSignatures().put(ECKey.fromPublicOnly(outputKey), elsewhere);
@@ -405,7 +405,7 @@ public class VerifiedSignaturesTest {
     @Test
     public void a_public_key_that_is_not_on_the_curve_answers_nothing_rather_than_throwing() {
         PSBTInput psbtInput = signedInput(SigHash.ALL.byteValue());
-        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_HD, key());
+        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_MLDSA87, key());
         TransactionSignature real = psbtInput.getPartialSignature(ECKey.fromPublicOnly(outputKey));
 
         ECKey offCurve = ECKey.fromPublicOnly(Utils.hexToBytes("02" + "ff".repeat(32)));
@@ -427,7 +427,7 @@ public class VerifiedSignaturesTest {
     @Test
     public void a_key_is_matched_by_its_point_and_not_by_what_it_is_wrapped_in() {
         PSBTInput psbtInput = signedInput(SigHash.ALL.byteValue());
-        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_HD, key());
+        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_MLDSA87, key());
 
         Assertions.assertEquals(1, psbtInput.getVerifiedSignatures(List.of(outputKey)).size(),
                 "a key carrying its private part is the same key as the public one the input names");
@@ -450,7 +450,7 @@ public class VerifiedSignaturesTest {
     @Test
     public void opening_a_psbt_naming_a_key_that_is_not_on_the_curve_is_refused_not_crashed() {
         PSBTInput psbtInput = signedInput(SigHash.ALL.byteValue());
-        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_HD, key());
+        ECKey outputKey = ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_MLDSA87, key());
         TransactionSignature real = psbtInput.getPartialSignature(ECKey.fromPublicOnly(outputKey));
 
         psbtInput.getPartialSignatures().clear();

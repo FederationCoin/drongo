@@ -7,6 +7,7 @@ import com.sparrowwallet.drongo.Utils;
 import com.sparrowwallet.drongo.bip47.PaymentAddress;
 import com.sparrowwallet.drongo.bip47.PaymentCode;
 import com.sparrowwallet.drongo.crypto.*;
+import com.sparrowwallet.drongo.crypto.MlDsa44;
 import com.sparrowwallet.drongo.policy.PolicyType;
 import com.sparrowwallet.drongo.protocol.ScriptType;
 import com.sparrowwallet.drongo.silentpayments.SilentPaymentScanAddress;
@@ -493,6 +494,40 @@ public class Keystore extends Persistable {
         return copy;
     }
 
+    public byte[] getHdSeedBytes() throws MnemonicException {
+        return getMasterPrivateKey().getPrivKeyBytes();
+    }
+
+    public byte[] deriveMlDsaSeed(DilithiumKind kind, WalletNode node, int slot) throws MnemonicException {
+        int pos = kind.isPolicy() ? MlDsaSeed.policyIndex(node.getIndex(), slot) : node.getIndex();
+        boolean change = node.getKeyPurpose() == KeyPurpose.CHANGE;
+        return MlDsaSeed.derive(getHdSeedBytes(), kind.seedKind(), MlDsaSeed.kdfIndex(pos, change));
+    }
+
+    public DilithiumKind.Keypair getDilithiumKeypair(DilithiumKind kind, WalletNode node, int slot) throws MnemonicException {
+        return kind.keygen(deriveMlDsaSeed(kind, node, slot));
+    }
+
+    public MlDsa44.Keypair getMlDsaKeypair(WalletNode node) throws MnemonicException {
+        DilithiumKind.Keypair pair = getDilithiumKeypair(DilithiumKind.SINGLE_44, node, 0);
+        return new MlDsa44.Keypair(pair.pubkey(), pair.secret());
+    }
+
+    public com.sparrowwallet.drongo.crypto.MlDsa87.Keypair getMlDsa87Keypair(WalletNode node) throws MnemonicException {
+        DilithiumKind.Keypair pair = getDilithiumKeypair(DilithiumKind.SINGLE_87, node, 0);
+        return new com.sparrowwallet.drongo.crypto.MlDsa87.Keypair(pair.pubkey(), pair.secret());
+    }
+
+    public MlDsa44.Keypair getMlDsaPolicyKeypair(WalletNode node, int slot) throws MnemonicException {
+        DilithiumKind.Keypair pair = getDilithiumKeypair(DilithiumKind.POLICY_44, node, slot);
+        return new MlDsa44.Keypair(pair.pubkey(), pair.secret());
+    }
+
+    public com.sparrowwallet.drongo.crypto.MlDsa87.Keypair getMlDsa87PolicyKeypair(WalletNode node, int slot) throws MnemonicException {
+        DilithiumKind.Keypair pair = getDilithiumKeypair(DilithiumKind.POLICY_87, node, slot);
+        return new com.sparrowwallet.drongo.crypto.MlDsa87.Keypair(pair.pubkey(), pair.secret());
+    }
+
     public static Keystore fromSeed(DeterministicSeed seed, PolicyType policyType, List<ChildNumber> derivation) throws MnemonicException {
         Keystore keystore = new Keystore();
         keystore.setSeed(seed);
@@ -517,18 +552,13 @@ public class Keystore extends Persistable {
         keystore.setWalletModel(WalletModel.SPARROW);
         keystore.setKeyDerivation(new KeyDerivation(masterFingerprint, KeyDerivation.writePath(derivation)));
 
-        if(policyType == PolicyType.SINGLE_SP) {
-            DeterministicKey scanKey = xprv.getKey(KeyDerivation.getBip352ScanDerivation(derivation));
-            DeterministicKey spendKey = xprv.getKey(KeyDerivation.getBip352SpendDerivation(derivation));
-            SilentPaymentScanAddress spScanAddress = new SilentPaymentScanAddress(ECKey.fromPrivate(scanKey.getPrivKey()), ECKey.fromPublicOnly(spendKey));
-            keystore.setSilentPaymentScanAddress(spScanAddress);
-        } else {
-            DeterministicKey derivedKey = xprv.getKey(derivation);
-            DeterministicKey derivedKeyPublicOnly = derivedKey.dropPrivateBytes().dropParent();
-            ExtendedKey xpub = new ExtendedKey(derivedKeyPublicOnly, derivedKey.getParentFingerprint(), derivation.isEmpty() ? ChildNumber.ZERO : derivation.get(derivation.size() - 1));
-            keystore.setExtendedPublicKey(ExtendedKey.fromDescriptor(xpub.toString()));
+        DeterministicKey derivedKey = xprv.getKey(derivation);
+        DeterministicKey derivedKeyPublicOnly = derivedKey.dropPrivateBytes().dropParent();
+        ExtendedKey xpub = new ExtendedKey(derivedKeyPublicOnly, derivedKey.getParentFingerprint(), derivation.isEmpty() ? ChildNumber.ZERO : derivation.get(derivation.size() - 1));
+        keystore.setExtendedPublicKey(ExtendedKey.fromDescriptor(xpub.toString()));
 
-            int account = ScriptType.getScriptTypesForPolicyType(PolicyType.SINGLE_HD).stream()
+        if(!policyType.isSilentPayment()) {
+            int account = ScriptType.getScriptTypesForPolicyType(policyType).stream()
                     .mapToInt(scriptType -> scriptType.getAccount(keystore.getKeyDerivation().getDerivationPath())).filter(idx -> idx > -1).findFirst().orElse(0);
             List<ChildNumber> bip47Derivation = KeyDerivation.getBip47Derivation(account);
             DeterministicKey bip47Key = xprv.getKey(bip47Derivation);

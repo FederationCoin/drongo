@@ -25,6 +25,8 @@ import com.sparrowwallet.drongo.Drongo;
 import com.sparrowwallet.drongo.Network;
 import com.sparrowwallet.drongo.Utils;
 import com.sparrowwallet.drongo.address.P2PKHAddress;
+import com.sparrowwallet.drongo.policy.PolicyType;
+import com.sparrowwallet.drongo.policy.PolicyVisitor;
 import com.sparrowwallet.drongo.protocol.Base58;
 import com.sparrowwallet.drongo.protocol.Sha256Hash;
 import org.bouncycastle.crypto.generators.SCrypt;
@@ -40,19 +42,55 @@ import java.util.Arrays;
 
 import static com.sparrowwallet.drongo.crypto.ECKey.CURVE;
 
+/** secp-only BIP38. Dilithium wallets are refused via {@link #decrypt(PolicyType, String, String)}. */
 public class BIP38 {
     private static final int ENCRYPTED_KEY_LENGTH = 39;
 
-    /**
-     * Decrypts an encrypted key.
-     *
-     * @param passphrase
-     * @param encryptedKey
-     * @throws UnsupportedEncodingException
-     * @throws GeneralSecurityException if the key is not a well formed BIP38 key
-     * @throws InvalidPasswordException if the passphrase is incorrect (unchecked)
-     */
-    public static DumpedPrivateKey decrypt(String passphrase, String encryptedKey) throws UnsupportedEncodingException, GeneralSecurityException {
+    private static final PolicyVisitor<Boolean> SECP_SINGLE = new PolicyVisitor<>() {
+        @Override
+        public Boolean visitSingleSegwit() {
+            return true;
+        }
+
+        @Override
+        public Boolean visitMultiSegwit() {
+            return false;
+        }
+
+        @Override
+        public Boolean visitSingleMldsa87() {
+            return false;
+        }
+
+        @Override
+        public Boolean visitMultiMldsa87() {
+            return false;
+        }
+
+        @Override
+        public Boolean visitSingleMldsa44() {
+            return false;
+        }
+
+        @Override
+        public Boolean visitMultiMldsa44() {
+            return false;
+        }
+
+        @Override
+        public Boolean visitSingleSp() {
+            return false;
+        }
+    };
+
+    public static DumpedPrivateKey decrypt(PolicyType policyType, String passphrase, String encryptedKey) throws UnsupportedEncodingException, GeneralSecurityException {
+        if(!policyType.accept(SECP_SINGLE)) {
+            throw new GeneralSecurityException("BIP38 is secp-only");
+        }
+        return decryptSecp(passphrase, encryptedKey);
+    }
+
+    private static DumpedPrivateKey decryptSecp(String passphrase, String encryptedKey) throws UnsupportedEncodingException, GeneralSecurityException {
         byte[] encryptedKeyBytes = Base58.decodeChecked(encryptedKey);
         verifyLength(encryptedKeyBytes);
 

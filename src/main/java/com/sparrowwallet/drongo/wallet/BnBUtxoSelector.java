@@ -38,7 +38,7 @@ public class BnBUtxoSelector extends SingleSetUtxoSelector {
 
         long currentWasteValue = 0;
         ArrayDeque<Boolean> bestSelection = null;
-        long bestWasteValue = Transaction.MAX_BITCOIN;
+        long bestWasteValue = Transaction.MAX_COIN;
 
         // Depth First search loop for choosing the UTXOs
         for(int i = 0; i < TOTAL_TRIES; i++) {

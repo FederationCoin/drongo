@@ -1,6 +1,6 @@
 package com.sparrowwallet.drongo.dns;
 
-import com.sparrowwallet.drongo.uri.BitcoinURI;
+import com.sparrowwallet.drongo.uri.CoinURI;
 import org.xbill.DNS.*;
 import org.xbill.DNS.Record;
 
@@ -9,7 +9,7 @@ import java.util.Optional;
 
 import static com.sparrowwallet.drongo.dns.RecordUtils.fromWire;
 
-public record DnsPayment(String hrn, BitcoinURI bitcoinURI, byte[] proofChain) {
+public record DnsPayment(String hrn, CoinURI coinURI, byte[] proofChain) {
     public String toString() {
         return "₿" + hrn;
     }
@@ -30,11 +30,11 @@ public record DnsPayment(String hrn, BitcoinURI bitcoinURI, byte[] proofChain) {
     }
 
     public boolean hasAddress() {
-        return bitcoinURI.getAddress() != null;
+        return coinURI.getAddress() != null;
     }
 
     public boolean hasSilentPaymentAddress() {
-        return bitcoinURI.getSilentPaymentAddress() != null;
+        return coinURI.getSilentPaymentAddress() != null;
     }
 
     public static Optional<String> getHrn(String value) {

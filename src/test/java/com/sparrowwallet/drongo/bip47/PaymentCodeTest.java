@@ -1,11 +1,11 @@
 package com.sparrowwallet.drongo.bip47;
 
+import com.sparrowwallet.drongo.ChainEncoding;
 import com.sparrowwallet.drongo.KeyPurpose;
 import com.sparrowwallet.drongo.Utils;
 import com.sparrowwallet.drongo.address.Address;
 import com.sparrowwallet.drongo.crypto.ChildNumber;
 import com.sparrowwallet.drongo.crypto.DeterministicKey;
-import com.sparrowwallet.drongo.crypto.DumpedPrivateKey;
 import com.sparrowwallet.drongo.crypto.ECKey;
 import com.sparrowwallet.drongo.policy.Policy;
 import com.sparrowwallet.drongo.policy.PolicyType;
@@ -27,9 +27,9 @@ public class PaymentCodeTest {
     public void testNotificationAddress() throws InvalidPaymentCodeException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, MnemonicException {
         PaymentCode alicePaymentCode = new PaymentCode("PM8TJTLJbPRGxSbc8EJi42Wrr6QbNSaSSVJ5Y3E4pbCYiTHUskHg13935Ubb7q8tx9GVbh2UuRnBc3WSyJHhUrw8KhprKnn9eDznYGieTzFcwQRya4GA");
         Address aliceNotificationAddress = alicePaymentCode.getNotificationAddress();
-        Assertions.assertEquals("1JDdmqFLhpzcUwPeinhJbUPw4Co3aWLyzW", aliceNotificationAddress.toString());
+        Assertions.assertEquals(ChainEncoding.address("1JDdmqFLhpzcUwPeinhJbUPw4Co3aWLyzW"), aliceNotificationAddress.toString());
 
-        ECKey alicePrivKey = DumpedPrivateKey.fromBase58("Kx983SRhAZpAhj7Aac1wUXMJ6XZeyJKqCxJJ49dxEbYCT4a1ozRD").getKey();
+        ECKey alicePrivKey = ChainEncoding.keyFromPublishedWif("Kx983SRhAZpAhj7Aac1wUXMJ6XZeyJKqCxJJ49dxEbYCT4a1ozRD");
 
         byte[] alicePayload = alicePaymentCode.getPayload();
         Assertions.assertEquals("010002b85034fb08a8bfefd22848238257b252721454bbbfba2c3667f168837ea2cdad671af9f65904632e2dcc0c6ad314e11d53fc82fa4c4ea27a4a14eccecc478fee00000000000000000000000000", Utils.bytesToHex(alicePayload));
@@ -66,7 +66,7 @@ public class PaymentCodeTest {
         Assertions.assertArrayEquals(alicePubKey.getPubKey(), alicePrivKey.getPubKey());
 
         DeterministicSeed bobSeed = new DeterministicSeed("reward upper indicate eight swift arch injury crystal super wrestle already dentist", "", 0, DeterministicSeed.Type.BIP39);
-        Keystore bobKeystore = Keystore.fromSeed(bobSeed, PolicyType.SINGLE_HD, List.of(new ChildNumber(47, true), ChildNumber.ZERO_HARDENED, ChildNumber.ZERO_HARDENED));
+        Keystore bobKeystore = Keystore.fromSeed(bobSeed, PolicyType.SINGLE_MLDSA87, List.of(new ChildNumber(47, true), ChildNumber.ZERO_HARDENED, ChildNumber.ZERO_HARDENED));
         ECKey bobNotificationPrivKey = bobKeystore.getBip47ExtendedPrivateKey().getKey(List.of(ChildNumber.ZERO_HARDENED, new ChildNumber(0)));
 
         SecretPoint bobSecretPoint = new SecretPoint(bobNotificationPrivKey.getPrivKeyBytes(), alicePubKey.getPubKey());
@@ -93,22 +93,22 @@ public class PaymentCodeTest {
             List<String> receiveWords = bip39MnemonicCode.toMnemonic(receiveEntropy);
             DeterministicSeed receiveSeed = new DeterministicSeed(receiveWords, "", 0, DeterministicSeed.Type.BIP39);
             Wallet receiveWallet = new Wallet();
-            receiveWallet.setPolicyType(PolicyType.SINGLE_HD);
+            receiveWallet.setPolicyType(PolicyType.SINGLE_MLDSA87);
             receiveWallet.setScriptType(ScriptType.P2WPKH);
-            Keystore receiveKeystore = Keystore.fromSeed(receiveSeed, PolicyType.SINGLE_HD, receiveWallet.getScriptType().getDefaultDerivation());
+            Keystore receiveKeystore = Keystore.fromSeed(receiveSeed, PolicyType.SINGLE_MLDSA87, receiveWallet.getScriptType().getDefaultDerivation());
             receiveWallet.getKeystores().add(receiveKeystore);
-            receiveWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, receiveWallet.getKeystores(), 1));
+            receiveWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_MLDSA87, ScriptType.P2WPKH, receiveWallet.getKeystores(), 1));
 
             byte[] sendEntropy = new byte[128];
             secureRandom.nextBytes(sendEntropy);
             List<String> sendWords = bip39MnemonicCode.toMnemonic(sendEntropy);
             DeterministicSeed sendSeed = new DeterministicSeed(sendWords, "pp", 0, DeterministicSeed.Type.BIP39);
             Wallet sendWallet = new Wallet();
-            sendWallet.setPolicyType(PolicyType.SINGLE_HD);
+            sendWallet.setPolicyType(PolicyType.SINGLE_MLDSA87);
             sendWallet.setScriptType(ScriptType.P2WPKH);
-            Keystore sendKeystore = Keystore.fromSeed(sendSeed, PolicyType.SINGLE_HD, sendWallet.getScriptType().getDefaultDerivation());
+            Keystore sendKeystore = Keystore.fromSeed(sendSeed, PolicyType.SINGLE_MLDSA87, sendWallet.getScriptType().getDefaultDerivation());
             sendWallet.getKeystores().add(sendKeystore);
-            sendWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, sendWallet.getKeystores(), 1));
+            sendWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_MLDSA87, ScriptType.P2WPKH, sendWallet.getKeystores(), 1));
 
             PaymentCode paymentCode = sendWallet.getPaymentCode();
             PaymentCode externalPaymentCode = receiveWallet.getPaymentCode();
@@ -138,7 +138,7 @@ public class PaymentCodeTest {
     @Test
     public void testFromSeed() throws MnemonicException {
         DeterministicSeed aliceSeed = new DeterministicSeed("response seminar brave tip suit recall often sound stick owner lottery motion", "", 0, DeterministicSeed.Type.BIP39);
-        Keystore aliceKeystore = Keystore.fromSeed(aliceSeed, PolicyType.SINGLE_HD, List.of(new ChildNumber(47, true), ChildNumber.ZERO_HARDENED, ChildNumber.ZERO_HARDENED));
+        Keystore aliceKeystore = Keystore.fromSeed(aliceSeed, PolicyType.SINGLE_MLDSA87, List.of(new ChildNumber(47, true), ChildNumber.ZERO_HARDENED, ChildNumber.ZERO_HARDENED));
 
         DeterministicKey bip47PubKey = aliceKeystore.getExtendedPublicKey().getKey();
         PaymentCode alicePaymentCode = new PaymentCode(bip47PubKey.getPubKey(), bip47PubKey.getChainCode());
@@ -148,28 +148,28 @@ public class PaymentCodeTest {
     @Test
     public void testPaymentAddress() throws MnemonicException, InvalidPaymentCodeException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, NoSuchProviderException, NotSecp256k1Exception {
         DeterministicSeed seed = new DeterministicSeed("response seminar brave tip suit recall often sound stick owner lottery motion", "", 0, DeterministicSeed.Type.BIP39);
-        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_HD, List.of(new ChildNumber(47, true), ChildNumber.ZERO_HARDENED, ChildNumber.ZERO_HARDENED));
+        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_MLDSA87, List.of(new ChildNumber(47, true), ChildNumber.ZERO_HARDENED, ChildNumber.ZERO_HARDENED));
         DeterministicKey privateKey = keystore.getExtendedPrivateKey().getKey(List.of(ChildNumber.ZERO_HARDENED, ChildNumber.ZERO));
 
         PaymentCode paymentCodeBob = new PaymentCode("PM8TJS2JxQ5ztXUpBBRnpTbcUXbUHy2T1abfrb3KkAAtMEGNbey4oumH7Hc578WgQJhPjBxteQ5GHHToTYHE3A1w6p7tU6KSoFmWBVbFGjKPisZDbP97");
 
         PaymentAddress paymentAddress0 = new PaymentAddress(paymentCodeBob, 0, privateKey.getPrivKeyBytes());
         ECKey sendKey0 = paymentAddress0.getSendECKey();
-        Assertions.assertEquals("141fi7TY3h936vRUKh1qfUZr8rSBuYbVBK", ScriptType.P2PKH.getAddress(PolicyType.SINGLE_HD, sendKey0).toString());
+        Assertions.assertEquals(ChainEncoding.address("141fi7TY3h936vRUKh1qfUZr8rSBuYbVBK"), ScriptType.P2PKH.getAddress(PolicyType.SINGLE_MLDSA87, sendKey0).toString());
 
         PaymentAddress paymentAddress1 = new PaymentAddress(paymentCodeBob, 1, privateKey.getPrivKeyBytes());
         ECKey sendKey1 = paymentAddress1.getSendECKey();
-        Assertions.assertEquals("12u3Uued2fuko2nY4SoSFGCoGLCBUGPkk6", ScriptType.P2PKH.getAddress(PolicyType.SINGLE_HD, sendKey1).toString());
+        Assertions.assertEquals(ChainEncoding.address("12u3Uued2fuko2nY4SoSFGCoGLCBUGPkk6"), ScriptType.P2PKH.getAddress(PolicyType.SINGLE_MLDSA87, sendKey1).toString());
     }
 
     @Test
     public void testChildWallet() throws MnemonicException, InvalidPaymentCodeException {
         DeterministicSeed aliceSeed = new DeterministicSeed("response seminar brave tip suit recall often sound stick owner lottery motion", "", 0, DeterministicSeed.Type.BIP39);
         Wallet aliceWallet = new Wallet();
-        aliceWallet.setPolicyType(PolicyType.SINGLE_HD);
+        aliceWallet.setPolicyType(PolicyType.SINGLE_MLDSA87);
         aliceWallet.setScriptType(ScriptType.P2PKH);
-        aliceWallet.getKeystores().add(Keystore.fromSeed(aliceSeed, PolicyType.SINGLE_HD, aliceWallet.getScriptType().getDefaultDerivation()));
-        aliceWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2PKH, aliceWallet.getKeystores(), 1));
+        aliceWallet.getKeystores().add(Keystore.fromSeed(aliceSeed, PolicyType.SINGLE_MLDSA87, aliceWallet.getScriptType().getDefaultDerivation()));
+        aliceWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_MLDSA87, ScriptType.P2PKH, aliceWallet.getKeystores(), 1));
 
         PaymentCode paymentCodeBob = new PaymentCode("PM8TJS2JxQ5ztXUpBBRnpTbcUXbUHy2T1abfrb3KkAAtMEGNbey4oumH7Hc578WgQJhPjBxteQ5GHHToTYHE3A1w6p7tU6KSoFmWBVbFGjKPisZDbP97");
 
@@ -178,42 +178,42 @@ public class PaymentCodeTest {
 
         Assertions.assertEquals(aliceWallet.getPaymentCode(), aliceBip47Wallet.getPaymentCode());
         Assertions.assertEquals("PM8TJTLJbPRGxSbc8EJi42Wrr6QbNSaSSVJ5Y3E4pbCYiTHUskHg13935Ubb7q8tx9GVbh2UuRnBc3WSyJHhUrw8KhprKnn9eDznYGieTzFcwQRya4GA", paymentCodeAlice.toString());
-        Assertions.assertEquals("1JDdmqFLhpzcUwPeinhJbUPw4Co3aWLyzW", paymentCodeAlice.getNotificationAddress().toString());
+        Assertions.assertEquals(ChainEncoding.address("1JDdmqFLhpzcUwPeinhJbUPw4Co3aWLyzW"), paymentCodeAlice.getNotificationAddress().toString());
 
         WalletNode sendNode0 = aliceBip47Wallet.getFreshNode(KeyPurpose.SEND);
         Address address0 = sendNode0.getAddress();
-        Assertions.assertEquals("141fi7TY3h936vRUKh1qfUZr8rSBuYbVBK", address0.toString());
+        Assertions.assertEquals(ChainEncoding.address("141fi7TY3h936vRUKh1qfUZr8rSBuYbVBK"), address0.toString());
 
         WalletNode sendNode1 = aliceBip47Wallet.getFreshNode(KeyPurpose.SEND, sendNode0);
         Address address1 = sendNode1.getAddress();
-        Assertions.assertEquals("12u3Uued2fuko2nY4SoSFGCoGLCBUGPkk6", address1.toString());
+        Assertions.assertEquals(ChainEncoding.address("12u3Uued2fuko2nY4SoSFGCoGLCBUGPkk6"), address1.toString());
 
         WalletNode sendNode2 = aliceBip47Wallet.getFreshNode(KeyPurpose.SEND, sendNode1);
         Address address2 = sendNode2.getAddress();
-        Assertions.assertEquals("1FsBVhT5dQutGwaPePTYMe5qvYqqjxyftc", address2.toString());
+        Assertions.assertEquals(ChainEncoding.address("1FsBVhT5dQutGwaPePTYMe5qvYqqjxyftc"), address2.toString());
 
         DeterministicSeed bobSeed = new DeterministicSeed("reward upper indicate eight swift arch injury crystal super wrestle already dentist", "", 0, DeterministicSeed.Type.BIP39);
         Wallet bobWallet = new Wallet();
-        bobWallet.setPolicyType(PolicyType.SINGLE_HD);
+        bobWallet.setPolicyType(PolicyType.SINGLE_MLDSA87);
         bobWallet.setScriptType(ScriptType.P2PKH);
-        bobWallet.getKeystores().add(Keystore.fromSeed(bobSeed, PolicyType.SINGLE_HD, bobWallet.getScriptType().getDefaultDerivation()));
-        bobWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2PKH, bobWallet.getKeystores(), 1));
+        bobWallet.getKeystores().add(Keystore.fromSeed(bobSeed, PolicyType.SINGLE_MLDSA87, bobWallet.getScriptType().getDefaultDerivation()));
+        bobWallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_MLDSA87, ScriptType.P2PKH, bobWallet.getKeystores(), 1));
 
         Wallet bobBip47Wallet = bobWallet.addChildWallet(paymentCodeAlice, ScriptType.P2PKH, "Bob");
         Assertions.assertEquals(paymentCodeBob.toString(), bobBip47Wallet.getKeystores().get(0).getPaymentCode().toString());
-        Assertions.assertEquals("1ChvUUvht2hUQufHBXF8NgLhW8SwE2ecGV", paymentCodeBob.getNotificationAddress().toString());
+        Assertions.assertEquals(ChainEncoding.address("1ChvUUvht2hUQufHBXF8NgLhW8SwE2ecGV"), paymentCodeBob.getNotificationAddress().toString());
 
         WalletNode receiveNode0 = bobBip47Wallet.getFreshNode(KeyPurpose.RECEIVE);
         Address receiveAddress0 = receiveNode0.getAddress();
-        Assertions.assertEquals("141fi7TY3h936vRUKh1qfUZr8rSBuYbVBK", receiveAddress0.toString());
+        Assertions.assertEquals(ChainEncoding.address("141fi7TY3h936vRUKh1qfUZr8rSBuYbVBK"), receiveAddress0.toString());
 
         WalletNode receiveNode1 = bobBip47Wallet.getFreshNode(KeyPurpose.RECEIVE, receiveNode0);
         Address receiveAddress1 = receiveNode1.getAddress();
-        Assertions.assertEquals("12u3Uued2fuko2nY4SoSFGCoGLCBUGPkk6", receiveAddress1.toString());
+        Assertions.assertEquals(ChainEncoding.address("12u3Uued2fuko2nY4SoSFGCoGLCBUGPkk6"), receiveAddress1.toString());
 
         WalletNode receiveNode2 = bobBip47Wallet.getFreshNode(KeyPurpose.RECEIVE, receiveNode1);
         Address receiveAddress2 = receiveNode2.getAddress();
-        Assertions.assertEquals("1FsBVhT5dQutGwaPePTYMe5qvYqqjxyftc", receiveAddress2.toString());
+        Assertions.assertEquals(ChainEncoding.address("1FsBVhT5dQutGwaPePTYMe5qvYqqjxyftc"), receiveAddress2.toString());
 
         ECKey privKey0 = bobWallet.getKeystores().get(0).getKey(receiveNode0);
         ECKey pubKey0 = bobWallet.getKeystores().get(0).getPubKey(receiveNode0);

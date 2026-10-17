@@ -25,7 +25,7 @@ public class OutputDescriptor {
     private static final String INPUT_CHARSET = "0123456789()[],'/*abcdefgh@:$%{}IJKLMNOPQRSTUVWXYZ&+-.;<=>?!^_|~ijklmnopqrstuvwxyzABCDEFGH`#\"\\ ";
     private static final String CHECKSUM_CHARSET = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
 
-    public static final Pattern XPUB_PATTERN = Pattern.compile("(\\[[^\\]]+\\])?(.(?:pub|prv)[^/\\,)]{100,112})(/[/\\d*'hH<>;]+)?");
+    public static final Pattern XPUB_PATTERN = Pattern.compile("(\\[[^\\]]+\\])?([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{107,112})(/[/\\d*'hH<>;]+)?");
     private static final Pattern PUBKEY_PATTERN = Pattern.compile("(\\[[^\\]]+\\])?(0[23][0-9a-fA-F]{64})");
     private static final Pattern MULTI_PATTERN = Pattern.compile("multi\\(\\s*(\\d+)", Pattern.CASE_INSENSITIVE);
     public static final Pattern LEGACY_MULTI_PATTERN = Pattern.compile("(?<!sorted)multi\\(\\s*\\d+", Pattern.CASE_INSENSITIVE);
@@ -199,7 +199,23 @@ public class OutputDescriptor {
     }
 
     public boolean isCosigner() {
-        return !isMultisig() && scriptType.isAllowed(PolicyType.MULTI_HD);
+        return !isMultisig() && scriptType.getAllowedPolicyTypes().stream().anyMatch(PolicyType::isHomogeneousMultisig);
+    }
+
+    public PolicyType inferredPolicyType() {
+        if(isSilentPayments()) {
+            return PolicyType.SINGLE_SP;
+        }
+        boolean multi = isMultisig() || isCosigner();
+        for(PolicyType candidate : scriptType.getAllowedPolicyTypes()) {
+            if(multi ? candidate.isHomogeneousMultisig() : candidate.isSingleKey()) {
+                return candidate;
+            }
+        }
+        if(scriptType.getSignatureType() == com.sparrowwallet.drongo.protocol.TransactionSignature.Type.ECDSA) {
+            return multi ? PolicyType.MULTI_SEGWIT : PolicyType.SINGLE_SEGWIT;
+        }
+        throw new IllegalStateException("No policy type allowed for " + scriptType);
     }
 
     public ExtendedKey getSingletonExtendedPublicKey() {
@@ -286,7 +302,7 @@ public class OutputDescriptor {
     }
 
     public Address getAddress(DeterministicKey childKey) {
-        return scriptType.getAddress(PolicyType.SINGLE_HD, childKey);
+        return scriptType.getAddress(inferredPolicyType(), childKey);
     }
 
     private Address getAddress(Script multisigScript) {
@@ -325,7 +341,7 @@ public class OutputDescriptor {
         }
 
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(isMultisig() || isCosigner() ? PolicyType.MULTI_HD : PolicyType.SINGLE_HD);
+        wallet.setPolicyType(inferredPolicyType());
         wallet.setScriptType(scriptType);
 
         for(Map.Entry<ExtendedKey, KeyDerivation> extKeyEntry : extendedPublicKeys.entrySet()) {
@@ -389,7 +405,7 @@ public class OutputDescriptor {
         if(annotations.containsKey(ANNOTATION_BLOCK_HEIGHT)) {
             wallet.setBirthHeight(annotations.get(ANNOTATION_BLOCK_HEIGHT));
         }
-        if(annotations.containsKey(ANNOTATION_GAP_LIMIT) && wallet.getPolicyType() != PolicyType.SINGLE_SP) {
+        if(annotations.containsKey(ANNOTATION_GAP_LIMIT) && (wallet.getPolicyType() == null || !wallet.getPolicyType().isSilentPayment())) {
             wallet.setGapLimit(annotations.get(ANNOTATION_GAP_LIMIT));
         }
     }
@@ -421,7 +437,8 @@ public class OutputDescriptor {
         keystore.setExtendedPublicKey(extendedKey);
         setKeystoreLabel(keystore);
         wallet.getKeystores().add(keystore);
-        wallet.setDefaultPolicy(Policy.getPolicy(isCosigner() ? PolicyType.MULTI_HD : PolicyType.SINGLE_HD, wallet.getScriptType(), wallet.getKeystores(), 1));
+        wallet.setPolicyType(inferredPolicyType());
+        wallet.setDefaultPolicy(Policy.getPolicy(wallet.getPolicyType(), wallet.getScriptType(), wallet.getKeystores(), 1));
         applyAnnotations(wallet);
 
         return wallet;
@@ -462,7 +479,7 @@ public class OutputDescriptor {
     public static OutputDescriptor getOutputDescriptor(Wallet wallet, List<KeyPurpose> keyPurposes, Integer index) {
         Map<String, Integer> annotations = getWalletAnnotations(wallet);
 
-        if(wallet.getPolicyType() == PolicyType.SINGLE_SP) {
+        if(wallet.getPolicyType() != null && wallet.getPolicyType().isSilentPayment()) {
             Keystore keystore = wallet.getKeystores().getFirst();
             Map<SilentPaymentScanAddress, KeyDerivation> spMap = new LinkedHashMap<>();
             spMap.put(keystore.getSilentPaymentScanAddress(), keystore.getKeyDerivation());
@@ -496,7 +513,7 @@ public class OutputDescriptor {
         if(wallet.getBirthHeight() != null) {
             annotations.put(ANNOTATION_BLOCK_HEIGHT, wallet.getBirthHeight());
         }
-        if(wallet.gapLimit() != null && wallet.getPolicyType() != PolicyType.SINGLE_SP) {
+        if(wallet.gapLimit() != null && (wallet.getPolicyType() == null || !wallet.getPolicyType().isSilentPayment())) {
             annotations.put(ANNOTATION_GAP_LIMIT, wallet.getGapLimit());
         }
 

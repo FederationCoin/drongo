@@ -48,6 +48,15 @@ public abstract class Address {
         return getScriptType().getOutputScript(data);
     }
 
+    public void requireSendable() throws InvalidAddressException {
+        if(getScriptType().isParkedOnThisChain()) {
+            throw new InvalidAddressException(ScriptType.TAPROOT_NOT_ENABLED_MESSAGE);
+        }
+        if(!(this instanceof MlDsaAddress) && !getScriptType().isOfferedForNewWallets()) {
+            throw new InvalidAddressException("This chain pays Dilithium 87, Dilithium 44, or SegWit witness v0 programs");
+        }
+    }
+
     public byte[] getOutputScriptData() {
         return data;
     }
@@ -59,11 +68,11 @@ public abstract class Address {
             return false;
         }
 
-        return Arrays.equals(data, address.data) && getVersion(Network.get()) == address.getVersion(Network.get()) && getScriptType() == address.getScriptType();
+        return Arrays.equals(data, address.data) && getVersion(Network.get()) == address.getVersion(Network.get());
     }
 
     public int hashCode() {
-        return Arrays.hashCode(data) + getVersion(Network.get()) + getScriptType().hashCode();
+        return Arrays.hashCode(data) + getVersion(Network.get());
     }
 
     public static Address fromString(String address) throws InvalidAddressException {
@@ -90,27 +99,39 @@ public abstract class Address {
 
         if(address != null) {
             if(network.hasP2PKHAddressPrefix(address) || network.hasP2SHAddressPrefix(address)) {
-                try {
-                    byte[] decodedBytes = Base58.decodeChecked(address);
-                    if(decodedBytes.length == 21) {
-                        int version = Byte.toUnsignedInt(decodedBytes[0]);
-                        byte[] hash = Arrays.copyOfRange(decodedBytes, 1, 21);
-                        if(version == network.getP2PKHAddressHeader()) {
-                            return new P2PKHAddress(hash);
-                        }
-                        if(version == network.getP2SHAddressHeader()) {
-                            return new P2SHAddress(hash);
-                        }
-                    }
-                } catch(Exception e) {
-                    nested = e;
-                }
+                throw new InvalidAddressException("This chain does not use base58 addresses");
             }
 
             if(address.toLowerCase(Locale.ROOT).startsWith(network.getBech32AddressHRP())) {
                 try {
-                    Bech32.Bech32Data data = Bech32.decode(address);
+                    Bech32.Bech32Data data = Bech32.decode(address, com.sparrowwallet.drongo.protocol.ModernSig.BECH32_CHAR_LIMIT);
                     if(data.hrp.equals(network.getBech32AddressHRP())) {
+                        if(data.encoding == Bech32.Encoding.BECH32) {
+                            try {
+                                byte[] scriptBytes = Bech32.convertBits(data.data, 0, data.data.length, 5, 8, false);
+                                com.sparrowwallet.drongo.protocol.Script script = new com.sparrowwallet.drongo.protocol.Script(scriptBytes);
+                                com.sparrowwallet.drongo.protocol.ModernSig.Single single = com.sparrowwallet.drongo.protocol.ModernSig.matchSingle(script);
+                                if(single != null && single.algorithm() == com.sparrowwallet.drongo.protocol.ModernSig.ALGO_DILITHIUM) {
+                                    if(single.param() == com.sparrowwallet.drongo.protocol.ModernSig.PARAM_DILITHIUM_44) {
+                                        return new MlDsa44Address(single.fingerprint());
+                                    }
+                                    if(single.param() == com.sparrowwallet.drongo.protocol.ModernSig.PARAM_DILITHIUM_87) {
+                                        return new MlDsa87Address(single.fingerprint());
+                                    }
+                                }
+                                com.sparrowwallet.drongo.protocol.ModernSig.Policy policy = com.sparrowwallet.drongo.protocol.ModernSig.matchPolicy(script);
+                                if(policy != null && policy.algorithm() == com.sparrowwallet.drongo.protocol.ModernSig.ALGO_DILITHIUM) {
+                                    if(policy.param() == com.sparrowwallet.drongo.protocol.ModernSig.PARAM_DILITHIUM_44) {
+                                        return new MlDsa44MultiAddress(scriptBytes);
+                                    }
+                                    if(policy.param() == com.sparrowwallet.drongo.protocol.ModernSig.PARAM_DILITHIUM_87) {
+                                        return new MlDsa87MultiAddress(scriptBytes);
+                                    }
+                                }
+                            } catch(Exception ignored) {
+                                // Witness v0 payload is version + program, not a locking script.
+                            }
+                        }
                         int witnessVersion = data.data[0];
                         if(witnessVersion == 0) {
                             if(data.encoding != Bech32.Encoding.BECH32) {
@@ -125,20 +146,12 @@ public abstract class Address {
                             if(witnessProgram.length == 32) {
                                 return new P2WSHAddress(witnessProgram);
                             }
-                        } else if(witnessVersion == 1) {
-                            if(data.encoding != Bech32.Encoding.BECH32M) {
-                                throw new InvalidAddressException("Invalid address - witness version is 1 but encoding is " + data.encoding);
-                            }
-
-                            byte[] convertedProgram = Arrays.copyOfRange(data.data, 1, data.data.length);
-                            byte[] witnessProgram = Bech32.convertBits(convertedProgram, 0, convertedProgram.length, 5, 8, false);
-                            if(witnessProgram.length == 32) {
-                                return new P2TRAddress(witnessProgram);
-                            } else if(Arrays.equals(witnessProgram, ScriptType.ANCHOR_WITNESS_PROGRAM)) {
-                                return new P2AAddress(witnessProgram);
-                            }
+                            throw new InvalidAddressException("Invalid witness v0 program length " + witnessProgram.length);
                         }
+                        throw new InvalidAddressException("This chain does not use witness v1 or later addresses");
                     }
+                } catch(InvalidAddressException e) {
+                    throw e;
                 } catch(Exception e) {
                     nested = e;
                 }

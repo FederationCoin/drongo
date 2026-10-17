@@ -18,15 +18,15 @@ public class ECKeyTest {
         String words = "absent essay fox snake vast pumpkin height crouch silent bulb excuse razor";
         DeterministicSeed seed = new DeterministicSeed(words, "", 0, DeterministicSeed.Type.BIP39);
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.SINGLE_HD);
+        wallet.setPolicyType(PolicyType.SINGLE_MLDSA87);
         wallet.setScriptType(ScriptType.P2PKH);
-        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_HD, wallet.getScriptType().getDefaultDerivation());
+        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_MLDSA87, wallet.getScriptType().getDefaultDerivation());
         wallet.getKeystores().add(keystore);
-        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2PKH, wallet.getKeystores(), 1));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_MLDSA87, ScriptType.P2PKH, wallet.getKeystores(), 1));
 
         WalletNode firstReceive = wallet.getNode(KeyPurpose.RECEIVE).getChildren().iterator().next();
         Address address = firstReceive.getAddress();
-        Assertions.assertEquals("14JmU9a7SzieZNEtBnsZo688rt3mGrw6hr", address.toString());
+        Assertions.assertEquals("FYUUv4JV1VQBzyG14ts3FbvTX3Kitj2L7B", address.toString());
         ECKey privKey = keystore.getKey(firstReceive);
 
         //1 attempt required for low R
@@ -60,7 +60,7 @@ public class ECKeyTest {
         // https://github.com/bitcoin/bips/blob/9a30c28574e62e26da77f14e33eb698b81268887/bip-0341/wallet-test-vectors.json#L6C36-L6C100
         String internalPubKeyHex = "d6889cb081036e0faefa3a35157ad71086b123b2b144b649798b494c300a961d";
         String expectedTweakedPubKey = "53a1f6e454df1aa2776a2814a721372d6258050de330b3c6d10ee8f4e0dda343";
-        String expectedAddress = "bc1p2wsldez5mud2yam29q22wgfh9439spgduvct83k3pm50fcxa5dps59h4z5";
+        String expectedAddress = "gfcn1p2wsldez5mud2yam29q22wgfh9439spgduvct83k3pm50fcxa5dpsp7ha7v";
 
         ECKey internalPubKey = ECKey.fromPublicOnly(HexFormat.of().parseHex(internalPubKeyHex));
         ECKey tweakedOutputKey = internalPubKey.getTweakedOutputKey();
@@ -68,7 +68,7 @@ public class ECKeyTest {
         // the y-coordinate of the resulting tweaked pubkey in this sample is odd, so the full pubkey will have 0x03 prefix
         Assertions.assertEquals("03" + expectedTweakedPubKey, Utils.bytesToHex(tweakedOutputKey.getPubKey()));
         // assert that the generated address matches the test vector
-        Address address = ScriptType.P2TR.getAddress(PolicyType.SINGLE_HD, internalPubKey);
+        Address address = ScriptType.P2TR.getAddress(PolicyType.SINGLE_MLDSA87, internalPubKey);
         Assertions.assertEquals(expectedAddress, address.toString());
     }
 }

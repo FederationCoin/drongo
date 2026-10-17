@@ -1,5 +1,6 @@
 package com.sparrowwallet.drongo.wallet;
 
+import com.sparrowwallet.drongo.ChainEncoding;
 import com.sparrowwallet.drongo.ExtendedKey;
 import com.sparrowwallet.drongo.KeyDerivation;
 import com.sparrowwallet.drongo.KeyPurpose;
@@ -22,6 +23,10 @@ import java.util.Map;
 import java.util.TreeSet;
 
 public class WalletTest {
+    private static void assertExtKey(String published, String actual) {
+        Assertions.assertEquals(ChainEncoding.extendedKey(published), actual);
+    }
+
     /**
      * There is no opted-in form of SIGHASH_DEFAULT, so a taproot signature that opts in carries a hash type byte and
      * encodes to 65 bytes rather than 64. The dummy this estimate is built from promises to take the same number of
@@ -42,10 +47,10 @@ public class WalletTest {
         String words = "absent essay fox snake vast pumpkin height crouch silent bulb excuse razor";
         DeterministicSeed seed = new DeterministicSeed(words, "", 0, DeterministicSeed.Type.BIP39);
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.SINGLE_HD);
+        wallet.setPolicyType(PolicyType.SINGLE_SP);
         wallet.setScriptType(ScriptType.P2TR);
-        wallet.getKeystores().add(Keystore.fromSeed(seed, PolicyType.SINGLE_HD, ScriptType.P2TR.getDefaultDerivation()));
-        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2TR, wallet.getKeystores(), 1));
+        wallet.getKeystores().add(Keystore.fromSeed(seed, PolicyType.SINGLE_SP, ScriptType.P2TR.getDefaultDerivation()));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_SP, ScriptType.P2TR, wallet.getKeystores(), 1));
 
         //outpoint 36 + empty scriptSig varint 1 + sequence 4, at four weight units a byte, plus a witness holding a
         //single item: its count, the length prefix, and the signature
@@ -55,15 +60,30 @@ public class WalletTest {
     }
 
     @Test
+    public void createWalletTransactionRefusesUserOpReturn() throws MnemonicException {
+        String words = "absent essay fox snake vast pumpkin height crouch silent bulb excuse razor";
+        DeterministicSeed seed = new DeterministicSeed(words, "", 0, DeterministicSeed.Type.BIP39);
+        Wallet wallet = new Wallet();
+        wallet.setPolicyType(PolicyType.SINGLE_MLDSA87);
+        wallet.setScriptType(ScriptType.MLDSA87_SINGLE);
+        wallet.getKeystores().add(Keystore.fromSeed(seed, PolicyType.SINGLE_MLDSA87, wallet.getScriptType().getDefaultDerivation()));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_MLDSA87, ScriptType.MLDSA87_SINGLE, wallet.getKeystores(), 1));
+        TransactionParameters params = new TransactionParameters(
+                List.of(), List.of(), List.of(), List.of(new byte[]{0x01}), Collections.emptySet(),
+                0.0, 0.0, 0.0, null, null, false, false, false);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> wallet.createWalletTransaction(params));
+    }
+
+    @Test
     public void encryptTest() throws MnemonicException {
         String words = "absent essay fox snake vast pumpkin height crouch silent bulb excuse razor";
         DeterministicSeed seed = new DeterministicSeed(words, "pp", 0, DeterministicSeed.Type.BIP39);
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.SINGLE_HD);
+        wallet.setPolicyType(PolicyType.SINGLE_SEGWIT);
         wallet.setScriptType(ScriptType.P2PKH);
-        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_HD, wallet.getScriptType().getDefaultDerivation());
+        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_SEGWIT, wallet.getScriptType().getDefaultDerivation());
         wallet.getKeystores().add(keystore);
-        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2PKH, wallet.getKeystores(), 1));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_SEGWIT, ScriptType.P2PKH, wallet.getKeystores(), 1));
 
         KeyDeriver keyDeriver = new Argon2KeyDeriver();
         Key key = keyDeriver.deriveKey("pass");
@@ -147,16 +167,16 @@ public class WalletTest {
         String words = "absent essay fox snake vast pumpkin height crouch silent bulb excuse razor";
         DeterministicSeed seed = new DeterministicSeed(words, "pp", 0, DeterministicSeed.Type.BIP39);
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.SINGLE_HD);
+        wallet.setPolicyType(PolicyType.SINGLE_SEGWIT);
         wallet.setScriptType(ScriptType.P2PKH);
-        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_HD, wallet.getScriptType().getDefaultDerivation());
+        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_SEGWIT, wallet.getScriptType().getDefaultDerivation());
         wallet.getKeystores().add(keystore);
-        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2PKH, wallet.getKeystores(), 1));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_SEGWIT, ScriptType.P2PKH, wallet.getKeystores(), 1));
 
         WalletNode receive0 = new WalletNode(wallet, KeyPurpose.RECEIVE, 0);
-        Assertions.assertEquals("12kTQjuWDp7Uu6PwY6CsS1KLTt3d1DBHZa", receive0.getAddress().toString());
+        Assertions.assertEquals("FWvAredsnJo2LhR4RCCLtX7f83KaeRvPKA", receive0.getAddress().toString());
         WalletNode receive1 = new WalletNode(wallet, KeyPurpose.RECEIVE, 1);
-        Assertions.assertEquals("1HbQwQCitHQxVtP39isXmUdHx7hQCZovrK", receive1.getAddress().toString());
+        Assertions.assertEquals(ChainEncoding.address("1HbQwQCitHQxVtP39isXmUdHx7hQCZovrK"), receive1.getAddress().toString());
     }
 
     @Test
@@ -164,16 +184,16 @@ public class WalletTest {
         String words = "absent essay fox snake vast pumpkin height crouch silent bulb excuse razor";
         DeterministicSeed seed = new DeterministicSeed(words, "pp", 0, DeterministicSeed.Type.BIP39);
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.SINGLE_HD);
+        wallet.setPolicyType(PolicyType.SINGLE_SEGWIT);
         wallet.setScriptType(ScriptType.P2SH_P2WPKH);
-        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_HD, wallet.getScriptType().getDefaultDerivation());
+        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_SEGWIT, wallet.getScriptType().getDefaultDerivation());
         wallet.getKeystores().add(keystore);
-        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2SH_P2WPKH, wallet.getKeystores(), 1));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_SEGWIT, ScriptType.P2SH_P2WPKH, wallet.getKeystores(), 1));
 
         WalletNode receive0 = new WalletNode(wallet, KeyPurpose.RECEIVE, 0);
-        Assertions.assertEquals("3NZLE4TntsjtcZ5MbrfxwtYo9meBVybVQj", receive0.getAddress().toString());
+        Assertions.assertEquals("7oGy4FjxhrqXcKcJsULUHGYT5KUZQeiP8P", receive0.getAddress().toString());
         WalletNode receive1 = new WalletNode(wallet, KeyPurpose.RECEIVE, 1);
-        Assertions.assertEquals("32YBBuRsp8XTeLx4T6BmD2L4nANGaNDkSg", receive1.getAddress().toString());
+        Assertions.assertEquals(ChainEncoding.address("32YBBuRsp8XTeLx4T6BmD2L4nANGaNDkSg"), receive1.getAddress().toString());
     }
 
     @Test
@@ -181,16 +201,16 @@ public class WalletTest {
         String words = "absent essay fox snake vast pumpkin height crouch silent bulb excuse razor";
         DeterministicSeed seed = new DeterministicSeed(words, "pp", 0, DeterministicSeed.Type.BIP39);
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.SINGLE_HD);
+        wallet.setPolicyType(PolicyType.SINGLE_SEGWIT);
         wallet.setScriptType(ScriptType.P2WPKH);
-        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_HD, wallet.getScriptType().getDefaultDerivation());
+        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_SEGWIT, wallet.getScriptType().getDefaultDerivation());
         wallet.getKeystores().add(keystore);
-        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, wallet.getKeystores(), 1));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_SEGWIT, ScriptType.P2WPKH, wallet.getKeystores(), 1));
 
         WalletNode receive0 = new WalletNode(wallet, KeyPurpose.RECEIVE, 0);
-        Assertions.assertEquals("bc1quvxdut936uswuxwxrk6nvjmgwxh463r0fjwn55", receive0.getAddress().toString());
+        Assertions.assertEquals("gfcn1quvxdut936uswuxwxrk6nvjmgwxh463r0fwnar3", receive0.getAddress().toString());
         WalletNode receive1 = new WalletNode(wallet, KeyPurpose.RECEIVE, 1);
-        Assertions.assertEquals("bc1q95j2862dz7mqpraw6qdjc70gumyu5z7adgq9x9", receive1.getAddress().toString());
+        Assertions.assertEquals(ChainEncoding.address("bc1q95j2862dz7mqpraw6qdjc70gumyu5z7adgq9x9"), receive1.getAddress().toString());
     }
 
     @Test
@@ -202,22 +222,22 @@ public class WalletTest {
         DeterministicSeed seed2 = new DeterministicSeed(words2, "", 0, DeterministicSeed.Type.BIP39);
 
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.MULTI_HD);
+        wallet.setPolicyType(PolicyType.MULTI_SEGWIT);
         wallet.setScriptType(ScriptType.P2SH);
-        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_HD, ScriptType.P2PKH.getDefaultDerivation());
-        Assertions.assertEquals("xprv9s21ZrQH143K4G3jeUxf7h93qLeinXNULjjaef1yZFXpoc5D16iHEFkgJ7ThkWzAEBwNNwyJFtrVhJVJRjCc9ew76JrgsVoXT4VYHJBbbSV", keystore.getExtendedMasterPrivateKey().toString());
-        Assertions.assertEquals("xpub6DLZWwJhGmq2SwdAytDWhCUrM4MojYSLHhHMZ1sob9UGXnSvgczEL7zV1wtcy9qcH6yduKMp1bPWcSxxSmz6LEpw4xTABLL3XwX5KGzkNqZ", keystore.getExtendedPublicKey().toString());
+        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_SEGWIT, ScriptType.P2PKH.getDefaultDerivation());
+        assertExtKey("xprv9s21ZrQH143K4G3jeUxf7h93qLeinXNULjjaef1yZFXpoc5D16iHEFkgJ7ThkWzAEBwNNwyJFtrVhJVJRjCc9ew76JrgsVoXT4VYHJBbbSV", keystore.getExtendedMasterPrivateKey().toString());
+        assertExtKey("xpub6DLZWwJhGmq2SwdAytDWhCUrM4MojYSLHhHMZ1sob9UGXnSvgczEL7zV1wtcy9qcH6yduKMp1bPWcSxxSmz6LEpw4xTABLL3XwX5KGzkNqZ", keystore.getExtendedPublicKey().toString());
         wallet.getKeystores().add(keystore);
-        Keystore keystore2 = Keystore.fromSeed(seed2, PolicyType.SINGLE_HD, ScriptType.P2PKH.getDefaultDerivation());
-        Assertions.assertEquals("xprv9s21ZrQH143K4FNcBwXNXfzVNskpoRS7cf4jQTLrhbPkhhXp8hz4QRXT62HziiHziM3Pxyd2Qx3UQkoRpcDu2BauuJJRdyrduXBJGgjAgFx", keystore2.getExtendedMasterPrivateKey().toString());
-        Assertions.assertEquals("xpub6ChqMsFBYpJiJYzcJgEvddHtbZr1mTaE1o4RbhFRBAYVxN8SScGb9kjwkXtM33JKejR16gBZhNbkV14AccetR5u2McnCgTCpDBfa8hee9v8", keystore2.getExtendedPublicKey().toString());
+        Keystore keystore2 = Keystore.fromSeed(seed2, PolicyType.SINGLE_SEGWIT, ScriptType.P2PKH.getDefaultDerivation());
+        assertExtKey("xprv9s21ZrQH143K4FNcBwXNXfzVNskpoRS7cf4jQTLrhbPkhhXp8hz4QRXT62HziiHziM3Pxyd2Qx3UQkoRpcDu2BauuJJRdyrduXBJGgjAgFx", keystore2.getExtendedMasterPrivateKey().toString());
+        assertExtKey("xpub6ChqMsFBYpJiJYzcJgEvddHtbZr1mTaE1o4RbhFRBAYVxN8SScGb9kjwkXtM33JKejR16gBZhNbkV14AccetR5u2McnCgTCpDBfa8hee9v8", keystore2.getExtendedPublicKey().toString());
         wallet.getKeystores().add(keystore2);
-        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.MULTI_HD, ScriptType.P2SH, wallet.getKeystores(), 2));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.MULTI_SEGWIT, ScriptType.P2SH, wallet.getKeystores(), 2));
 
         WalletNode receive0 = new WalletNode(wallet, KeyPurpose.RECEIVE, 0);
-        Assertions.assertEquals("38kq6yz4VcYymTExQPY3gppbz38mtPLveK", receive0.getAddress().toString());
+        Assertions.assertEquals("7ZUTwBGEJbecmDmug1CZ2CpFuay9ijiXSg", receive0.getAddress().toString());
         WalletNode receive1 = new WalletNode(wallet, KeyPurpose.CHANGE, 1);
-        Assertions.assertEquals("3EdKaNsnjBTBggWcSMRyVju6GbHWy68mAH", receive1.getAddress().toString());
+        Assertions.assertEquals(ChainEncoding.address("3EdKaNsnjBTBggWcSMRyVju6GbHWy68mAH"), receive1.getAddress().toString());
     }
 
     @Test
@@ -229,22 +249,22 @@ public class WalletTest {
         DeterministicSeed seed2 = new DeterministicSeed(words2, "", 0, DeterministicSeed.Type.BIP39);
 
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.MULTI_HD);
+        wallet.setPolicyType(PolicyType.MULTI_SEGWIT);
         wallet.setScriptType(ScriptType.P2SH_P2WSH);
-        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_HD, ScriptType.P2PKH.getDefaultDerivation());
-        Assertions.assertEquals("xprv9s21ZrQH143K4G3jeUxf7h93qLeinXNULjjaef1yZFXpoc5D16iHEFkgJ7ThkWzAEBwNNwyJFtrVhJVJRjCc9ew76JrgsVoXT4VYHJBbbSV", keystore.getExtendedMasterPrivateKey().toString());
-        Assertions.assertEquals("xpub6DLZWwJhGmq2SwdAytDWhCUrM4MojYSLHhHMZ1sob9UGXnSvgczEL7zV1wtcy9qcH6yduKMp1bPWcSxxSmz6LEpw4xTABLL3XwX5KGzkNqZ", keystore.getExtendedPublicKey().toString());
+        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_SEGWIT, ScriptType.P2PKH.getDefaultDerivation());
+        assertExtKey("xprv9s21ZrQH143K4G3jeUxf7h93qLeinXNULjjaef1yZFXpoc5D16iHEFkgJ7ThkWzAEBwNNwyJFtrVhJVJRjCc9ew76JrgsVoXT4VYHJBbbSV", keystore.getExtendedMasterPrivateKey().toString());
+        assertExtKey("xpub6DLZWwJhGmq2SwdAytDWhCUrM4MojYSLHhHMZ1sob9UGXnSvgczEL7zV1wtcy9qcH6yduKMp1bPWcSxxSmz6LEpw4xTABLL3XwX5KGzkNqZ", keystore.getExtendedPublicKey().toString());
         wallet.getKeystores().add(keystore);
-        Keystore keystore2 = Keystore.fromSeed(seed2, PolicyType.SINGLE_HD, ScriptType.P2PKH.getDefaultDerivation());
-        Assertions.assertEquals("xprv9s21ZrQH143K4FNcBwXNXfzVNskpoRS7cf4jQTLrhbPkhhXp8hz4QRXT62HziiHziM3Pxyd2Qx3UQkoRpcDu2BauuJJRdyrduXBJGgjAgFx", keystore2.getExtendedMasterPrivateKey().toString());
-        Assertions.assertEquals("xpub6ChqMsFBYpJiJYzcJgEvddHtbZr1mTaE1o4RbhFRBAYVxN8SScGb9kjwkXtM33JKejR16gBZhNbkV14AccetR5u2McnCgTCpDBfa8hee9v8", keystore2.getExtendedPublicKey().toString());
+        Keystore keystore2 = Keystore.fromSeed(seed2, PolicyType.SINGLE_SEGWIT, ScriptType.P2PKH.getDefaultDerivation());
+        assertExtKey("xprv9s21ZrQH143K4FNcBwXNXfzVNskpoRS7cf4jQTLrhbPkhhXp8hz4QRXT62HziiHziM3Pxyd2Qx3UQkoRpcDu2BauuJJRdyrduXBJGgjAgFx", keystore2.getExtendedMasterPrivateKey().toString());
+        assertExtKey("xpub6ChqMsFBYpJiJYzcJgEvddHtbZr1mTaE1o4RbhFRBAYVxN8SScGb9kjwkXtM33JKejR16gBZhNbkV14AccetR5u2McnCgTCpDBfa8hee9v8", keystore2.getExtendedPublicKey().toString());
         wallet.getKeystores().add(keystore2);
-        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.MULTI_HD, ScriptType.P2SH_P2WSH, wallet.getKeystores(), 2));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.MULTI_SEGWIT, ScriptType.P2SH_P2WSH, wallet.getKeystores(), 2));
 
         WalletNode receive0 = new WalletNode(wallet, KeyPurpose.RECEIVE, 0);
-        Assertions.assertEquals("3Mw8xqAHh8g3eBvh7q1UEUmoexqdXDK9Tf", receive0.getAddress().toString());
+        Assertions.assertEquals("7nemo2STW7mgdxTePSfyZrmTaWg1LHS7Fq", receive0.getAddress().toString());
         WalletNode receive1 = new WalletNode(wallet, KeyPurpose.CHANGE, 1);
-        Assertions.assertEquals("35dFo1ivJ8jyHpyf42MWvnYf5LBU8Siren", receive1.getAddress().toString());
+        Assertions.assertEquals(ChainEncoding.address("35dFo1ivJ8jyHpyf42MWvnYf5LBU8Siren"), receive1.getAddress().toString());
     }
 
     @Test
@@ -256,28 +276,28 @@ public class WalletTest {
         DeterministicSeed seed2 = new DeterministicSeed(words2, "", 0, DeterministicSeed.Type.BIP39);
 
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.MULTI_HD);
+        wallet.setPolicyType(PolicyType.MULTI_SEGWIT);
         wallet.setScriptType(ScriptType.P2WSH);
-        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_HD, ScriptType.P2PKH.getDefaultDerivation());
-        Assertions.assertEquals("xprv9s21ZrQH143K4G3jeUxf7h93qLeinXNULjjaef1yZFXpoc5D16iHEFkgJ7ThkWzAEBwNNwyJFtrVhJVJRjCc9ew76JrgsVoXT4VYHJBbbSV", keystore.getExtendedMasterPrivateKey().toString());
-        Assertions.assertEquals("xpub6DLZWwJhGmq2SwdAytDWhCUrM4MojYSLHhHMZ1sob9UGXnSvgczEL7zV1wtcy9qcH6yduKMp1bPWcSxxSmz6LEpw4xTABLL3XwX5KGzkNqZ", keystore.getExtendedPublicKey().toString());
+        Keystore keystore = Keystore.fromSeed(seed, PolicyType.SINGLE_SEGWIT, ScriptType.P2PKH.getDefaultDerivation());
+        assertExtKey("xprv9s21ZrQH143K4G3jeUxf7h93qLeinXNULjjaef1yZFXpoc5D16iHEFkgJ7ThkWzAEBwNNwyJFtrVhJVJRjCc9ew76JrgsVoXT4VYHJBbbSV", keystore.getExtendedMasterPrivateKey().toString());
+        assertExtKey("xpub6DLZWwJhGmq2SwdAytDWhCUrM4MojYSLHhHMZ1sob9UGXnSvgczEL7zV1wtcy9qcH6yduKMp1bPWcSxxSmz6LEpw4xTABLL3XwX5KGzkNqZ", keystore.getExtendedPublicKey().toString());
         wallet.getKeystores().add(keystore);
-        Keystore keystore2 = Keystore.fromSeed(seed2, PolicyType.SINGLE_HD, ScriptType.P2PKH.getDefaultDerivation());
-        Assertions.assertEquals("xprv9s21ZrQH143K4FNcBwXNXfzVNskpoRS7cf4jQTLrhbPkhhXp8hz4QRXT62HziiHziM3Pxyd2Qx3UQkoRpcDu2BauuJJRdyrduXBJGgjAgFx", keystore2.getExtendedMasterPrivateKey().toString());
-        Assertions.assertEquals("xpub6ChqMsFBYpJiJYzcJgEvddHtbZr1mTaE1o4RbhFRBAYVxN8SScGb9kjwkXtM33JKejR16gBZhNbkV14AccetR5u2McnCgTCpDBfa8hee9v8", keystore2.getExtendedPublicKey().toString());
+        Keystore keystore2 = Keystore.fromSeed(seed2, PolicyType.SINGLE_SEGWIT, ScriptType.P2PKH.getDefaultDerivation());
+        assertExtKey("xprv9s21ZrQH143K4FNcBwXNXfzVNskpoRS7cf4jQTLrhbPkhhXp8hz4QRXT62HziiHziM3Pxyd2Qx3UQkoRpcDu2BauuJJRdyrduXBJGgjAgFx", keystore2.getExtendedMasterPrivateKey().toString());
+        assertExtKey("xpub6ChqMsFBYpJiJYzcJgEvddHtbZr1mTaE1o4RbhFRBAYVxN8SScGb9kjwkXtM33JKejR16gBZhNbkV14AccetR5u2McnCgTCpDBfa8hee9v8", keystore2.getExtendedPublicKey().toString());
         wallet.getKeystores().add(keystore2);
-        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.MULTI_HD, ScriptType.P2WSH, wallet.getKeystores(), 2));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.MULTI_SEGWIT, ScriptType.P2WSH, wallet.getKeystores(), 2));
 
         WalletNode receive0 = new WalletNode(wallet, KeyPurpose.RECEIVE, 0);
-        Assertions.assertEquals("bc1q20e4vm656h5lvmngz9ztz6hjzftvh39yzngqhuqzk8qzj7tqnzaqgclrwc", receive0.getAddress().toString());
+        Assertions.assertEquals("gfcn1q20e4vm656h5lvmngz9ztz6hjzftvh39yzngqhuqzk8qzj7tqnzaqarltjq", receive0.getAddress().toString());
         WalletNode receive1 = new WalletNode(wallet, KeyPurpose.CHANGE, 1);
-        Assertions.assertEquals("bc1q2epdx7dplwaas2jucfrzmxm8350rqh68hs6vqreysku80ye44mfqla85f2", receive1.getAddress().toString());
+        Assertions.assertEquals(ChainEncoding.address("bc1q2epdx7dplwaas2jucfrzmxm8350rqh68hs6vqreysku80ye44mfqla85f2"), receive1.getAddress().toString());
     }
 
     @Test
     public void testHighDerivationPath() {
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.SINGLE_HD);
+        wallet.setPolicyType(PolicyType.SINGLE_SEGWIT);
         wallet.setScriptType(ScriptType.P2WPKH);
         Keystore keystore = new Keystore();
         keystore.setKeyDerivation(new KeyDerivation("ffffffff", "m/84'/0'/2147483646'"));
@@ -289,7 +309,7 @@ public class WalletTest {
         Assertions.assertEquals("027ecc656f4b91b92881b6f07cf876cd2e42b20df7acc4df54fc3315fbb2d13e1c", Utils.bytesToHex(extendedKey.getKey(derivation).getPubKey()));
 
         WalletNode receive0 = new WalletNode(wallet, KeyPurpose.RECEIVE, 0);
-        Assertions.assertEquals("bc1qarzeu6ncapyvjzdeayjq8vnzp6uvcn4eaeuuqq", receive0.getAddress().toString());
+        Assertions.assertEquals("gfcn1qarzeu6ncapyvjzdeayjq8vnzp6uvcn4ea9pjh9", receive0.getAddress().toString());
     }
 
     @Test
@@ -362,9 +382,7 @@ public class WalletTest {
 
     @Test
     public void testFillToIndexNoOpForSp() {
-        Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.SINGLE_SP);
-        wallet.setScriptType(ScriptType.P2TR);
+        Wallet wallet = buildValidSpWallet();
 
         WalletNode purposeNode = wallet.getNode(KeyPurpose.RECEIVE);
         Assertions.assertTrue(purposeNode.getChildren().isEmpty());
@@ -399,6 +417,13 @@ public class WalletTest {
         Assertions.assertNull(duplicate);
         Assertions.assertEquals(1, purposeNode.getChildren().size());
         Assertions.assertArrayEquals(firstTweak, first.getSilentPaymentTweak());
+    }
+
+    @Test
+    public void getNodeDoesNotRequireAScriptType() {
+        Wallet wallet = new Wallet();
+        WalletNode node = Assertions.assertDoesNotThrow(() -> wallet.getNode(KeyPurpose.RECEIVE));
+        Assertions.assertNotNull(node);
     }
 
     @Test
@@ -459,6 +484,23 @@ public class WalletTest {
     }
 
     @Test
+    public void maxCosignersDilithiumMultisig() throws MnemonicException, InvalidWalletException {
+        Assertions.assertEquals(MlDsa44.MAX_KEYS, ScriptType.MLDSA_MULTI.getMaxCosigners());
+        Assertions.assertEquals(com.sparrowwallet.drongo.crypto.MlDsa87.MAX_KEYS, ScriptType.MLDSA87_MULTI.getMaxCosigners());
+
+        for(ScriptType scriptType : List.of(ScriptType.MLDSA_MULTI, ScriptType.MLDSA87_MULTI)) {
+            Wallet wallet = buildMultisigWallet(scriptType, scriptType.getMaxCosigners());
+            wallet.checkWallet();
+            Assertions.assertNotNull(new WalletNode(wallet, KeyPurpose.RECEIVE, 0).getAddress());
+
+            Wallet oversize = buildMultisigWallet(scriptType, scriptType.getMaxCosigners() + 1);
+            InvalidWalletException e = Assertions.assertThrows(InvalidWalletException.class, oversize::checkWallet);
+            Assertions.assertTrue(e.getMessage().contains("maximum of " + scriptType.getMaxCosigners() + " cosigners"));
+            Assertions.assertFalse(oversize.isValid());
+        }
+    }
+
+    @Test
     public void testMalformedOpReturnDoesNotBreakCoinSelection() {
         Wallet wallet = buildFundedWallet(new Script(List.of(ScriptChunk.fromOpcode(ScriptOpCodes.OP_RETURN), ScriptChunk.fromOpcode(ScriptOpCodes.OP_1))), true);
 
@@ -485,20 +527,31 @@ public class WalletTest {
         Assertions.assertTrue(outputGroups.get(0).isSpendLast());
     }
 
+    private static PolicyType multisigPolicy(ScriptType scriptType) {
+        if(scriptType == ScriptType.MLDSA87_MULTI) {
+            return PolicyType.MULTI_MLDSA87;
+        }
+        if(scriptType == ScriptType.MLDSA_MULTI) {
+            return PolicyType.MULTI_MLDSA44;
+        }
+        return PolicyType.MULTI_SEGWIT;
+    }
+
     private Wallet buildMultisigWallet(ScriptType scriptType, int cosigners) throws MnemonicException {
+        PolicyType policyType = multisigPolicy(scriptType);
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.MULTI_HD);
+        wallet.setPolicyType(policyType);
         wallet.setScriptType(scriptType);
 
         for(int i = 0; i < cosigners; i++) {
             byte[] entropy = Utils.hexToBytes(String.format("%032x", i + 1));
             DeterministicSeed seed = new DeterministicSeed(entropy, "", 0);
-            Keystore keystore = Keystore.fromSeed(seed, PolicyType.MULTI_HD, scriptType.getDefaultDerivation());
+            Keystore keystore = Keystore.fromSeed(seed, policyType, scriptType.getDefaultDerivation());
             keystore.setLabel("Keystore " + (i + 1));
             wallet.getKeystores().add(keystore);
         }
 
-        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.MULTI_HD, scriptType, wallet.getKeystores(), 2));
+        wallet.setDefaultPolicy(Policy.getPolicy(policyType, scriptType, wallet.getKeystores(), 2));
         return wallet;
     }
 
@@ -520,13 +573,13 @@ public class WalletTest {
 
     private Wallet buildFundedWallet(Script opReturnScript, boolean addWalletTransaction) {
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.SINGLE_HD);
+        wallet.setPolicyType(PolicyType.SINGLE_SEGWIT);
         wallet.setScriptType(ScriptType.P2WPKH);
         Keystore keystore = new Keystore();
         keystore.setKeyDerivation(new KeyDerivation("00000000", "m/84'/0'/0'"));
-        keystore.setExtendedPublicKey(ExtendedKey.fromDescriptor("xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj"));
+        keystore.setExtendedPublicKey(ExtendedKey.fromDescriptor(ChainEncoding.extendedKey("xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj")));
         wallet.getKeystores().add(keystore);
-        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, ScriptType.P2WPKH, wallet.getKeystores(), 1));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_SEGWIT, ScriptType.P2WPKH, wallet.getKeystores(), 1));
         wallet.setStoredBlockHeight(800006);
 
         WalletNode receiveNode = wallet.getNode(KeyPurpose.RECEIVE);
@@ -596,10 +649,11 @@ public class WalletTest {
         String words = "absent essay fox snake vast pumpkin height crouch silent bulb excuse razor";
         DeterministicSeed seed = new DeterministicSeed(words, "", 0, DeterministicSeed.Type.BIP39);
         Wallet wallet = new Wallet();
-        wallet.setPolicyType(PolicyType.SINGLE_HD);
+        PolicyType policyType = PolicyType.forScript(scriptType, false);
+        wallet.setPolicyType(policyType);
         wallet.setScriptType(scriptType);
-        wallet.getKeystores().add(Keystore.fromSeed(seed, PolicyType.SINGLE_HD, scriptType.getDefaultDerivation()));
-        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_HD, scriptType, wallet.getKeystores(), 1));
+        wallet.getKeystores().add(Keystore.fromSeed(seed, policyType, scriptType.getDefaultDerivation()));
+        wallet.setDefaultPolicy(Policy.getPolicy(policyType, scriptType, wallet.getKeystores(), 1));
         wallet.getNode(KeyPurpose.RECEIVE).fillToIndex(0);
 
         return wallet;
@@ -622,7 +676,7 @@ public class WalletTest {
         ECKey key = wallet.getKeystores().getFirst().getKey(addressNode);
         if(wallet.getScriptType() == ScriptType.P2TR) {
             Sha256Hash hash = transaction.hashForTaprootSignature(List.of(funding.getOutputs().getFirst()), 0, false, outputScript, sigHashFlags, null);
-            SchnorrSignature schnorrSignature = key.getTweakedOutputKey().signSchnorr(hash);
+            SchnorrSignature schnorrSignature = wallet.getScriptType().getOutputKey(wallet.getPolicyType(), key).signSchnorr(hash);
             TransactionSignature signature = new TransactionSignature(schnorrSignature.r, schnorrSignature.s, TransactionSignature.Type.SCHNORR, sigHashFlags);
             transaction.getInputs().getFirst().setWitness(new TransactionWitness(transaction, signature));
         } else {
@@ -634,5 +688,23 @@ public class WalletTest {
         }
 
         return transaction;
+    }
+
+    @Test
+    public void dilithium87ReceiveAddressCompletes() throws MnemonicException {
+        String words = "absent essay fox snake vast pumpkin height crouch silent bulb excuse razor";
+        DeterministicSeed seed = new DeterministicSeed(words, "", 0, DeterministicSeed.Type.BIP39);
+        Wallet wallet = new Wallet();
+        wallet.setPolicyType(PolicyType.SINGLE_MLDSA87);
+        wallet.setScriptType(ScriptType.MLDSA87_SINGLE);
+        wallet.getKeystores().add(Keystore.fromSeed(seed, PolicyType.SINGLE_MLDSA87, ScriptType.MLDSA87_SINGLE.getDefaultDerivation()));
+        wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE_MLDSA87, ScriptType.MLDSA87_SINGLE, wallet.getKeystores(), 1));
+
+        WalletNode receive0 = new WalletNode(wallet, KeyPurpose.RECEIVE, 0);
+        Address address = receive0.getAddress();
+        Assertions.assertEquals(32, address.getData().length);
+        Assertions.assertFalse(address.toString().isEmpty());
+        Assertions.assertEquals(36, receive0.getOutputScript().getProgram().length);
+        Assertions.assertEquals(64, receive0.getOutputDescriptor().length());
     }
 }

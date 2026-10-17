@@ -8,7 +8,7 @@ import com.sparrowwallet.drongo.dns.DnsPaymentResolver;
 import com.sparrowwallet.drongo.dns.DnsPaymentValidationException;
 import com.sparrowwallet.drongo.protocol.*;
 import com.sparrowwallet.drongo.silentpayments.SilentPaymentAddress;
-import com.sparrowwallet.drongo.uri.BitcoinURIParseException;
+import com.sparrowwallet.drongo.uri.CoinURIParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,7 +118,7 @@ public class PSBTOutput {
                         throw new PSBTParseException("PSBT output amount must be 8 bytes");
                     }
                     long outputAmount = Utils.readInt64(entry.getData(), 0);
-                    if(outputAmount < 0 || outputAmount > Transaction.MAX_SATOSHIS) {
+                    if(outputAmount < 0 || outputAmount > Transaction.MAX_TOKENS) {
                         throw new PSBTParseException("PSBT output amount is out of range: " + outputAmount);
                     }
                     this.amount = outputAmount;
@@ -370,7 +370,7 @@ public class PSBTOutput {
         return dnssecProof;
     }
 
-    public Optional<DnsPayment> getDnsPayment() throws DnsPaymentValidationException, IOException, BitcoinURIParseException, ExecutionException, InterruptedException {
+    public Optional<DnsPayment> getDnsPayment() throws DnsPaymentValidationException, IOException, CoinURIParseException, ExecutionException, InterruptedException {
         if(dnssecProof == null || dnssecProof.isEmpty()) {
             return Optional.empty();
         }

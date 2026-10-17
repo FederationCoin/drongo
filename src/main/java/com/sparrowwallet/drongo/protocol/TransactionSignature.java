@@ -167,6 +167,6 @@ public class TransactionSignature {
     }
 
     public enum Type {
-        ECDSA, SCHNORR
+        ECDSA, SCHNORR, UNIFIED
     }
 }

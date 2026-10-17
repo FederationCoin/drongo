@@ -36,6 +36,7 @@ public record TransactionParameters(List<UtxoSelector> utxoSelectors, List<TxoFi
     }
 
     public long getRequiredFeeAmount(double virtualSize) {
-        return fee == null ? (long)Math.floor(feeRate * virtualSize) : fee;
+        long requested = fee == null ? (long)Math.floor(feeRate * virtualSize) : fee;
+        return Math.max(requested, com.sparrowwallet.drongo.protocol.SettlementFee.minimumTokens((long)Math.floor(virtualSize)));
     }
 }

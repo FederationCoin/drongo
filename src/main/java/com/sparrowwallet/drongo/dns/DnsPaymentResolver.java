@@ -1,8 +1,8 @@
 package com.sparrowwallet.drongo.dns;
 
 import com.sparrowwallet.drongo.Utils;
-import com.sparrowwallet.drongo.uri.BitcoinURI;
-import com.sparrowwallet.drongo.uri.BitcoinURIParseException;
+import com.sparrowwallet.drongo.uri.CoinURI;
+import com.sparrowwallet.drongo.uri.CoinURIParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xbill.DNS.*;
@@ -21,12 +21,12 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-import static com.sparrowwallet.drongo.uri.BitcoinURI.BITCOIN_SCHEME;
+import static com.sparrowwallet.drongo.uri.CoinURI.COIN_SCHEME;
 
 public class DnsPaymentResolver {
     private static final Logger log = LoggerFactory.getLogger(DnsPaymentResolver.class);
 
-    private static final String BITCOIN_URI_PREFIX = BITCOIN_SCHEME + ":";
+    private static final String BITCOIN_URI_PREFIX = COIN_SCHEME + ":";
     private static final String DEFAULT_RESOLVER_IP_ADDRESS = "8.8.8.8";
 
     static String ROOT = ". IN DS 20326 8 2 E06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D\n" +
@@ -53,7 +53,7 @@ public class DnsPaymentResolver {
         this.clock = clock;
     }
 
-    public Optional<DnsPayment> resolve(Proxy proxy) throws IOException, DnsPaymentValidationException, BitcoinURIParseException, ExecutionException, InterruptedException {
+    public Optional<DnsPayment> resolve(Proxy proxy) throws IOException, DnsPaymentValidationException, CoinURIParseException, ExecutionException, InterruptedException {
         return resolve(DEFAULT_RESOLVER_IP_ADDRESS, proxy);
     }
 
@@ -65,9 +65,9 @@ public class DnsPaymentResolver {
      * @return The DNS payment instruction, if present
      * @throws IOException Thrown for a general I/O error
      * @throws DnsPaymentValidationException Thrown for a DNSSEC or BIP 353 validation failure
-     * @throws BitcoinURIParseException Thrown for an invalid BIP 21 URI
+     * @throws CoinURIParseException Thrown for an invalid BIP 21 URI
      */
-    public Optional<DnsPayment> resolve(String resolverIpAddress, Proxy proxy) throws IOException, DnsPaymentValidationException, BitcoinURIParseException, ExecutionException, InterruptedException {
+    public Optional<DnsPayment> resolve(String resolverIpAddress, Proxy proxy) throws IOException, DnsPaymentValidationException, CoinURIParseException, ExecutionException, InterruptedException {
         log.debug("Resolving payment record for: " + domain);
 
         PersistingResolver persistingResolver = new PersistingResolver(resolverIpAddress, proxy);
@@ -83,17 +83,17 @@ public class DnsPaymentResolver {
                 return Optional.empty();
             }
 
-            String strBitcoinUri = getBitcoinURI(result.getRecords());
+            String strBitcoinUri = getCoinURI(result.getRecords());
             if(strBitcoinUri.isEmpty()) {
                 return Optional.empty();
             }
-            BitcoinURI bitcoinURI = new BitcoinURI(strBitcoinUri);
+            CoinURI coinURI = new CoinURI(strBitcoinUri);
             validateResponse(authenticatingResolver, new ArrayList<>(persistingResolver.getChain()));
 
             byte[] proofChain = persistingResolver.chainToWire();
             log.debug("Resolved " + hrn + " with proof " + Utils.bytesToHex(proofChain));
 
-            return Optional.of(new DnsPayment(hrn, bitcoinURI, proofChain));
+            return Optional.of(new DnsPayment(hrn, coinURI, proofChain));
         } catch(ExecutionException e) {
             if(e.getCause() instanceof NoSuchDomainException) {
                 return Optional.empty();
@@ -112,9 +112,9 @@ public class DnsPaymentResolver {
      * @return The DNS payment instruction, if present
      * @throws IOException Thrown for a general I/O error
      * @throws DnsPaymentValidationException Thrown for a DNSSEC or BIP 353 validation failure
-     * @throws BitcoinURIParseException Thrown for an invalid BIP 21 URI
+     * @throws CoinURIParseException Thrown for an invalid BIP 21 URI
      */
-    public Optional<DnsPayment> resolve(byte[] proofChain) throws IOException, DnsPaymentValidationException, BitcoinURIParseException, ExecutionException, InterruptedException {
+    public Optional<DnsPayment> resolve(byte[] proofChain) throws IOException, DnsPaymentValidationException, CoinURIParseException, ExecutionException, InterruptedException {
         OfflineResolver offlineResolver = new OfflineResolver(proofChain);
         ValidatingResolver offlineValidatingResolver = new ValidatingResolver(offlineResolver, clock);
         offlineValidatingResolver.loadTrustAnchors(new ByteArrayInputStream(ROOT.getBytes(StandardCharsets.US_ASCII)));
@@ -139,14 +139,14 @@ public class DnsPaymentResolver {
                 return Optional.empty();
             }
 
-            String strBitcoinUri = getBitcoinURI(result.getRecords());
+            String strBitcoinUri = getCoinURI(result.getRecords());
             if(strBitcoinUri.isEmpty()) {
                 return Optional.empty();
             }
-            BitcoinURI bitcoinURI = new BitcoinURI(strBitcoinUri);
+            CoinURI coinURI = new CoinURI(strBitcoinUri);
             validateResponse(authenticatingResolver, offlineResolver.getRecords());
 
-            return Optional.of(new DnsPayment(hrn, bitcoinURI, proofChain));
+            return Optional.of(new DnsPayment(hrn, coinURI, proofChain));
         } catch(ExecutionException e) {
             if(e.getCause() instanceof NoSuchDomainException) {
                 return Optional.empty();
@@ -173,7 +173,7 @@ public class DnsPaymentResolver {
         }
     }
 
-    private String getBitcoinURI(List<Record> answers) throws DnsPaymentValidationException {
+    private String getCoinURI(List<Record> answers) throws DnsPaymentValidationException {
         StringBuilder uriBuilder = new StringBuilder();
         for(Record record : answers) {
             if(record.getType() == Type.TXT) {

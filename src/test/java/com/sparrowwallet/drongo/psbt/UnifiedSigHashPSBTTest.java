@@ -26,8 +26,8 @@ public class UnifiedSigHashPSBTTest {
     private static final long VALUE_TWO = 250000L;
 
     private PSBT twoInputPsbt(SigHash sigHash) {
-        Script spkOne = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_HD, KEY_ONE);
-        Script spkTwo = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_HD, KEY_TWO);
+        Script spkOne = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_MLDSA87, KEY_ONE);
+        Script spkTwo = ScriptType.P2WPKH.getOutputScript(PolicyType.SINGLE_MLDSA87, KEY_TWO);
 
         Transaction transaction = new Transaction();
         transaction.setVersion(2);
@@ -47,7 +47,7 @@ public class UnifiedSigHashPSBTTest {
     }
 
     private ECKey outputKey(ECKey privKey) {
-        return ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_HD, privKey);
+        return ScriptType.P2WPKH.getOutputKey(PolicyType.SINGLE_MLDSA87, privKey);
     }
 
     @Test
@@ -85,7 +85,7 @@ public class UnifiedSigHashPSBTTest {
 
     /**
      * The PSBT path must reach the same digest as calling the algorithm directly, with the segwit v0
-     * script type byte and the BIP143 script code. Anything else would verify here and be rejected by a node.
+     * script type byte and an empty scriptCode. Anything else would verify here and be rejected by a node.
      */
     @Test
     public void testPsbtDigestMatchesTheAlgorithmDirectly() {
@@ -94,9 +94,8 @@ public class UnifiedSigHashPSBTTest {
         inputs.get(0).sign(outputKey(KEY_ONE));
 
         List<TransactionOutput> spentUtxos = inputs.stream().map(PSBTInput::getUtxo).toList();
-        byte[] scriptCode = ScriptType.P2PKH.getOutputScript(PolicyType.SINGLE_HD, outputKey(KEY_ONE)).getProgram();
         Sha256Hash expected = psbt.getTransaction().hashForUnifiedSignature(spentUtxos, 0, UnifiedScriptType.WITNESS_V0,
-                scriptCode, SigHash.UNIFIED_ALL.byteValue(), null, null, null);
+                new byte[0], SigHash.UNIFIED_ALL.byteValue(), null, null, null);
 
         ECKey pubKey = ECKey.fromPublicOnly(outputKey(KEY_ONE));
         TransactionSignature signature = inputs.get(0).getPartialSignatures().get(pubKey);
@@ -119,9 +118,8 @@ public class UnifiedSigHashPSBTTest {
         PSBT unifiedPsbt = twoInputPsbt(SigHash.UNIFIED_ALL);
         List<PSBTInput> inputs = unifiedPsbt.getPsbtInputs();
         List<TransactionOutput> spentUtxos = inputs.stream().map(PSBTInput::getUtxo).toList();
-        byte[] scriptCode = ScriptType.P2PKH.getOutputScript(PolicyType.SINGLE_HD, outputKey(KEY_ONE)).getProgram();
         Sha256Hash unifiedDigest = unifiedPsbt.getTransaction().hashForUnifiedSignature(spentUtxos, 0, UnifiedScriptType.WITNESS_V0,
-                scriptCode, SigHash.UNIFIED_ALL.byteValue(), null, null, null);
+                new byte[0], SigHash.UNIFIED_ALL.byteValue(), null, null, null);
 
         Assertions.assertFalse(ECKey.fromPublicOnly(outputKey(KEY_ONE)).verify(unifiedDigest, legacySignature),
                 "A legacy signature verified against the unified message");
@@ -138,5 +136,45 @@ public class UnifiedSigHashPSBTTest {
         for(PSBTInput input : parsed.getPsbtInputs()) {
             Assertions.assertEquals(SigHash.UNIFIED_ALL, input.getSigHash());
         }
+    }
+
+    /**
+     * Product secp v0 signing with no PSBT sighash field must emit UNIFIED_ALL over empty scriptCode,
+     * the same digest the node hashes. BIP143 implied-P2PKH is a different message and must not be
+     * what the wallet signs.
+     */
+    @Test
+    public void testProductSignWithoutSetSigHashUsesUnifiedAllAndEmptyScriptCode() {
+        Script spk = ScriptType.P2WPKH.getOutputScript(KEY_ONE.getPubKeyHash());
+        Transaction transaction = new Transaction();
+        transaction.setVersion(2);
+        transaction.addInput(Sha256Hash.wrap(Utils.hexToBytes("aa".repeat(32))), 0, new Script(new byte[0]));
+        transaction.addOutput(VALUE_ONE - 1000L, spk);
+
+        PSBT psbt = new PSBT(transaction);
+        PSBTInput input = psbt.getPsbtInputs().get(0);
+        input.setWitnessUtxo(new TransactionOutput(null, VALUE_ONE, spk.getProgram()));
+        Assertions.assertNull(input.getSigHash(), "This case is the missing PSBT sighash field");
+
+        Assertions.assertTrue(input.sign(KEY_ONE), "Product sign produced no signature");
+        TransactionSignature signature = input.getPartialSignatures().get(ECKey.fromPublicOnly(KEY_ONE));
+        Assertions.assertNotNull(signature, "No signature for the signing key");
+        Assertions.assertEquals(SigHash.UNIFIED_ALL.byteValue(), signature.sighashFlags,
+                "Product sign without setSigHash must emit UNIFIED_ALL");
+
+        List<TransactionOutput> spent = List.of(input.getUtxo());
+        Sha256Hash emptyScriptCode = psbt.getTransaction().hashForUnifiedSignature(spent, 0, UnifiedScriptType.WITNESS_V0,
+                new byte[0], SigHash.UNIFIED_ALL.byteValue(), null, null, null);
+        Assertions.assertTrue(ECKey.fromPublicOnly(KEY_ONE).verify(emptyScriptCode, signature),
+                "Product sign hashed something other than empty scriptCode UNIFIED_ALL");
+
+        Script p2pkhWrap = ScriptType.P2PKH.getOutputScript(KEY_ONE.getPubKeyHash());
+        Sha256Hash wrappedUnified = psbt.getTransaction().hashForUnifiedSignature(spent, 0, UnifiedScriptType.WITNESS_V0,
+                p2pkhWrap.getProgram(), SigHash.UNIFIED_ALL.byteValue(), null, null, null);
+        Assertions.assertNotEquals(emptyScriptCode, wrappedUnified,
+                "Empty scriptCode and the BIP143 P2PKH wrap must be distinct messages");
+        Sha256Hash bip143 = psbt.getTransaction().hashForWitnessSignature(0, p2pkhWrap, VALUE_ONE, SigHash.ALL);
+        Assertions.assertFalse(ECKey.fromPublicOnly(KEY_ONE).verify(bip143, signature),
+                "Product sign produced a BIP143 signature");
     }
 }

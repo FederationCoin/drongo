@@ -94,6 +94,13 @@ public enum WalletModel {
                 this == LEDGER_STAX || this == LEDGER_FLEX || this == LEDGER_NANO_GEN5 || this == DIGITALBITBOX_01 || this == BITBOX_02 || this == COLDCARD || this == KEEPKEY || this == JADE || this == ONEKEY_CLASSIC_1S || this == ONEKEY_PRO);
     }
 
+    public boolean isAirgapped() {
+        return this == COLDCARD || this == COBO_VAULT || this == PASSPORT || this == KEYSTONE
+                || this == SEEDSIGNER || this == GORDIAN_SEED_TOOL || this == KRUX || this == AIRGAP_VAULT
+                || this == SPECTER_DIY || this == SAMOURAI || this == JADE || this == KEYCARD_SHELL
+                || this == ERA_WALLET;
+    }
+
     public int getMinPinLength() {
         if(this == SATOCHIP) {
             return 4;
@@ -204,5 +211,20 @@ public enum WalletModel {
         }
 
         return builder.toString().trim();
+    }
+
+    /** Seed, Sparrow file, labels, and transaction export. Hardware and foreign wallets are not a spend. */
+    public boolean isProductImport() {
+        return this == SEED || this == SPARROW || this == LABELS || this == TRANSACTIONS;
+    }
+
+    /**
+     * True for software wallets this product can import. USB, airgap, and card models stay false
+     * until a manufacturer supports this chain; flipping that model to true offers the existing path.
+     */
+    public boolean supportsThisChain() {
+        return this == SEED || this == SPARROW || this == ELECTRUM || this == BITCOIN_CORE
+                || this == SPECTER_DESKTOP || this == BLUE_WALLET || this == CARAVAN
+                || this == LABELS || this == BSMS || this == TRANSACTIONS || this == EPS;
     }
 }
