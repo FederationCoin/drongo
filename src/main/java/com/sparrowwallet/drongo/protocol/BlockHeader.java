@@ -10,7 +10,6 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.util.Date;
 
-import static com.sparrowwallet.drongo.Utils.uint16ToByteStreamLE;
 import static com.sparrowwallet.drongo.Utils.uint32ToByteStreamLE;
 
 public class BlockHeader extends Message {
@@ -21,7 +20,7 @@ public class BlockHeader extends Message {
     public static final int FLAG_USE_TIME_OFFSET = 0x04;
 
     public static final int V1_LENGTH = 80;
-    public static final int V2_LENGTH = 164;
+    public static final int V2_LENGTH = 166;
 
     private static final int EXTRANONCE_LENGTH = 16;
     private static final int XOR_KEY_LENGTH = 16;
@@ -93,7 +92,7 @@ public class BlockHeader extends Message {
             nonce3 = readUint32();
             extranonce = readReversedBytes(EXTRANONCE_LENGTH);
             timeOffset = readUint32();
-            txCount = readUint16();
+            txCount = (int)readUint32();
             flags = readByte();
             xorKeyMaskClearBits = readByte();
             xorKey = readReversedBytes(XOR_KEY_LENGTH);
@@ -120,16 +119,6 @@ public class BlockHeader extends Message {
         xorKey = new byte[XOR_KEY_LENGTH];
         height = 0;
         mmRhs = Sha256Hash.ZERO_HASH;
-    }
-
-    private int readUint16() throws ProtocolException {
-        try {
-            int u = Utils.readUint16(payload, cursor);
-            cursor += 2;
-            return u;
-        } catch(ArrayIndexOutOfBoundsException e) {
-            throw new ProtocolException(e);
-        }
     }
 
     private int readByte() throws ProtocolException {
@@ -484,7 +473,7 @@ public class BlockHeader extends Message {
             uint32ToByteStreamLE(nonce3, stream);
             stream.write(Utils.reverseBytes(extranonce));
             uint32ToByteStreamLE(timeOffset, stream);
-            uint16ToByteStreamLE(txCount, stream);
+            uint32ToByteStreamLE(txCount, stream);
             stream.write(flags);
             stream.write(xorKeyMaskClearBits);
             stream.write(Utils.reverseBytes(xorKey));

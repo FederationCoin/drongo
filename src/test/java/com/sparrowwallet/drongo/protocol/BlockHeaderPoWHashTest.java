@@ -47,10 +47,10 @@ public class BlockHeaderPoWHashTest {
      * 2^248 that lets about one hash in 256 through while staying well inside the regtest proof of work
      * limit, then grinding nonce2 until both conditions held. nonce2 = 135 was the first to qualify.
      */
-    private static final String DISCRIMINATING_HEADER_HEX = "000000a01f1e1d1c1b1a191817161514131211100f0e0d0c0b0a0908070605040302010000112233445566778899aabbccddeeff00102030405060708090a0b0c0d0e0f0a8913577ffff00200df0ad0b87000000efcdab89ffeeddccbbaa998877665544332211005802000003001c000000000000000000000000000000000040d10c008967452301efcdab8967452301efcdab8967452301efcdab8967452301efcdab";
+    private static final String DISCRIMINATING_HEADER_HEX = "000000a01f1e1d1c1b1a191817161514131211100f0e0d0c0b0a0908070605040302010000112233445566778899aabbccddeeff00102030405060708090a0b0c0d0e0f0a8913577ffff00200df0ad0b87000000efcdab89ffeeddccbbaa9988776655443322110058020000030000001c000000000000000000000000000000000040d10c008967452301efcdab8967452301efcdab8967452301efcdab8967452301efcdab";
     private static final long DISCRIMINATING_NBITS = 0x2000ffffL;
     private static final String DISCRIMINATING_POW_HASH = "00c99031e59e5fc5e70e149025f6c8acd5ac774e882a9e2bf3e0ce82d4a017e8";
-    private static final String DISCRIMINATING_SHA256D_HASH = "9a1c4a7367e691f9db7fd3cd070791149699f503ae4ba7f6a176828b155e963d";
+    private static final String DISCRIMINATING_SHA256D_HASH = "3db01324bb6bb0dccb91d0ce7f6fb8a51eac1ca021990a0cbdbb31b3adebdf24";
 
     /**
      * SHA256(tag || tag || m_xor_key), where m_xor_key is fed in wire order.
